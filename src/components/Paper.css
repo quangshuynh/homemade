@@ -50,20 +50,3 @@
   line-height: var(--leading-hand);
   color: var(--ink-pen);
 }
-
-.sticker {
-  display: inline-grid;
-  place-items: center;
-  padding: var(--space-1) var(--space-3);
-  font-family: var(--font-hand);
-  font-weight: var(--weight-bold);
-  font-size: var(--text-xs);
-  line-height: 1.2;
-  color: var(--ink);
-  background: var(--butter-400);
-  border: 1.5px solid var(--ink);
-  border-radius: var(--radius-sticker);
-  transform: rotate(-6deg);
-  box-shadow: 0 2px 3px rgb(80 45 15 / 0.25);
-  white-space: nowrap;
-}

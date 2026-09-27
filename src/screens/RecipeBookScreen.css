@@ -1,0 +1,177 @@
+.recipe-book {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.recipe-book__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+}
+
+.recipe-book__title {
+  font-size: var(--text-2xl);
+}
+
+.recipe-book__count {
+  padding: var(--space-2) var(--space-4);
+  background: var(--butter-300);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(1.5deg);
+}
+
+/* Index cards laid out on the counter, a little uneven. */
+.recipe-book__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--space-6) var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.book-card {
+  position: relative;
+  min-height: 15rem;
+  padding: var(--space-5);
+  background-color: var(--paper);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.book-card:nth-child(3n + 1) {
+  transform: rotate(-0.8deg);
+}
+
+.book-card:nth-child(3n + 2) {
+  transform: rotate(0.6deg);
+}
+
+.book-card__body {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.book-card__cookie {
+  position: absolute;
+  top: -18px;
+  right: var(--space-4);
+  width: 4.5rem;
+  height: auto;
+  transform: rotate(12deg);
+}
+
+.book-card__name {
+  margin-inline: calc(-1 * var(--space-5));
+  padding: 0 5.5rem var(--space-2) var(--space-5);
+  border-bottom: 2px solid var(--paper-margin);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.book-card__descriptors {
+  margin-top: var(--space-2);
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  color: var(--ink-pen);
+}
+
+.book-card__description {
+  font-size: var(--text-sm);
+}
+
+.book-card__subhead {
+  margin-top: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+}
+
+.book-card__ingredients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-hand);
+  color: var(--ink-pen);
+}
+
+.book-card__ingredients li:not(:last-child)::after {
+  content: ',';
+}
+
+.book-card__date {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* An undiscovered recipe: a blank card with a strip of tape over where the name would be. */
+.book-card--blank {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-2);
+  background-color: var(--paper-shade);
+  box-shadow: inset 0 0 0 2px rgb(43 29 20 / 0.12);
+}
+
+.book-card__tape {
+  position: absolute;
+  top: 2.2rem;
+  left: 12%;
+  width: 76%;
+  height: 28px;
+  background: var(--tape);
+  box-shadow: 0 1px 2px rgb(80 45 15 / 0.15);
+  transform: rotate(-2deg);
+}
+
+.book-card__mark {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-3xl);
+  line-height: 1;
+  color: rgb(43 29 20 / 0.35);
+}
+
+.book-card__blank-text {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.recipe-book__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  background: var(--paper);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  justify-self: start;
+}
+
+@media (max-width: 480px) {
+  .book-card {
+    min-height: 0;
+  }
+
+  .book-card--blank {
+    min-height: 9rem;
+    padding-top: var(--space-7);
+  }
+
+  .book-card__tape {
+    top: var(--space-4);
+  }
+
+  .book-card__mark {
+    font-size: var(--text-2xl);
+  }
+}

@@ -40,6 +40,25 @@
   --ink-on-accent: #fffaf0;
   --ink-pen: #1d4f91; /* ballpoint blue: focus and handwritten marks */
 
+  /* ---- Colour: ingredients (jar contents) and baked dough ---- */
+  --swatch-white: #f8f3ea;
+  --swatch-wheat: #ead7b0;
+  --swatch-butter: #f6d77a;
+  --swatch-shell: #ecd3ae;
+  --swatch-amber: #9c5a1b;
+  --swatch-chocolate: #4a2a18;
+  --swatch-cocoa: #6e4128;
+  --swatch-cinnamon: #a9592b;
+
+  --dough-pale: #f0d8a4;
+  --dough-golden: #daa55a;
+  --dough-spiced: #c4854b;
+  --dough-cocoa: #7a4a2e;
+  --dough-dark: #4e2c1b;
+
+  --oven-glow: #f39a3d;
+  --glass: rgb(233 245 243 / 0.72);
+
   /* ---- Colour: roles ---- */
   --surface-counter: var(--wood-300);
   --surface-card: var(--paper);

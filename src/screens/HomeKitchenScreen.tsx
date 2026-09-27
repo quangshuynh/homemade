@@ -1,14 +1,15 @@
 import { useSave } from '../app/gameContext'
 import { hrefFor } from '../app/routes'
 import { MixingBowl, PantryJar, RecipeBox } from '../components/illustrations'
-import { HandNote, Sticker } from '../components/Paper'
+import { HandNote } from '../components/Paper'
 import { ScreenTitle } from '../components/ScreenTitle'
 import { greetingFor } from './greeting'
 import './HomeKitchenScreen.css'
 
 export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
   const save = useSave()
-  const recipeCount = save.discoveredRecipeIds.length
+  const recipeCount = save.discoveredRecipes.length
+  const ingredientCount = save.pantryIngredientIds.length
 
   return (
     <div className="kitchen">
@@ -39,7 +40,7 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
             <MixingBowl className="counter-object__art" />
             <span className="counter-object__tag">
               <span className="counter-object__name">Bake</span>
-              <Sticker>coming soon</Sticker>
+              <span className="counter-object__detail">Mix something up</span>
             </span>
           </a>
         </li>
@@ -48,7 +49,9 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
             <PantryJar className="counter-object__art" />
             <span className="counter-object__tag">
               <span className="counter-object__name">Pantry</span>
-              <span className="counter-object__detail">Empty shelves</span>
+              <span className="counter-object__detail">
+                {ingredientCount === 0 ? 'Empty shelves' : `${ingredientCount} ${ingredientCount === 1 ? 'ingredient' : 'ingredients'}`}
+              </span>
             </span>
           </a>
         </li>

@@ -1,0 +1,523 @@
+.bake {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  grid-template-areas:
+    'title title'
+    'shelf station';
+  align-items: start;
+  gap: var(--space-5) var(--space-7);
+}
+
+.bake--oven,
+.bake:has(.bake-result) {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'title' 'main';
+}
+
+.bake__title {
+  grid-area: title;
+  font-size: var(--text-2xl);
+}
+
+.bake__heading {
+  font-size: var(--text-lg);
+}
+
+.bake__hint {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* ---- The shelf: jars standing on wooden planks ---- */
+
+.bake__shelf {
+  grid-area: shelf;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  background: rgb(110 64 28 / 0.18);
+  border-radius: var(--radius-paper);
+  box-shadow: inset 0 2px 8px rgb(70 38 12 / 0.3);
+}
+
+.bake__shelf .bake__hint {
+  color: var(--ink);
+}
+
+.bake__jars {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.75rem, 1fr));
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bake__jars > li {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-3);
+  /* each row stands on a plank */
+  border-bottom: 9px solid var(--wood-500);
+  box-shadow: 0 3px 0 rgb(70 38 12 / 0.35);
+}
+
+.jar-button {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  width: 100%;
+  min-height: var(--tap-target);
+  padding: var(--space-1) var(--space-1) var(--space-2);
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.jar-button__art {
+  width: 5.25rem;
+  height: auto;
+  transition: transform var(--duration-quick) var(--ease-out);
+}
+
+.jar-button:hover .jar-button__art {
+  transform: translateY(var(--lift-hover)) rotate(-2deg);
+}
+
+.jar-button:active .jar-button__art {
+  transform: scale(var(--press-scale));
+}
+
+.jar-art__lid {
+  transform-box: fill-box;
+  transform-origin: 0% 100%;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+/* Picked: the lid comes off, and a sticker says so in words (never colour alone). */
+.jar-button[aria-pressed='true'] .jar-art__lid {
+  transform: translate(-6px, -10px) rotate(-14deg);
+}
+
+.jar-button__label {
+  max-width: 100%;
+  padding: 1px var(--space-2);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  text-align: center;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.jar-button[aria-pressed='true'] .jar-button__label {
+  background: var(--butter-300);
+}
+
+.jar-button__state {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  padding: 1px var(--space-2);
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  color: var(--ink);
+  background: var(--butter-400);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-sticker);
+  transform: rotate(8deg);
+  animation: sticker-on var(--duration-base) var(--ease-settle) both;
+}
+
+@keyframes sticker-on {
+  from {
+    opacity: 0;
+    transform: rotate(20deg) scale(1.4);
+  }
+}
+
+/* ---- The bowl station ---- */
+
+.bake__station {
+  grid-area: station;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.bake__bowl {
+  width: min(22rem, 100%);
+  height: auto;
+}
+
+.baking-bowl__dollop {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: dollop-drop var(--duration-base) var(--ease-settle) both;
+}
+
+@keyframes dollop-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.8);
+  }
+}
+
+.bake__bowl--mixed {
+  transform-origin: 50% 90%;
+  animation: bowl-mix var(--duration-slow) var(--ease-out);
+}
+
+.baking-bowl__dough {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dough-fold var(--duration-slow) var(--ease-out) both;
+}
+
+@keyframes bowl-mix {
+  25% {
+    transform: rotate(-3deg) translateX(-4px);
+  }
+  55% {
+    transform: rotate(2.5deg) translateX(3px);
+  }
+  80% {
+    transform: rotate(-1deg);
+  }
+}
+
+@keyframes dough-fold {
+  from {
+    opacity: 0.3;
+    transform: scale(0.85) rotate(-6deg);
+  }
+}
+
+.bake__empty {
+  margin-top: calc(-1 * var(--space-2));
+}
+
+.bake__in-bowl {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bake__in-bowl > li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-left: var(--space-3);
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-md);
+  color: var(--ink-pen);
+  background: var(--paper);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.bake__take-out {
+  display: grid;
+  place-items: center;
+  min-width: var(--tap-target);
+  min-height: var(--tap-target);
+  padding: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.bake__take-out:hover {
+  color: var(--jam-600);
+  background: rgb(168 50 60 / 0.1);
+}
+
+.bake__room {
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.bake__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.bake__actions .bake__hint {
+  flex-basis: 100%;
+  color: var(--ink);
+}
+
+.bake__go {
+  min-width: 10rem;
+  font-size: var(--text-lg);
+}
+
+/* ---- The oven ---- */
+
+.bake__oven {
+  grid-area: main;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-5);
+}
+
+.bake__oven-art {
+  width: min(18rem, 80vw);
+  height: auto;
+  animation: oven-arrive var(--duration-base) var(--ease-settle) both;
+}
+
+.oven__glow {
+  animation: oven-glow 900ms ease-in-out infinite alternate;
+}
+
+@keyframes oven-arrive {
+  from {
+    opacity: 0.4;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes oven-glow {
+  to {
+    opacity: 0.9;
+  }
+}
+
+/* ---- The result ---- */
+
+.bake-result {
+  grid-area: main;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: var(--space-6) var(--space-7);
+  max-width: 60rem;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* A baking tray with three cookies on parchment. */
+.bake-result__tray {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
+  background: var(--paper);
+  border: 10px solid #b9b3a8;
+  border-radius: 10px;
+  outline: 2px solid var(--ink);
+  box-shadow: var(--shadow-lifted);
+  transform: rotate(-1.5deg);
+}
+
+.bake-result__cookie {
+  width: 100%;
+  height: auto;
+  animation: cookie-out var(--duration-slow) var(--ease-settle) both;
+}
+
+.bake-result__cookie:nth-child(2) {
+  animation-delay: calc(var(--duration-quick) * 0.6);
+  transform: rotate(8deg);
+}
+
+.bake-result__cookie:nth-child(3) {
+  animation-delay: calc(var(--duration-quick) * 1.2);
+}
+
+@keyframes cookie-out {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.9);
+  }
+}
+
+.bake-result__card {
+  display: grid;
+  gap: var(--space-3);
+  animation: card-in var(--duration-slow) var(--ease-settle) both;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0.3;
+    transform: translateY(24px) rotate(1.5deg);
+  }
+}
+
+.bake-result__name {
+  font-size: var(--text-xl);
+  padding-right: 7rem; /* room for the stamp */
+}
+
+.bake-result__name:focus {
+  outline: none;
+}
+
+.bake-result__name:focus-visible {
+  outline: var(--focus-width) dashed var(--focus-ring);
+  outline-offset: var(--space-1);
+}
+
+.bake-result__descriptors {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  color: var(--ink-soft);
+}
+
+.bake-result__made,
+.bake-result__book {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.bake-result__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+/* The first-time stamp, with a small puff of flour as it lands. */
+.bake-result__stamp {
+  position: absolute;
+  top: var(--space-5);
+  right: var(--space-4);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-md);
+  line-height: 1.3;
+  color: var(--jam-600);
+  border: 3px double var(--jam-600);
+  border-radius: 6px 8px 5px 9px;
+  background: rgb(255 250 240 / 0.8);
+  transform: rotate(-9deg);
+  animation: stamp-down var(--duration-base) var(--ease-settle) both;
+  animation-delay: var(--duration-slow);
+}
+
+.bake-result__stamp::before,
+.bake-result__stamp::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 253 246 / 0.95) 0 18%, transparent 60%);
+  opacity: 0;
+  pointer-events: none;
+  animation: flour-puff var(--duration-slow) var(--ease-out) both;
+  animation-delay: calc(var(--duration-slow) + var(--duration-quick));
+}
+
+.bake-result__stamp::after {
+  inset: -4px -30px;
+  animation-delay: calc(var(--duration-slow) + var(--duration-quick) * 1.5);
+}
+
+@keyframes stamp-down {
+  from {
+    opacity: 0;
+    transform: rotate(-20deg) scale(1.7);
+  }
+}
+
+@keyframes flour-puff {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+/* ---- Tablet and phone ---- */
+
+@media (max-width: 879px) {
+  .bake {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'title' 'shelf' 'station';
+  }
+
+  .bake-result {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bake-result__tray {
+    max-width: 26rem;
+    justify-self: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .bake__shelf {
+    padding-inline: var(--space-2);
+  }
+
+  .bake__jars {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .jar-button__art {
+    width: min(3.75rem, 100%);
+  }
+
+  .jar-button__label {
+    font-size: var(--text-xs);
+    padding-inline: var(--space-1);
+  }
+
+  .jar-button__state {
+    right: -4px;
+    font-size: 0.6875rem;
+  }
+
+  .bake-result__name {
+    padding-right: 0;
+    padding-top: var(--space-6);
+  }
+
+  .bake-result__stamp {
+    top: var(--space-4);
+    right: auto;
+    left: var(--space-5);
+  }
+}
+
+/* Phones: keep the bowl compact so Mix stays close to the shelf. */
+@media (max-width: 600px) {
+  .bake__bowl {
+    width: min(15rem, 100%);
+  }
+
+  .bake__station {
+    gap: var(--space-2);
+  }
+}

@@ -1,7 +1,9 @@
 import { IDBFactory } from 'fake-indexeddb'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { CURRENT_SAVE_VERSION, touchSave, updateSettings } from '../domain/save'
-import { makeSave } from '../test/fixtures'
+import { bake, recordBake } from '../domain/baking'
+import { BUTTER, FLOUR, SUGAR } from '../domain/ingredients'
+import { makeSave, makeV1Save } from '../test/fixtures'
 import { createIndexedDbSaveRepository, readArchive, type IndexedDbSaveRepositoryOptions } from './indexedDbSaveRepository'
 import { findSaveProblem } from './schema'
 
@@ -128,6 +130,48 @@ describe('IndexedDB save repository', () => {
     expect(archive[0]?.data).toEqual(versionOne)
     // The upgraded save is what's stored now, so the next load needs no migration.
     await expect(createIndexedDbSaveRepository({ ...options, schema }).load()).resolves.toMatchObject({ migratedFrom: null })
+  })
+
+  it('upgrades an Interval 1 save on load, archiving the original and storing the upgrade', async () => {
+    const v1 = makeV1Save()
+    await putRaw(v1)
+
+    const result = await createIndexedDbSaveRepository(options).load()
+
+    expect(result).toMatchObject({
+      kind: 'loaded',
+      migratedFrom: 1,
+      save: { version: CURRENT_SAVE_VERSION, profile: v1.profile, settings: v1.settings, discoveredRecipes: [] },
+    })
+    const archive = await readArchive(options)
+    expect(archive.map((entry) => entry.data)).toEqual([v1])
+    await expect(createIndexedDbSaveRepository(options).load()).resolves.toMatchObject({ kind: 'loaded', migratedFrom: null })
+  })
+
+  it('leaves a version 1 save it cannot upgrade exactly where it was', async () => {
+    const broken = makeV1Save({ discoveredRecipeIds: 'not a list' })
+    await putRaw(broken)
+
+    const result = await createIndexedDbSaveRepository(options).load()
+
+    expect(result).toMatchObject({ kind: 'incompatible', reason: 'migration-failed', raw: broken })
+    await expect(readArchive(options)).resolves.toEqual([])
+    await expect(createIndexedDbSaveRepository(options).load()).resolves.toMatchObject({ raw: broken })
+  })
+
+  it('keeps discovered recipes across sessions, and reset clears them', async () => {
+    const repo = createIndexedDbSaveRepository(options)
+    const { save } = recordBake(makeSave(), bake([FLOUR, SUGAR, BUTTER]), new Date('2026-04-01T12:00:00.000Z'))
+    await repo.write(save)
+
+    const reopened = await createIndexedDbSaveRepository(options).load()
+    expect(reopened).toMatchObject({
+      kind: 'loaded',
+      save: { discoveredRecipes: [{ recipeId: 'recipe_shortbread', discoveredAt: '2026-04-01T12:00:00.000Z' }] },
+    })
+
+    await repo.clear()
+    await expect(createIndexedDbSaveRepository(options).load()).resolves.toEqual({ kind: 'empty' })
   })
 
   it('fails loudly when the browser has no IndexedDB', async () => {

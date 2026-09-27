@@ -1,8 +1,9 @@
 import { createId } from './ids'
+import { STARTER_PANTRY } from './ingredients'
 import type { GameSave, GameSettings, PlayerProfile } from './types'
 
 /** The save schema version this build writes. */
-export const CURRENT_SAVE_VERSION = 1
+export const CURRENT_SAVE_VERSION = 2
 
 export const NAME_MAX_LENGTH = 32
 
@@ -47,7 +48,8 @@ export function createNewSave(input: NewSaveInput, now: Date = new Date()): Game
   return {
     version: CURRENT_SAVE_VERSION,
     profile,
-    discoveredRecipeIds: [],
+    pantryIngredientIds: [...STARTER_PANTRY],
+    discoveredRecipes: [],
     settings: { ...DEFAULT_SETTINGS },
     createdAt: timestamp,
     updatedAt: timestamp,

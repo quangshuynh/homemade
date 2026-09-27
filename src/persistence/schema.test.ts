@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { CURRENT_SAVE_VERSION } from '../domain/save'
-import { makeSave } from '../test/fixtures'
+import { defineId } from '../domain/ids'
+import { FIXED_NOW, makeSave } from '../test/fixtures'
 import { deserializeSave, findSaveProblem, readSave, serializeSave, type Migration } from './schema'
 
 describe('readSave', () => {
@@ -39,7 +40,7 @@ describe('readSave', () => {
   })
 
   it('flags recipe ids that are not recipe ids', () => {
-    const raw = { ...makeSave(), discoveredRecipeIds: ['Butter Cookie'] }
+    const raw = { ...makeSave(), discoveredRecipes: [{ recipeId: 'Butter Cookie', discoveredAt: '2026-03-14T09:30:00.000Z' }] }
     expect(readSave(raw)).toMatchObject({ ok: false, reason: 'invalid' })
   })
 
@@ -132,7 +133,7 @@ describe('readSave', () => {
 
 describe('serialization', () => {
   it('round-trips a save through JSON', () => {
-    const save = makeSave({ discoveredRecipeIds: [] })
+    const save = makeSave({ discoveredRecipes: [{ recipeId: defineId('recipe', 'shortbread'), discoveredAt: FIXED_NOW.toISOString() }] })
     const json = serializeSave(save)
 
     expect(JSON.parse(json).version).toBe(CURRENT_SAVE_VERSION)

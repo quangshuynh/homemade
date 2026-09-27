@@ -1,30 +1,22 @@
-<p align="center">
-  <img src="docs/images/homemade-logo.png" alt="Homemade icon" width="256">
-</p>
-
 # Homemade
 
-[![CI](https://github.com/quangshuynh/homemade/actions/workflows/ci.yml/badge.svg)](https://github.com/quangshuynh/homemade/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-powered-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
-
-Homemade is a cozy baking game that runs in your browser. You name your own little kitchen, and over time you'll discover recipes, try out ingredients, fill a recipe book and make the place your own.
+Homemade is a cozy baking game that runs in your browser. You name your own little kitchen, try out ingredients, discover recipes and fill a recipe book.
 
 It is **not** an idle or clicker game. Nothing ticks up while you're away, and there's no counter to grind. It's a slow, hands-on game about making things.
 
 ## Status
 
-**Interval 1: Foundation.** There is no baking yet. This first interval puts in the base everything else will sit on:
+**Interval 2: First baking loop.** There's one small, complete loop:
 
-- **First launch:** you give your name (or a nickname) and a name for your kitchen. Both are saved in this browser.
-- **Home Kitchen:** your kitchen's name, a greeting, and a counter with the mixing bowl (Bake), the recipe box (Recipe Book) and the pantry jar (Pantry).
-- **Bake, Recipe Book and Pantry** exist as places you can visit, but each one says plainly that it is empty or not built yet. None of them contain made-up content.
-- **Settings:** a sound preference (stored for later, since there's no audio yet), a motion preference (match your device, keep things still, or let things move), and **Start over**, which asks you to confirm before it clears the save.
-- **Returning players** skip setup and go straight back to their kitchen.
+1. **Bake:** take up to five ingredients off the shelf and put them in the bowl, mix, and bake.
+2. **Discover:** an exact set of ingredients makes one of 7 hand-written recipes. The first time you bake one, it's stamped *New recipe!* and saved.
+3. **Experiment:** anything else comes out as a *Kitchen Experiment*. You still get to eat it, but it doesn't go in the book.
+4. **Recipe Book:** recipes you've found are written out. Ones you haven't are blank cards that give nothing away.
+5. **Pantry:** the 8 ingredients on your shelves. Everyone starts with all of them, and there's no shop or currency.
 
-Saves live in the browser's IndexedDB. No account is needed and nothing is sent anywhere.
+Also in place from Interval 1: naming your kitchen on first launch, the Home Kitchen, and Settings (sound preference, motion preference, and Start over with confirmation).
+
+Saves live in the browser's IndexedDB. No account is needed and nothing is sent anywhere. Saves from Interval 1 are upgraded automatically, and the original is kept in an archive.
 
 ## Tech stack
 
@@ -66,8 +58,8 @@ Other scripts:
 src/
   app/          App shell, routing, and the GameProvider that holds the current save
   components/   Reusable UI: recipe-box tabs, paper cards, buttons, dialog, illustrations
-  domain/       Game types and pure logic (IDs, save creation, settings updates)
-  persistence/  Save schema, validation and migrations, and the IndexedDB repository
+  domain/       Game rules and catalogs: ingredients, recipes, baking, saves
+  persistence/  Save schema, validation, migrations, and the IndexedDB repository
   screens/      One file per screen (onboarding, kitchen, bake, recipe book, pantry, settings)
   styles/       Design tokens and base styles
   assets/       Static art (the butcher-block counter)
@@ -77,6 +69,8 @@ src/
 A few design decisions worth knowing:
 
 - **The UI never touches IndexedDB.** Screens call `updateSave(change)` from `GameProvider`. The provider updates the screen right away and writes through a `SaveRepository` interface in the background. Autosave, cloud sync or a different storage backend can plug in behind that interface later.
+- **Game rules live in `domain/`.** Ingredients and recipes are static catalogs with stable ids, and saves store only ids. Matching, discovery and bowl rules are pure functions (`domain/baking.ts`), and screens call them rather than deciding anything themselves.
+- **Individual batches aren't saved yet.** Only first-time discoveries are. Nothing reads past bakes yet, and keeping every one would grow saves for no benefit. A `CookieCreation` type is ready for when a collection feature needs it.
 - **Everything read from storage is checked.** `persistence/schema.ts` validates stored data and runs any migrations before the game sees it. Each save has a `version`. A save that can't be read is **never deleted automatically**: the player sees what went wrong and can download a copy, try again, or set it aside. Setting it aside moves it to an archive store rather than deleting it. Before a migrated save is written back, the original is archived too.
 - **IDs are stable and typed.** Players, recipes, ingredients and creations use prefixed, branded string IDs (`player_…`, `recipe_…`). Nothing is keyed by display name.
 - **Navigation is hash-based** (`#/bake`, `#/settings`): real links, working back button, no server config.
@@ -87,15 +81,7 @@ Semantic landmarks and headings, real links and buttons, a skip link, visible fo
 
 ## Where it's heading
 
-Later intervals are expected to add, roughly in this order:
-
-- Mixing ingredients and baking, with recipes discovered by experimenting
-- A recipe book that fills in as you discover things
-- A pantry of ingredients
-- Collecting what you bake
-- Decorating your kitchen or bakery
-
-None of these exist yet. Cloud saves, accounts and multiplayer are not planned for the near term.
+Likely next: more ingredients and recipes, collecting what you bake, and decorating your kitchen. None of that exists yet. Cloud saves, accounts and multiplayer aren't planned for the near term.
 
 ## Design direction
 
