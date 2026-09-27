@@ -1,4 +1,14 @@
+<p align="center">
+  <img src="docs/images/homemade-logo.png" alt="Homemade icon" width="256">
+</p>
+
 # Homemade
+
+[![CI](https://github.com/quangshuynh/homemade/actions/workflows/ci.yml/badge.svg)](https://github.com/quangshuynh/homemade/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-powered-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 
 Homemade is a cozy baking game that runs in your browser. You name your own little kitchen, and over time you'll discover recipes, try out ingredients, fill a recipe book and make the place your own.
 
