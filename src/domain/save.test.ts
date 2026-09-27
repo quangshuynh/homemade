@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { FIXED_NOW, makeSave } from '../test/fixtures'
 import { defineId, isIdOf } from './ids'
 import { STARTER_PANTRY } from './ingredients'
-import { CURRENT_SAVE_VERSION, createNewSave, DEFAULT_SETTINGS, NAME_MAX_LENGTH, touchSave, updateSettings, validateName } from './save'
+import { CURRENT_SAVE_VERSION, createNewSave, DEFAULT_SETTINGS, NAME_MAX_LENGTH, renameProfile, touchSave, updateSettings, validateName } from './save'
 
 describe('createNewSave', () => {
   it('creates a versioned save with the player and bakery names', () => {
@@ -79,5 +79,45 @@ describe('defineId', () => {
 
   it('rejects slugs that would make unstable ids', () => {
     expect(() => defineId('recipe', 'Butter Cookie')).toThrow()
+  })
+})
+
+describe('renameProfile', () => {
+  it('renames the player and the kitchen without touching the player id or anything else', () => {
+    const save = makeSave()
+    const result = renameProfile(save, { playerName: 'Robin Q', bakeryName: 'The New Oven' })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.changed).toBe(true)
+    expect(result.save.profile).toEqual({ id: save.profile.id, name: 'Robin Q', bakeryName: 'The New Oven' })
+    const { profile: _before, ...restBefore } = save
+    const { profile: _after, ...restAfter } = result.save
+    expect(restAfter).toEqual(restBefore)
+  })
+
+  it('can change just one name', () => {
+    const save = makeSave()
+    const result = renameProfile(save, { bakeryName: 'Flour Power' })
+
+    expect(result.ok && result.save.profile).toEqual({ ...save.profile, bakeryName: 'Flour Power' })
+  })
+
+  it('tidies whitespace the same way onboarding does', () => {
+    const result = renameProfile(makeSave(), { playerName: '  Sam   B ', bakeryName: '\tOven  Mitts ' })
+    expect(result.ok && result.save.profile.name).toBe('Sam B')
+    expect(result.ok && result.save.profile.bakeryName).toBe('Oven Mitts')
+  })
+
+  it('refuses blank or overlong names and reports each problem', () => {
+    const result = renameProfile(makeSave(), { playerName: '   ', bakeryName: 'x'.repeat(NAME_MAX_LENGTH + 1) })
+    expect(result).toEqual({ ok: false, problems: { playerName: 'empty', bakeryName: 'too-long' } })
+  })
+
+  it('says nothing changed, and returns the same save, when the tidied names are the same', () => {
+    const save = makeSave()
+    const result = renameProfile(save, { playerName: ' Robin ', bakeryName: 'Crumb  &  Co.' })
+    expect(result.ok && result.changed).toBe(false)
+    expect(result.ok && result.save).toBe(save)
   })
 })

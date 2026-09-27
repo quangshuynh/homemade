@@ -174,6 +174,11 @@
 }
 
 .kitchen__rack-top a {
+  display: inline-flex;
+  align-items: center;
+  /* a full-size touch target, without making the paper strip any taller */
+  min-height: var(--tap-target);
+  margin-block: calc(-1 * var(--space-2));
   font-size: var(--text-sm);
 }
 

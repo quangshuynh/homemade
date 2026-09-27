@@ -172,6 +172,7 @@ describe('saves that cannot be read', () => {
       write: () => Promise.reject(new Error('nope')),
       clear: () => Promise.resolve(),
       archiveAndClear: () => Promise.resolve(),
+      replace: () => Promise.reject(new Error('nope')),
     }
     renderGame(broken)
 

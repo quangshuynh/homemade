@@ -3,20 +3,11 @@ import { useGame } from '../app/gameContext'
 import { Button } from '../components/Button'
 import { HandNote, RecipeCard } from '../components/Paper'
 import { NAME_MAX_LENGTH, normalizeName, validateName, type NameProblem } from '../domain/save'
+import { NAME_MESSAGES } from './nameMessages'
+import '../components/LineInput.css'
 import './OnboardingScreen.css'
 
 type Field = 'playerName' | 'bakeryName'
-
-const messages: Record<Field, Record<NameProblem, string>> = {
-  playerName: {
-    empty: 'Write down a name or nickname, even just an initial.',
-    'too-long': `Keep it to ${NAME_MAX_LENGTH} letters or fewer.`,
-  },
-  bakeryName: {
-    empty: 'Every kitchen needs a name. You can keep it simple.',
-    'too-long': `Keep it to ${NAME_MAX_LENGTH} letters or fewer, so it fits over the door.`,
-  },
-}
 
 export function OnboardingScreen() {
   const { startGame } = useGame()
@@ -91,7 +82,7 @@ export function OnboardingScreen() {
                   }}
                   id={id}
                   name={field}
-                  className="onboarding__input"
+                  className="line-input"
                   type="text"
                   autoComplete={field === 'playerName' ? 'nickname' : 'off'}
                   autoCapitalize="words"
@@ -104,7 +95,7 @@ export function OnboardingScreen() {
                 />
                 {problem && (
                   <p className="onboarding__error" id={errorId}>
-                    {messages[field][problem]}
+                    {NAME_MESSAGES[field][problem]}
                   </p>
                 )}
               </div>

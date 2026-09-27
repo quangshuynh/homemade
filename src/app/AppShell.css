@@ -28,7 +28,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-3) var(--space-6);
-  padding: var(--space-4) var(--gutter) 0;
+  padding: max(var(--space-4), var(--safe-top)) var(--gutter-right) 0 var(--gutter-left);
 }
 
 .shell__header > nav:only-child {
@@ -36,9 +36,11 @@
 }
 
 .shell__sign {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-target);
   max-width: 100%;
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
   font-family: var(--font-display);
   font-weight: var(--weight-display);
   font-size: var(--text-lg);
@@ -58,7 +60,7 @@
   width: 100%;
   max-width: 72rem;
   margin: 0 auto;
-  padding: var(--space-6) var(--gutter) var(--space-8);
+  padding: var(--space-6) var(--gutter-right) calc(var(--space-8) + var(--nav-clearance)) var(--gutter-left);
   animation: screen-settle var(--duration-slow) var(--ease-settle);
 }
 
@@ -75,12 +77,25 @@
   }
 }
 
-.shell__save-warning {
+/* Notes stuck to the bottom of the screen, above the phone tab bar. They stack. */
+.shell__notes {
   position: fixed;
-  left: 50%;
-  bottom: var(--space-4);
+  right: var(--gutter-right);
+  bottom: calc(var(--nav-clearance) + var(--space-4));
+  left: var(--gutter-left);
   z-index: var(--layer-nav);
-  width: min(30rem, calc(100vw - 2 * var(--space-4)));
+  display: grid;
+  justify-items: end;
+  gap: var(--space-3);
+  pointer-events: none;
+}
+
+.shell__notes:empty {
+  display: none;
+}
+
+.shell__save-warning {
+  width: min(30rem, 100%);
   padding: var(--space-3) var(--space-4);
   font-weight: var(--weight-bold);
   color: var(--ink);
@@ -88,7 +103,8 @@
   border: var(--border-ink);
   border-radius: var(--radius-paper);
   box-shadow: var(--shadow-lifted);
-  transform: translateX(-50%) rotate(-0.5deg);
+  transform: rotate(-0.5deg);
+  pointer-events: auto;
 }
 
 #screen-title:focus {
@@ -102,16 +118,15 @@
 
 @media (max-width: 719px) {
   .shell__header {
-    padding-top: var(--space-3);
+    padding-top: max(var(--space-3), var(--safe-top));
   }
 
   .shell__screen {
     padding-top: var(--space-4);
-    /* clear the fixed tab bar at the bottom */
-    padding-bottom: calc(var(--space-8) + 56px + env(safe-area-inset-bottom));
+    padding-bottom: calc(var(--space-6) + var(--nav-clearance));
   }
 
-  .shell__save-warning {
-    bottom: calc(72px + env(safe-area-inset-bottom));
+  .shell__notes {
+    justify-items: center;
   }
 }

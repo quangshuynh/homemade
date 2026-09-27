@@ -5,7 +5,7 @@ import type { RecipeId } from '../domain/ids'
 import { createNewSave, touchSave, type NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
 import type { SaveRepository } from '../persistence/repository'
-import { GameContext, type GameState, type SaveStatus } from './gameContext'
+import { GameContext, type GameState, type ImportedSave, type SaveStatus } from './gameContext'
 
 function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
@@ -135,6 +135,27 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
     setState({ status: 'first-run' })
   }, [repository])
 
+  const importSave = useCallback(
+    async (incoming: ImportedSave) => {
+      // Let any pending write land first, so it can't overwrite the import afterwards.
+      await writeQueue.current.catch(() => {})
+      await repository.replace(incoming.save, {
+        note: 'Set aside when another save was imported',
+        alsoArchive:
+          incoming.migratedFrom === null
+            ? undefined
+            : { note: `Imported from save version ${incoming.migratedFrom} (original file)`, data: incoming.original },
+      })
+      saveRef.current = incoming.save
+      setPreparedBowl(null)
+      setSaveStatus('saved')
+      setState({ status: 'ready', save: incoming.save })
+    },
+    [repository],
+  )
+
+  const whenSaved = useCallback(() => writeQueue.current.catch(() => {}), [])
+
   const reload = useCallback(() => {
     setState({ status: 'loading' })
     setLoadAttempt((attempt) => attempt + 1)
@@ -152,9 +173,25 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       clearPreparedBowl,
       resetSave,
       archiveAndStartOver,
+      importSave,
+      whenSaved,
       reload,
     }),
-    [state, saveStatus, startGame, updateSave, bake, preparedBowl, prepareRecipe, clearPreparedBowl, resetSave, archiveAndStartOver, reload],
+    [
+      state,
+      saveStatus,
+      startGame,
+      updateSave,
+      bake,
+      preparedBowl,
+      prepareRecipe,
+      clearPreparedBowl,
+      resetSave,
+      archiveAndStartOver,
+      importSave,
+      whenSaved,
+      reload,
+    ],
   )
 
   return <GameContext value={value}>{children}</GameContext>

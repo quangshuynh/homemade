@@ -84,25 +84,29 @@
   height: 20px;
 }
 
-/* Phones: the recipe box sits at the bottom of the screen, within thumb reach. */
+/*
+ * Phones: the recipe box sits at the bottom of the screen, within thumb reach.
+ * Its height is --nav-height (plus the home-indicator inset), which the page
+ * reserves at the bottom and scroll-padding keeps focus clear of.
+ */
 @media (max-width: 719px) {
   .recipe-tabs {
     position: fixed;
     inset: auto 0 0;
     z-index: var(--layer-nav);
-    padding-top: var(--space-2);
-    background: linear-gradient(to bottom, transparent, rgb(120 72 32 / 0.35));
+    /* the rim; the raised tab pokes up above it */
+    border-top: 3px solid var(--ink);
+    background: var(--wood-500);
+    box-shadow: 0 -6px 14px -6px rgb(70 38 12 / 0.45);
   }
 
   .recipe-tabs__list {
     align-items: stretch;
-    justify-content: stretch;
     gap: 3px;
-    padding: 0 var(--space-1);
+    height: calc(var(--nav-height) - 3px);
+    box-sizing: content-box;
+    padding: 0 max(var(--space-1), var(--safe-right)) var(--safe-bottom) max(var(--space-1), var(--safe-left));
     border-bottom: 0;
-    border-top: 0;
-    padding-bottom: env(safe-area-inset-bottom);
-    background: var(--wood-500);
     box-shadow: none;
   }
 
@@ -118,18 +122,59 @@
     flex-direction: column;
     justify-content: center;
     gap: 2px;
-    min-height: 56px;
-    padding: var(--space-2) var(--space-1);
+    min-width: 0;
+    min-height: 0;
+    padding: var(--space-1) 2px;
+    margin: 0;
     font-size: var(--text-xs);
-    line-height: var(--leading-snug);
+    line-height: 1.15;
     text-align: center;
-    transform: translateY(-4px);
-    margin-top: -4px;
+    border-top: 0;
+    border-radius: 0 0 8px 9px;
+    transform: none;
   }
 
+  .recipe-tabs__item:nth-child(even) .recipe-tabs__tab {
+    border-radius: 0 0 9px 7px;
+  }
+
+  .recipe-tabs__label {
+    max-width: 100%;
+    /* "Recipe Book" may take two lines at 320px, but words never split */
+    overflow-wrap: normal;
+    hyphens: none;
+  }
+
+  .recipe-tabs__tab:hover,
+  .recipe-tabs__tab:active {
+    transform: none;
+  }
+
+  /* The open section: its card is pulled up through the rim. */
   .recipe-tabs__tab[aria-current='page'] {
-    transform: translateY(-10px);
-    padding-bottom: var(--space-2);
+    margin-top: -9px;
+    padding-bottom: var(--space-1);
     margin-bottom: 0;
+    border-top: var(--border-ink);
+    border-radius: 9px 11px 8px 9px;
+    transform: none;
+    box-shadow: 0 -4px 8px -4px rgb(70 38 12 / 0.5);
+  }
+
+  .recipe-tabs__tab:focus-visible {
+    outline-offset: -5px;
+  }
+}
+
+/* Short landscape phones: icon beside the label, in a slimmer bar. */
+@media (max-width: 719px) and (max-height: 500px) {
+  .recipe-tabs__tab {
+    flex-direction: row;
+    gap: var(--space-1);
+  }
+
+  .recipe-tabs__icon {
+    width: 18px;
+    height: 18px;
   }
 }

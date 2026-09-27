@@ -1,6 +1,8 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { useStopSoundsWhenMuted } from '../audio/soundContext'
 import { RecipeTabs } from '../components/RecipeTabs'
 import { SCREEN_TITLE_ID } from '../components/ScreenTitle'
+import { UpdateNotice } from '../components/UpdateNotice'
 import { useGame, useSave } from './gameContext'
 import { hrefFor, ROUTES, type RouteId } from './routes'
 import './AppShell.css'
@@ -17,6 +19,7 @@ export function AppShell({ route, focusOnMount = false, children }: AppShellProp
   const save = useSave()
   const { saveStatus } = useGame()
   const skipFocus = useRef(!focusOnMount)
+  useStopSoundsWhenMuted()
 
   useEffect(() => {
     document.title = `${ROUTES[route].title} · ${save.profile.bakeryName} · Homemade`
@@ -24,11 +27,15 @@ export function AppShell({ route, focusOnMount = false, children }: AppShellProp
 
   // After navigating, move focus to the new screen's heading so keyboard and
   // screen reader users land in the content, not back at the top of the tabs.
+  // A screen can claim focus for something more useful (Bake again focuses
+  // the prepared bowl); its effects run first, so that focus is left alone.
   useEffect(() => {
     if (skipFocus.current) {
       skipFocus.current = false
       return
     }
+    const screen = document.getElementById('screen')
+    if (screen && screen.contains(document.activeElement) && document.activeElement !== screen) return
     document.getElementById(SCREEN_TITLE_ID)?.focus()
   }, [route])
 
@@ -56,11 +63,15 @@ export function AppShell({ route, focusOnMount = false, children }: AppShellProp
       <main id="screen" className="shell__screen" key={route} data-route={route}>
         {children}
       </main>
-      {saveStatus === 'failed' && (
-        <p className="shell__save-warning" role="alert">
-          Couldn’t save just now. Your changes are safe in this tab, but may be lost if you close it.
-        </p>
-      )}
+      {/* Notes stuck above the tabs. Empty most of the time. */}
+      <div className="shell__notes">
+        {saveStatus === 'failed' && (
+          <p className="shell__save-warning" role="alert">
+            Couldn’t save just now. Your changes are safe in this tab, but may be lost if you close it.
+          </p>
+        )}
+        <UpdateNotice />
+      </div>
     </div>
   )
 }

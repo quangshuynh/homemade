@@ -165,3 +165,124 @@
   padding-top: 0;
   border-top: 0;
 }
+
+.settings__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.settings__hint:empty {
+  display: none;
+}
+
+.settings__error {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.settings__details {
+  font-weight: var(--weight-regular);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.settings__details summary {
+  min-height: var(--tap-target);
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  cursor: pointer;
+}
+
+/* ---- Names: written on the card's lines, like the first launch ---- */
+
+.names-form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.names-form__field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.names-form__label {
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+}
+
+.names-form__input {
+  margin-top: 0;
+  font-size: var(--text-lg);
+}
+
+.names-form__error {
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  color: var(--danger);
+}
+
+.names-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.names-form__confirmation {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  color: var(--ink-pen);
+}
+
+/* Two-column names on wider cards. */
+@media (min-width: 640px) {
+  .names-form {
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--space-6);
+  }
+
+  .names-form__actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings__buttons .button {
+    flex: 1 1 100%;
+  }
+}
+
+/* ---- What's in an imported file, before it replaces anything ---- */
+
+.import-summary {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  color: var(--ink);
+  background: var(--paper);
+  border-radius: var(--radius-paper);
+  box-shadow: inset 0 0 0 1.5px rgb(43 29 20 / 0.2);
+}
+
+.import-summary > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 var(--space-3);
+}
+
+.import-summary dt {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.import-summary dd {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  color: var(--ink-pen);
+  overflow-wrap: anywhere;
+}

@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type RefObject } from 'react'
 import { useGame, useSave } from '../app/gameContext'
 import { hrefFor } from '../app/routes'
 import { useReducedMotion } from '../app/useReducedMotion'
+import { useSound } from '../audio/soundContext'
 import { Button, LinkButton } from '../components/Button'
 import { BakingBowl, Cookie, IngredientJar, Oven } from '../components/kitchenArt'
 import { HandNote, RecipeCard } from '../components/Paper'
@@ -67,22 +68,32 @@ export function BakeScreen() {
   const [message, setMessage] = useState('')
   const preparedName = prepared ? findRecipeById(prepared.recipeId)?.name : undefined
   const resultHeading = useRef<HTMLHeadingElement>(null)
+  const preparedNote = useRef<HTMLParagraphElement>(null)
+  const station = useRef<HTMLElement>(null)
   const ids = { shelf: useId(), bowl: useId(), result: useId(), mixHint: useId() }
+  const playSound = useSound()
+  // For effects that should run once per event, not again when these change underneath them.
+  const latest = useRef({ reducedMotion, playSound })
+  useEffect(() => {
+    latest.current = { reducedMotion, playSound }
+  })
 
   const pantry = save.pantryIngredientIds.map(findIngredient).filter((item): item is Ingredient => item !== undefined)
   const inBowl = bowl.map(getIngredient)
   const mixed = phase.kind === 'mixed'
 
-  // Take the prepared bowl once, then say what was laid out. Live regions only announce
-  // changes made after they're on the page, so the message waits a frame.
+  // Take the prepared bowl once, then bring the bowl into view and put focus on
+  // the note saying what was laid out, so it's seen (and read out) straight away.
+  // On a phone the bowl is below the shelf; this is what saves a scroll.
   const { clearPreparedBowl } = game
   useEffect(() => {
     if (!prepared) return
     clearPreparedBowl()
-    const said = `Laid out ${listIngredientNames(prepared.bowl)}${preparedName ? ` for ${preparedName}` : ''}. Change anything you like, then mix.`
-    const frame = requestAnimationFrame(() => setMessage(said))
-    return () => cancelAnimationFrame(frame)
-  }, [prepared, preparedName, clearPreparedBowl])
+    const note = preparedNote.current
+    if (!note) return
+    note.focus({ preventScroll: true })
+    revealIfHidden(station.current, latest.current.reducedMotion)
+  }, [prepared, clearPreparedBowl])
 
   // The oven: a short pause for the animation, skipped entirely when motion is reduced.
   useEffect(() => {
@@ -96,7 +107,20 @@ export function BakeScreen() {
     if (phase.kind === 'done') resultHeading.current?.focus()
   }, [phase.kind])
 
+  // Out of the oven: the timer dings, and a first discovery gets a little chime as the stamp lands.
+  const doneOutcome = phase.kind === 'done' ? phase.outcome : null
+  useEffect(() => {
+    if (!doneOutcome) return
+    const { playSound: play, reducedMotion: still } = latest.current
+    play('ding')
+    if (!doneOutcome.newDiscovery) return
+    const timer = window.setTimeout(() => latest.current.playSound('discover'), still ? 350 : 650)
+    return () => window.clearTimeout(timer)
+  }, [doneOutcome])
+
   function change(next: BowlChange, ingredient: Ingredient) {
+    if (next.outcome === 'added') playSound('pick')
+    if (next.outcome === 'removed') playSound('remove')
     setBowl(next.bowl)
     setMessage(describeChange(next, ingredient))
     // Changing what's in a mixed bowl un-mixes it.
@@ -116,6 +140,9 @@ export function BakeScreen() {
     if (!canMix(bowl)) return
     setPhase({ kind: 'mixed' })
     setMessage(`Mixed. It’s a ${DOUGH_WORDS[mixedDoughTone(bowl)]} dough.`)
+    playSound('mix')
+    // On a phone, Mix can be pressed from the bar while the bowl is off screen: show the dough.
+    revealIfHidden(station.current, reducedMotion)
   }
 
   function bake() {
@@ -205,19 +232,22 @@ export function BakeScreen() {
         </ul>
       </section>
 
-      <section className="bake__station" aria-labelledby={ids.bowl}>
+      <section className="bake__station" aria-labelledby={ids.bowl} ref={station}>
         <h2 id={ids.bowl} className="bake__heading">
           The bowl
         </h2>
+        {prepared && preparedName && bowl === prepared.bowl && phase.kind === 'choosing' && (
+          <p className="bake__prepared hand-note" ref={preparedNote} tabIndex={-1}>
+            Laid out for {preparedName}.{' '}
+            <span className="visually-hidden">{capitalise(listIngredientNames(prepared.bowl))} are in the bowl. </span>
+            Mix when you’re ready.
+          </p>
+        )}
         <BakingBowl
           ingredients={inBowl}
           mixedDough={mixed ? mixedDoughTone(bowl) : null}
           className={['bake__bowl', mixed && 'bake__bowl--mixed'].filter(Boolean).join(' ')}
         />
-
-        {prepared && preparedName && bowl === prepared.bowl && phase.kind === 'choosing' && (
-          <HandNote className="bake__prepared">Laid out for {preparedName}. Mix when you’re ready.</HandNote>
-        )}
 
         {bowl.length === 0 ? (
           <HandNote className="bake__empty">Empty. Pick a few things from the shelf.</HandNote>
@@ -241,44 +271,72 @@ export function BakeScreen() {
             <p className="bake__room">{room === 0 ? 'The bowl is full.' : `Room for ${room} more.`}</p>
           </>
         )}
-
-        <div className="bake__actions">
-          {mixed ? (
-            <Button variant="primary" className="bake__go" onClick={bake}>
-              Bake it
-            </Button>
-          ) : (
-            <Button
-              variant="primary"
-              className="bake__go"
-              onClick={mix}
-              disabled={!canMix(bowl)}
-              aria-describedby={canMix(bowl) ? undefined : ids.mixHint}
-            >
-              Mix
-            </Button>
-          )}
-          {!canMix(bowl) && (
-            <p id={ids.mixHint} className="bake__hint">
-              Add at least {MIN_TO_MIX} things to mix.
-            </p>
-          )}
-          {bowl.length > 0 && (
-            <Button
-              onClick={() => {
-                setBowl([])
-                setPhase({ kind: 'choosing' })
-                setMessage('Emptied the bowl.')
-              }}
-            >
-              Empty the bowl
-            </Button>
-          )}
-        </div>
       </section>
+
+      {/* After the bowl in reading order; on a phone it sticks above the tab bar until you reach it. */}
+      <div className="bake__actions">
+        <p className="bake__summary" aria-hidden="true">
+          {bowl.length === 0
+            ? 'The bowl is empty'
+            : canMix(bowl)
+              ? `${bowl.length} of ${BOWL_CAPACITY} in the bowl`
+              : `${bowl.length} in the bowl, add ${MIN_TO_MIX - bowl.length} more to mix`}
+        </p>
+        {mixed ? (
+          <Button variant="primary" className="bake__go" onClick={bake}>
+            Bake it
+          </Button>
+        ) : (
+          <Button
+            variant="primary"
+            className="bake__go"
+            onClick={mix}
+            disabled={!canMix(bowl)}
+            aria-describedby={canMix(bowl) ? undefined : ids.mixHint}
+          >
+            Mix
+          </Button>
+        )}
+        {!canMix(bowl) && (
+          <p id={ids.mixHint} className="bake__hint">
+            Add at least {MIN_TO_MIX} things to mix.
+          </p>
+        )}
+        {bowl.length > 0 && (
+          <Button
+            onClick={() => {
+              setBowl([])
+              setPhase({ kind: 'choosing' })
+              setMessage('Emptied the bowl.')
+            }}
+          >
+            Empty the bowl
+          </Button>
+        )}
+      </div>
       {status}
     </div>
   )
+}
+
+function capitalise(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+/**
+ * Scrolls an element into view only if part of it is hidden (above the top,
+ * or behind the phone tab bar and docked bowl actions at the bottom).
+ * Smooth unless motion is reduced. Never a hard-coded position.
+ */
+function revealIfHidden(element: HTMLElement | null, reducedMotion: boolean) {
+  if (!element || typeof element.scrollIntoView !== 'function') return
+  const rect = element.getBoundingClientRect()
+  const covered = document.querySelector('.bake__actions')?.getBoundingClientRect().height ?? 0
+  // `auto` (the default) parses as NaN: treat it as no padding.
+  const padding = Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom) || 0
+  const bottomEdge = window.innerHeight - padding - covered
+  if (rect.top >= 0 && rect.bottom <= bottomEdge) return
+  element.scrollIntoView({ block: rect.height > bottomEdge ? 'start' : 'center', behavior: reducedMotion ? 'auto' : 'smooth' })
 }
 
 type BakeResultProps = {

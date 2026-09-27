@@ -229,4 +229,57 @@ describe('IndexedDB save repository', () => {
       if (original) globalThis.indexedDB = original
     }
   })
+
+  describe('replacing the save with an imported one', () => {
+    it('archives the current save, then installs the new one, in one step', async () => {
+      const current = makeSave()
+      const imported = makeSave({ profile: { ...makeSave().profile, bakeryName: 'Somewhere Else' } })
+      const repo = createIndexedDbSaveRepository(options)
+      await repo.write(current)
+
+      await repo.replace(imported, { note: 'replaced by an import' })
+
+      await expect(createIndexedDbSaveRepository(options).load()).resolves.toEqual({ kind: 'loaded', save: imported, migratedFrom: null })
+      await expect(readArchive(options)).resolves.toEqual([
+        { archivedAt: '2026-04-01T12:00:00.000Z', note: 'replaced by an import', data: current },
+      ])
+    })
+
+    it('also archives an imported file’s pre-upgrade original when asked', async () => {
+      const current = makeSave()
+      const original = makeV2Save()
+      const repo = createIndexedDbSaveRepository(options)
+      await repo.write(current)
+
+      await repo.replace(makeSave(), { note: 'replaced', alsoArchive: { note: 'original file', data: original } })
+
+      const archive = await readArchive(options)
+      expect(archive.map((entry) => [entry.note, entry.data])).toEqual([
+        ['replaced', current],
+        ['original file', original],
+      ])
+    })
+
+    it('archives an unreadable save too, rather than dropping it', async () => {
+      const damaged = { version: CURRENT_SAVE_VERSION, profile: 'nope' }
+      await putRaw(damaged)
+
+      await createIndexedDbSaveRepository(options).replace(makeSave(), { note: 'replaced' })
+
+      await expect(readArchive(options)).resolves.toEqual([expect.objectContaining({ data: damaged })])
+    })
+
+    it('changes nothing at all if the new save cannot be stored', async () => {
+      const current = makeSave()
+      const repo = createIndexedDbSaveRepository(options)
+      await repo.write(current)
+      // A function can't be stored in IndexedDB, so the write fails mid-transaction.
+      const unstorable = { ...makeSave(), oops: () => {} } as unknown as ReturnType<typeof makeSave>
+
+      await expect(repo.replace(unstorable, { note: 'replaced' })).rejects.toBeDefined()
+
+      await expect(createIndexedDbSaveRepository(options).load()).resolves.toEqual({ kind: 'loaded', save: current, migratedFrom: null })
+      await expect(readArchive(options)).resolves.toEqual([])
+    })
+  })
 })
