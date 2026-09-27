@@ -1,0 +1,68 @@
+/* Buttons are stamped card stock: an ink outline, a slight lift, and a press that flattens them. */
+.button {
+  --button-bg: var(--surface-card-raised);
+  --button-fg: var(--ink);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target);
+  padding: var(--space-2) var(--space-5);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+  color: var(--button-fg);
+  text-decoration: none;
+  background: var(--button-bg);
+  border: var(--border-ink);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-paper);
+  cursor: pointer;
+  transition:
+    transform var(--duration-quick) var(--ease-out),
+    box-shadow var(--duration-quick) var(--ease-out),
+    background-color var(--duration-quick) linear;
+}
+
+.button:hover {
+  transform: translateY(var(--lift-hover));
+  box-shadow: var(--shadow-lifted);
+}
+
+.button:active {
+  transform: translateY(0) scale(var(--press-scale));
+  box-shadow: var(--shadow-pressed);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.button--primary {
+  --button-bg: var(--action-primary);
+  --button-fg: var(--ink-on-accent);
+}
+
+.button--primary:hover {
+  --button-bg: var(--action-primary-hover);
+}
+
+.button--primary:active {
+  --button-bg: var(--action-primary-press);
+}
+
+.button--danger {
+  --button-bg: var(--surface-card-raised);
+  --button-fg: var(--danger);
+
+  border-color: var(--danger);
+}
+
+.button--danger:hover {
+  --button-bg: var(--danger);
+  --button-fg: var(--ink-on-accent);
+}
