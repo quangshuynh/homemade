@@ -36,9 +36,11 @@
 }
 
 .shell__sign {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-target);
   max-width: 100%;
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
   font-family: var(--font-display);
   font-weight: var(--weight-display);
   font-size: var(--text-lg);

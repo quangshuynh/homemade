@@ -51,13 +51,25 @@ These are decisions later work builds on. Change them on purpose, not by acciden
 - **Undiscovered recipes give one hint: how many ingredients they need.** Never a name, ingredient, flavour or look. The count narrows the search without spoiling it.
 - **New ingredients reach existing kitchens.** Because every pantry holds the whole catalog, a save upgrade adds newly shipped ingredients to the shelf, keeping everything already there.
 
+## Portability, installs and sound (Interval 4)
+
+- **Saves stay local-first.** The kitchen lives in this browser. There is no account and no cloud save.
+- **A save file is the portability mechanism.** Settings downloads the whole logical save as `homemade-<kitchen>.json` and opens one back. It's also how a player keeps a backup and how memories leave the browser.
+- **An import never overwrites without consent.** Choosing a file only reads and checks it. The player sees what's in it (kitchen, baker, recipes, memories, last saved) and must confirm. The current save is archived in the same step, never deleted. Unreadable, foreign, damaged or newer-version files are refused in plain words, and the current save is untouched.
+- **Imports are never repaired.** A file goes through exactly the checks and migrations a stored save does. Anything that fails is refused, not patched.
+- **Renaming never changes identity.** The player and kitchen names can change at any time, with the onboarding rules. The player id and everything else in the save stay the same.
+- **Installing is optional and never nagged.** Where the browser offers it, Settings has a quiet *Install Homemade*. Nowhere else, and never a fake button where installing isn't possible.
+- **Offline play continues from the local save.** Once loaded, the game opens and bakes without a network. Nothing needs a connection.
+- **Updates wait for the player.** A new version downloads in the background and a small note offers *Refresh* or *Later*. The game never reloads by itself, and an update never touches the save.
+- **Audio is optional and player-controlled.** A handful of short, quiet effects tied to actions (jar, take out, whisk, oven timer, new recipe). No music, nothing on page load, and the sound setting governs all of it. Sound and motion are separate choices.
+
 ## Voice
 
 Warm, plain, a little playful, never cutesy. Short sentences, written like a note left on the counter. Controls say what they do ("Open the kitchen", "Keep my kitchen"). Errors say what happened and what's safe.
 
 ## Open decisions
 
-- Whether names can be changed after setup.
 - Whether and how ingredients are ever gained (currently everyone has all of them).
-- Audio direction (the sound setting is stored but nothing plays yet; deferred to Interval 4).
-- Whether memories should ever be exportable, or kept beyond the cap.
+- Whether memories should ever be kept beyond the cap.
+- Whether to offer background music (deliberately not yet).
+- Whether archived saves should ever be visible to the player (today they're kept, but only reachable through browser devtools).

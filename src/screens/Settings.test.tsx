@@ -192,6 +192,8 @@ describe('opening a save file', () => {
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Keep my kitchen' }))
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    // Focus goes back to the control that started it.
+    expect(screen.getByRole('button', { name: 'Open a save file…' })).toHaveFocus()
     expect(stored(state)).toEqual(current)
     expect(state.archive).toEqual([])
   })

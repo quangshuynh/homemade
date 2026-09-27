@@ -1,9 +1,9 @@
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes } from 'react'
+import type { AnchorHTMLAttributes, ComponentPropsWithRef } from 'react'
 import './Button.css'
 
 type Variant = 'primary' | 'plain' | 'danger'
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }
+type ButtonProps = ComponentPropsWithRef<'button'> & { variant?: Variant }
 
 export function Button({ variant = 'plain', className, type = 'button', ...props }: ButtonProps) {
   return <button type={type} className={['button', `button--${variant}`, className].filter(Boolean).join(' ')} {...props} />

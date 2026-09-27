@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react'
 import { Button } from './Button'
 import './ConfirmDialog.css'
 
@@ -11,23 +11,42 @@ type ConfirmDialogProps = {
   busy?: boolean
   onConfirm: () => void
   onCancel: () => void
+  /**
+   * Where focus goes back to when the dialog closes. Defaults to whatever had
+   * focus when it opened; pass this when that might not be a real control
+   * (after a file picker, say, or on browsers that don't focus clicked buttons).
+   */
+  returnFocusRef?: RefObject<HTMLElement | null>
 }
 
 /**
  * A native modal <dialog>: focus is trapped and Escape cancels for free.
- * The safe choice (cancel) gets initial focus.
+ * The safe choice (cancel) gets initial focus, and focus goes back to where
+ * it came from on close.
  */
-export function ConfirmDialog({ open, title, children, confirmLabel, cancelLabel, busy, onConfirm, onCancel }: ConfirmDialogProps) {
+export function ConfirmDialog({ open, title, children, confirmLabel, cancelLabel, busy, onConfirm, onCancel, returnFocusRef }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const cancelRef = useRef<HTMLButtonElement>(null)
+  const openedFrom = useRef<Element | null>(null)
   const titleId = useId()
   const bodyId = useId()
 
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
-    if (open && !dialog.open) dialog.showModal?.()
-    if (!open && dialog.open) dialog.close?.()
-  }, [open])
+    if (open && !dialog.open) {
+      openedFrom.current = document.activeElement
+      dialog.showModal?.()
+      // Explicitly, because a dialog whose content scrolls (a long summary on a
+      // small phone) would otherwise focus the scrolling card instead.
+      cancelRef.current?.focus()
+    }
+    if (!open && dialog.open) {
+      dialog.close?.()
+      const target = returnFocusRef?.current ?? openedFrom.current
+      if (target instanceof HTMLElement && target.isConnected) target.focus()
+    }
+  }, [open, returnFocusRef])
 
   return (
     <dialog
@@ -49,7 +68,7 @@ export function ConfirmDialog({ open, title, children, confirmLabel, cancelLabel
             {children}
           </div>
           <div className="confirm-dialog__actions">
-            <Button autoFocus onClick={onCancel} disabled={busy}>
+            <Button ref={cancelRef} onClick={onCancel} disabled={busy}>
               {cancelLabel}
             </Button>
             <Button variant="danger" onClick={onConfirm} disabled={busy}>

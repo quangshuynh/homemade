@@ -15,7 +15,7 @@ html {
   text-size-adjust: 100%;
   /* Anything scrolled into view (focus, find-in-page, scrollIntoView) stops clear of the phone tab bar. */
   scroll-padding-top: calc(var(--safe-top) + var(--space-3));
-  scroll-padding-bottom: calc(var(--nav-clearance) + var(--space-4));
+  scroll-padding-bottom: calc(var(--nav-clearance) + var(--dock-clearance, 0px) + var(--space-4));
 }
 
 body {

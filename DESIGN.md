@@ -1,6 +1,6 @@
 # Design
 
-The visual system as built through Interval 3. Tokens live in `src/styles/tokens.css`; this file explains them.
+The visual system as built through Interval 4. Tokens live in `src/styles/tokens.css`; this file explains them.
 
 ## World
 
@@ -69,7 +69,11 @@ Fluid scale from `--text-xs` to `--text-3xl`. Body leading 1.55; handwriting 1.4
 
 ## Sound
 
-Nothing plays yet. The stored sound setting will govern any sound added later.
+- Sounds are the kitchen's own objects: a glass jar lid (pick), a wooden tock (take out), a whisk (mix), an oven timer bell (result), three rising bell notes (a new recipe). Short, soft, and mixed well under the page.
+- Every sound answers something the player just did. Nothing plays on load, nothing loops, and there's no music.
+- Screens ask for a meaning (`playSound('mix')`) and never see a file. The sound setting is checked in one place; turning it off also stops anything still ringing.
+- The same sound can't stack on itself, and only a few play at once. A sound that isn't ready is skipped, never late.
+- Sound and motion are independent: reduced motion keeps sound, and muting keeps motion.
 
 ## Motion
 
@@ -79,9 +83,29 @@ Nothing plays yet. The stored sound setting will govern any sound added later.
 - Baking: dollops drop into the bowl, the bowl wobbles as it mixes, the oven glows, cookies settle onto the tray, and the stamp lands. Every one of these has a zero-duration end state under reduced motion, so nothing is hidden when motion is off.
 - `prefers-reduced-motion` zeroes durations and stops ambient loops. The player can override it either way in Settings; this is stored as `data-motion` on `<html>`.
 
+## Phones and small screens
+
+- **Tab bar:** fixed at the bottom on phones, a wooden rim with the dividers hanging from it; the open section's card is pulled up through the rim. Its height is `--nav-height` plus the home-indicator inset, and `--nav-clearance` is what everything else reserves.
+- **Safe areas:** `--safe-*` tokens wrap `env(safe-area-inset-*)`. Side padding uses `--gutter-left/right`, so landscape notches never cover content; the tab bar pads for the home indicator and both sides.
+- **Nothing hides under the bar:** every screen reserves `--nav-clearance` at the end, `scroll-padding-bottom` keeps focused and scrolled-to elements above it (and above the Bake dock), and anything pinned to the bottom sits above it. A stylesheet test enforces this.
+- **Short landscape phones** (under 500px tall) get a slimmer bar with icon and label side by side.
+- **Bake on a phone:** the bowl's actions dock as a paper strip above the tab bar ("3 of 5 in the bowl", Mix) while the shelf is on screen, and settle under the bowl when you reach it. Pure `position: sticky`. Pressing Mix from the dock brings the bowl into view to show the dough.
+- **Bake again on a phone:** the "Laid out for…" note sits above the bowl, takes focus (so it's read out), and the bowl is scrolled into view only if it's off screen. Element-based, never a hard-coded offset, and instant under reduced motion.
+- Viewport heights use `dvh`, never `100vh`.
+
+## Notices and dialogs
+
+- **Update note:** a butter-yellow sticky note above the tab bar: "A fresh batch of Homemade is ready." with *Refresh* and *Later*. Polite status, never modal, never automatic.
+- **Import confirmation:** the standard confirm dialog, with the file's kitchen written out on a paper slip (kitchen, baker, recipes, memories, last saved) and a plain sentence about what happens to the current kitchen. *Keep my kitchen* is focused first; focus returns to *Open a save file…* on close. Long content scrolls inside the card.
+- Refusals (bad file, newer version) are an inline alert under the controls, with the technical detail tucked in a disclosure.
+
+## App icon
+
+The cookie "o" from the wordmark, with a bite out of it, on duck-egg enamel (the mixing bowl's colour). The full wordmark is never squeezed into a square. A maskable version keeps the cookie inside the safe zone. Source: `scripts/icon-mark.svg`.
+
 ## Layout
 
-- Phone (<720px): bowl first and full width, recipe box and jar side by side below it, tabs fixed at the bottom.
+- Phone (<720px): bowl first and full width, recipe box and jar side by side below it, tabs fixed at the bottom (see *Phones and small screens*).
 - Tablet: three objects in a row, content flows.
 - Desktop (≥960px): the kitchen fills the viewport, with the counter in the middle distance.
 - Cooling rack: three across; under 480px, one bake per row with its label beside it, so names never break mid-word.

@@ -538,6 +538,34 @@
   }
 }
 
+/* Keyboard focus and scrolled-to jars stop above the docked bar too, not under it. */
+@media (max-width: 879px) {
+  :root:has(.bake__actions) {
+    --dock-clearance: 7.5rem;
+  }
+}
+
+/* Short landscape phones: every pixel of height counts, so the dock is one tight row. */
+@media (max-width: 879px) and (max-height: 500px) {
+  :root:has(.bake__actions) {
+    --dock-clearance: 4.5rem;
+  }
+
+  .bake__actions {
+    grid-template-columns: 1fr auto auto;
+    padding-block: var(--space-1);
+  }
+
+  .bake__actions .button:not(.bake__go) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .bake__actions .bake__go {
+    grid-column: 3;
+  }
+}
+
 @media (max-width: 480px) {
   .bake__shelf {
     padding-inline: var(--space-2);

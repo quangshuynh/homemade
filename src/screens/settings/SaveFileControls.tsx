@@ -25,6 +25,7 @@ export function SaveFileControls() {
   const save = useSave()
   const { importSave } = useGame()
   const fileInput = useRef<HTMLInputElement>(null)
+  const openButton = useRef<HTMLButtonElement>(null)
   const [downloaded, setDownloaded] = useState('')
   const [problem, setProblem] = useState<Problem | null>(null)
   const [pending, setPending] = useState<Readable | null>(null)
@@ -78,7 +79,9 @@ export function SaveFileControls() {
     <>
       <div className="settings__buttons">
         <Button onClick={download}>Download my kitchen</Button>
-        <Button onClick={() => fileInput.current?.click()}>Open a save file…</Button>
+        <Button ref={openButton} onClick={() => fileInput.current?.click()}>
+          Open a save file…
+        </Button>
         <input
           ref={fileInput}
           type="file"
@@ -113,6 +116,7 @@ export function SaveFileControls() {
         busy={busy}
         onConfirm={confirmImport}
         onCancel={() => setPending(null)}
+        returnFocusRef={openButton}
       >
         {summary && (
           <>

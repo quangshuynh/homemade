@@ -276,7 +276,11 @@ export function BakeScreen() {
       {/* After the bowl in reading order; on a phone it sticks above the tab bar until you reach it. */}
       <div className="bake__actions">
         <p className="bake__summary" aria-hidden="true">
-          {bowl.length === 0 ? 'The bowl is empty' : `${bowl.length} of ${BOWL_CAPACITY} in the bowl`}
+          {bowl.length === 0
+            ? 'The bowl is empty'
+            : canMix(bowl)
+              ? `${bowl.length} of ${BOWL_CAPACITY} in the bowl`
+              : `${bowl.length} in the bowl, add ${MIN_TO_MIX - bowl.length} more to mix`}
         </p>
         {mixed ? (
           <Button variant="primary" className="bake__go" onClick={bake}>
