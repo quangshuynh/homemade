@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { App } from '../app/App'
 import { GameProvider } from '../app/GameProvider'
 import { bake, recordBake } from '../domain/baking'
@@ -10,6 +10,9 @@ import { BUTTER, CINNAMON, EGG, FLOUR, SUGAR } from '../domain/ingredients'
 import type { GameSave } from '../domain/types'
 import { createMemorySaveRepository } from '../persistence/memorySaveRepository'
 import { makeSave } from '../test/fixtures'
+
+// jsdom doesn't scroll; give it the method so the Bake screen's scrolling can be observed.
+Element.prototype.scrollIntoView ??= function scrollIntoView() {}
 
 const stillSave = (overrides: Partial<GameSave> = {}) => makeSave({ settings: { soundEnabled: true, motion: 'reduced' }, ...overrides })
 
@@ -221,6 +224,36 @@ describe('Bake again', () => {
     const heading = await screen.findByRole('heading', { level: 2, name: 'Shortbread' })
     await waitFor(() => expect(heading).toHaveFocus())
     expect(screen.getByText('Already in your Recipe Book.')).toBeInTheDocument()
+  })
+
+  it('brings the prepared bowl into view when it starts off screen, without animating when motion is reduced', async () => {
+    const user = userEvent.setup()
+    const scrolled: { element: Element; options: unknown }[] = []
+    vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(function (this: Element, options) {
+      scrolled.push({ element: this, options })
+    })
+    // As on a phone: the bowl sits below the shelf, beyond the bottom of the screen.
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+      const below = this.classList.contains('bake__station')
+      return { top: below ? 1200 : 0, bottom: below ? 1600 : 40, height: below ? 400 : 40, left: 0, right: 0, width: 0, x: 0, y: 0, toJSON: () => ({}) }
+    })
+    startAt('#/recipe-book', discovered('shortbread'))
+    await user.click(await screen.findByRole('button', { name: 'Bake again: Shortbread' }))
+
+    await waitFor(() => expect(screen.getByText(/^Laid out for Shortbread\./)).toHaveFocus())
+    expect(scrolled).toHaveLength(1)
+    expect(scrolled[0]!.element).toHaveClass('bake__station')
+    expect(scrolled[0]!.options).toEqual({ block: 'center', behavior: 'auto' })
+  })
+
+  it('leaves the page where it is when the prepared bowl is already in view', async () => {
+    const user = userEvent.setup()
+    const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {})
+    startAt('#/recipe-book', discovered('shortbread'))
+    await user.click(await screen.findByRole('button', { name: 'Bake again: Shortbread' }))
+
+    await waitFor(() => expect(screen.getByText(/^Laid out for Shortbread\./)).toHaveFocus())
+    expect(scrollIntoView).not.toHaveBeenCalled()
   })
 
   it('is never offered for recipes that have not been discovered', async () => {

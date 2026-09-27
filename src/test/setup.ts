@@ -4,7 +4,7 @@ import { afterEach } from 'vitest'
 
 afterEach(() => {
   cleanup()
-  window.location.hash = ''
+  if (typeof window !== 'undefined') window.location.hash = ''
 })
 
 // jsdom has no modal <dialog> support yet; mimic the parts the app relies on.

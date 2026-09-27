@@ -99,9 +99,14 @@ export function createIndexedDbSaveRepository(options: IndexedDbSaveRepositoryOp
       const archivedAt = now().toISOString()
       const current = saves.get(MAIN_SLOT)
       current.onsuccess = () => {
-        if (current.result !== undefined) archiveStore.add({ archivedAt, note, data: current.result } satisfies ArchivedSave)
-        if (alsoArchive) archiveStore.add({ archivedAt, note: alsoArchive.note, data: alsoArchive.data } satisfies ArchivedSave)
-        saves.put(save, MAIN_SLOT)
+        try {
+          if (current.result !== undefined) archiveStore.add({ archivedAt, note, data: current.result } satisfies ArchivedSave)
+          if (alsoArchive) archiveStore.add({ archivedAt, note: alsoArchive.note, data: alsoArchive.data } satisfies ArchivedSave)
+          saves.put(save, MAIN_SLOT)
+        } catch {
+          // e.g. data that can't be stored: undo the lot, so the current save stays exactly as it was.
+          tx.abort()
+        }
       }
       await transactionDone(tx)
     },

@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { useStopSoundsWhenMuted } from '../audio/soundContext'
 import { RecipeTabs } from '../components/RecipeTabs'
 import { SCREEN_TITLE_ID } from '../components/ScreenTitle'
 import { UpdateNotice } from '../components/UpdateNotice'
@@ -18,6 +19,7 @@ export function AppShell({ route, focusOnMount = false, children }: AppShellProp
   const save = useSave()
   const { saveStatus } = useGame()
   const skipFocus = useRef(!focusOnMount)
+  useStopSoundsWhenMuted()
 
   useEffect(() => {
     document.title = `${ROUTES[route].title} · ${save.profile.bakeryName} · Homemade`

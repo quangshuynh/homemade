@@ -15,14 +15,29 @@ export function useSound(): (id: SoundId) => void {
   const player = useContext(SoundPlayerContext)
   const { soundEnabled } = useSave().settings
 
-  useEffect(() => {
-    if (!soundEnabled) player.stopAll()
-  }, [soundEnabled, player])
-
   return useCallback(
     (id: SoundId) => {
-      if (soundEnabled) player.play(id)
+      if (!soundEnabled) return
+      try {
+        player.play(id)
+      } catch {
+        // A sound going wrong must never interrupt the game.
+      }
     },
     [soundEnabled, player],
   )
+}
+
+/** Used once, by the app shell: turning sound off also cuts short anything still ringing. */
+export function useStopSoundsWhenMuted(): void {
+  const player = useContext(SoundPlayerContext)
+  const { soundEnabled } = useSave().settings
+  useEffect(() => {
+    if (soundEnabled) return
+    try {
+      player.stopAll()
+    } catch {
+      // Nothing to stop, or nothing that can be.
+    }
+  }, [soundEnabled, player])
 }

@@ -328,7 +328,9 @@ function revealIfHidden(element: HTMLElement | null, reducedMotion: boolean) {
   if (!element || typeof element.scrollIntoView !== 'function') return
   const rect = element.getBoundingClientRect()
   const covered = document.querySelector('.bake__actions')?.getBoundingClientRect().height ?? 0
-  const bottomEdge = window.innerHeight - parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom || '0') - covered
+  // `auto` (the default) parses as NaN: treat it as no padding.
+  const padding = Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom) || 0
+  const bottomEdge = window.innerHeight - padding - covered
   if (rect.top >= 0 && rect.bottom <= bottomEdge) return
   element.scrollIntoView({ block: rect.height > bottomEdge ? 'start' : 'center', behavior: reducedMotion ? 'auto' : 'smooth' })
 }
