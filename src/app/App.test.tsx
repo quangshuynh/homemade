@@ -96,7 +96,7 @@ describe('navigation', () => {
     }
   })
 
-  it('makes Bake the main thing on the counter, and honest about being unfinished', async () => {
+  it('makes Bake the main thing on the counter', async () => {
     const user = userEvent.setup()
     const { repository } = createMemorySaveRepository(makeSave())
     renderGame(repository)
@@ -105,7 +105,7 @@ describe('navigation', () => {
     await user.click(within(counter).getByRole('link', { name: /Bake/ }))
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Bake' })).toBeInTheDocument()
-    expect(screen.getByText('The oven isn’t lit yet.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'From the shelf' })).toBeInTheDocument()
   })
 })
 

@@ -22,8 +22,3 @@ export function RecipeCard({ children, className, ruled = true, as: Tag = 'div',
 export function HandNote({ children, className }: { children: ReactNode; className?: string }) {
   return <div className={['hand-note', className].filter(Boolean).join(' ')}>{children}</div>
 }
-
-/** A round sticker, for small status words like "coming soon". */
-export function Sticker({ children }: { children: ReactNode }) {
-  return <span className="sticker">{children}</span>
-}

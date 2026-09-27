@@ -1,6 +1,7 @@
 import { isIdOf } from '../domain/ids'
 import { CURRENT_SAVE_VERSION, NAME_MAX_LENGTH } from '../domain/save'
 import type { GameSave, MotionPreference } from '../domain/types'
+import { MIGRATIONS, type Migration, type RawRecord } from './migrations'
 
 /**
  * The boundary between whatever is on disk and the typed GameSave the game
@@ -8,18 +9,8 @@ import type { GameSave, MotionPreference } from '../domain/types'
  * `readSave`.
  */
 
-type RawRecord = Record<string, unknown>
 
-/** Upgrades a save written at `from` into the shape of `from + 1`. */
-export type Migration = (raw: RawRecord) => RawRecord
-
-/**
- * Keyed by the version a migration upgrades *from*. Version 1 is the first
- * schema, so there is nothing to migrate yet. When the save shape changes:
- * bump CURRENT_SAVE_VERSION, add `[previous]: (raw) => ({ ...raw, version: previous + 1, ... })`,
- * and update `isCurrentSave`.
- */
-export const MIGRATIONS: Readonly<Record<number, Migration>> = {}
+export type { Migration }
 
 export type IncompatibleReason =
   /** Not recognisable as a Homemade save at all. */
@@ -61,9 +52,19 @@ export function findSaveProblem(value: RawRecord): string | null {
   if (!isName(profile.name)) return 'profile.name is not a valid name'
   if (!isName(profile.bakeryName)) return 'profile.bakeryName is not a valid name'
 
-  const recipes = value.discoveredRecipeIds
-  if (!Array.isArray(recipes) || !recipes.every((id) => isIdOf('recipe', id))) {
-    return 'discoveredRecipeIds is not a list of recipe ids'
+  const pantry = value.pantryIngredientIds
+  if (!Array.isArray(pantry) || !pantry.every((id) => isIdOf('ingredient', id))) {
+    return 'pantryIngredientIds is not a list of ingredient ids'
+  }
+
+  // Ids are checked for shape, not against the catalog: a recipe retired in a
+  // later build must not make an otherwise good save unreadable.
+  const discovered = value.discoveredRecipes
+  if (
+    !Array.isArray(discovered) ||
+    !discovered.every((entry) => isRecord(entry) && isIdOf('recipe', entry.recipeId) && isIsoDate(entry.discoveredAt))
+  ) {
+    return 'discoveredRecipes is not a list of discoveries'
   }
 
   const settings = value.settings

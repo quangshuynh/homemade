@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { FIXED_NOW, makeSave } from '../test/fixtures'
 import { defineId, isIdOf } from './ids'
+import { STARTER_PANTRY } from './ingredients'
 import { CURRENT_SAVE_VERSION, createNewSave, DEFAULT_SETTINGS, NAME_MAX_LENGTH, touchSave, updateSettings, validateName } from './save'
 
 describe('createNewSave', () => {
@@ -10,7 +11,8 @@ describe('createNewSave', () => {
     expect(save.version).toBe(CURRENT_SAVE_VERSION)
     expect(save.profile.name).toBe('Robin')
     expect(save.profile.bakeryName).toBe('Crumb & Co.')
-    expect(save.discoveredRecipeIds).toEqual([])
+    expect(save.discoveredRecipes).toEqual([])
+    expect(save.pantryIngredientIds).toEqual(STARTER_PANTRY)
     expect(save.settings).toEqual(DEFAULT_SETTINGS)
     expect(save.createdAt).toBe('2026-03-14T09:30:00.000Z')
     expect(save.updatedAt).toBe(save.createdAt)

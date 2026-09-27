@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+import type { BakeOutcome, Bowl } from '../domain/baking'
 import type { NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
 import type { LoadResult } from '../persistence/repository'
@@ -18,6 +19,11 @@ export type GameContextValue = {
   startGame: (input: NewSaveInput) => Promise<void>
   /** Applies a pure change to the save, updates the UI immediately and persists it in the background. */
   updateSave: (change: (save: GameSave) => GameSave) => void
+  /**
+   * Bakes what's in the bowl, records any first-time discovery, and saves.
+   * Returns what came out of the oven.
+   */
+  bake: (bowl: Bowl) => BakeOutcome
   /** Deletes the save and returns to first run. Callers confirm with the player first. */
   resetSave: () => Promise<void>
   /** For unreadable saves: archive the old data, then start over. */

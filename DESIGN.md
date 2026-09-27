@@ -43,16 +43,26 @@ Fluid scale from `--text-xs` to `--text-3xl`. Body leading 1.55; handwriting 1.4
 - **Counter objects**: illustrated links with a paper tag. Bake is the largest, with a jam-red tag.
 - **Recipe card**: taped index card with faint rules; its `h1` sits on the red header line.
 - **Hand note**: pen-blue handwriting, on a butter-yellow sticky note when it stands alone.
-- **Sticker**: small round-ended label for status words ("coming soon").
 - **Buttons**: stamped card stock. They lift on hover and flatten on press.
 - **Check boxes and radios**: hand-drawn boxes; ticks are drawn in pen.
 - **Confirm dialog**: native `<dialog>`, safe choice focused first.
+
+## Baking loop
+
+- **Jars on a shelf** are toggle buttons (`aria-pressed`). Picking one lifts its lid, turns its label butter yellow, and adds a written "in the bowl" sticker, so the state never relies on colour alone.
+- **The bowl** shows one dollop per ingredient in its jar colour. Mixing folds them into a single dough whose colour hints at the contents, never at the recipe. Beneath the bowl, a handwritten list names each ingredient, with a take-out button for each.
+- **The oven** is a brief reveal (900ms) after the result is already decided and saved. Reduced motion skips it.
+- **The result** is three cookies on a parchment tray beside a recipe card. A first discovery adds a jam-red *New recipe!* stamp with a puff of flour. Focus moves to the card heading, which reads "New recipe discovered: …" to screen readers.
+- **Cookies** are drawn from a recipe's `look` (dough tone, topping, shape). Experiments are always the `wobbly` shape.
+- **Recipe Book** cards are index cards; undiscovered ones are blank, taped over, with a "?".
+- Ingredient and dough colours are tokens (`--swatch-*`, `--dough-*`). The catalogs name a swatch or tone, never a colour value.
 
 ## Motion
 
 - `--ease-out` / `--ease-settle`, exponential ease-out; no bounce.
 - Hover lifts (`--lift-hover`), press scales (`--press-scale`), screens settle in from 8px below.
-- One ambient detail: the dough in the bowl rises very slowly.
+- Ambient: the dough on the kitchen counter rises very slowly.
+- Baking: dollops drop into the bowl, the bowl wobbles as it mixes, the oven glows, cookies settle onto the tray, and the stamp lands. Every one of these has a zero-duration end state under reduced motion, so nothing is hidden when motion is off.
 - `prefers-reduced-motion` zeroes durations and stops ambient loops. The player can override it either way in Settings; this is stored as `data-motion` on `<html>`.
 
 ## Layout

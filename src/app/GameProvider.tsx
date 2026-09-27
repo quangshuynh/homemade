@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { bake as bakeBowl, recordBake, type Bowl } from '../domain/baking'
 import { createNewSave, touchSave, type NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
 import type { SaveRepository } from '../persistence/repository'
@@ -87,6 +88,26 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
     [persist],
   )
 
+  const bake = useCallback(
+    (bowl: Bowl) => {
+      const current = saveRef.current
+      if (!current) throw new Error('Nothing to bake into: the save is not loaded')
+      const now = new Date()
+      const { save: next, outcome } = recordBake(current, bakeBowl(bowl), now)
+      // Only a discovery changes the save; replaying a recipe writes nothing.
+      if (next !== current) {
+        const stamped = { ...next, updatedAt: now.toISOString() }
+        saveRef.current = stamped
+        setState({ status: 'ready', save: stamped })
+        void persist(stamped).catch(() => {
+          // Surfaced through saveStatus.
+        })
+      }
+      return outcome
+    },
+    [persist],
+  )
+
   const resetSave = useCallback(async () => {
     await writeQueue.current
     await repository.clear()
@@ -107,8 +128,8 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
   }, [])
 
   const value = useMemo(
-    () => ({ state, saveStatus, startGame, updateSave, resetSave, archiveAndStartOver, reload }),
-    [state, saveStatus, startGame, updateSave, resetSave, archiveAndStartOver, reload],
+    () => ({ state, saveStatus, startGame, updateSave, bake, resetSave, archiveAndStartOver, reload }),
+    [state, saveStatus, startGame, updateSave, bake, resetSave, archiveAndStartOver, reload],
   )
 
   return <GameContext value={value}>{children}</GameContext>

@@ -30,6 +30,19 @@ Not an idle or clicker game: nothing accumulates while you're away, and there ar
 - Accessible from the start: keyboard, screen readers, contrast, reduced motion.
 - Keep dependencies minimal.
 
+## Gameplay rules to preserve
+
+These are decisions later work builds on. Change them on purpose, not by accident.
+
+- **Selection is presence, not quantity.** An ingredient is in the bowl or it isn't. The bowl holds at most 5, needs at least 2 to mix, and can't hold the same ingredient twice.
+- **Order never matters.** Selections are normalized (unique ids, sorted) before matching.
+- **A recipe is an exact ingredient set.** No two recipes share a set; tests enforce this. Extra or missing ingredients mean it's not that recipe.
+- **Every bake produces something.** Unmatched sets become a *Kitchen Experiment*. Its description is deterministic for a given set. Experiments are never saved as recipes and never appear in the Recipe Book.
+- **Discovery happens once.** The first bake of a recipe records `{ recipeId, discoveredAt }`, and rebakes change nothing in the save.
+- **Undiscovered recipes stay secret.** The Recipe Book shows a blank card for each, with no name, ingredients or hints. The total count is shown.
+- **Catalogs are static; saves store ids.** Ingredient and recipe ids are permanent once shipped. Saves never copy catalog data. A save that references an id the catalog no longer has stays loadable.
+- **No economy.** No currency, prices, scores, XP, timers or rarity. The pantry starts full.
+
 ## Voice
 
 Warm, plain, a little playful, never cutesy. Short sentences, written like a note left on the counter. Controls say what they do ("Open the kitchen", "Keep my kitchen"). Errors say what happened and what's safe.
@@ -37,4 +50,6 @@ Warm, plain, a little playful, never cutesy. Short sentences, written like a not
 ## Open decisions
 
 - Whether names can be changed after setup.
+- Whether and how ingredients are ever gained (currently everyone has all of them).
+- Whether individual bakes are kept (a collection), which would change the save schema.
 - Audio direction (the sound setting is stored but nothing plays yet).

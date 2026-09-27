@@ -138,15 +138,14 @@
   background: var(--action-primary-hover);
 }
 
+.counter-object--primary .counter-object__detail {
+  color: var(--ink-on-accent);
+}
+
 .counter-object--primary .counter-object__name {
   font-size: var(--text-xl);
 }
 
-.counter-object--primary .sticker {
-  position: absolute;
-  top: -14px;
-  right: -26px;
-}
 
 /* The dough rises, very slowly. Stops entirely when motion is reduced. */
 .mixing-bowl__dough {
@@ -224,7 +223,4 @@
     padding-inline: var(--space-3);
   }
 
-  .counter-object--primary .sticker {
-    right: -18px;
-  }
 }

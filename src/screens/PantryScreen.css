@@ -1,0 +1,116 @@
+.pantry {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.pantry__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.pantry__title {
+  font-size: var(--text-2xl);
+}
+
+/* A cupboard shelf: a recessed back wall and a plank along the bottom. */
+.pantry__shelf {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5) 0;
+  background: rgb(110 64 28 / 0.18);
+  border-radius: var(--radius-paper) var(--radius-paper) 0 0;
+  box-shadow: inset 0 2px 10px rgb(70 38 12 / 0.3);
+  position: relative;
+  margin-bottom: 12px;
+}
+
+/* The plank the jars stand on. */
+.pantry__shelf::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -12px;
+  height: 12px;
+  background: var(--wood-500);
+  box-shadow: 0 3px 0 rgb(70 38 12 / 0.35);
+}
+
+.pantry__shelf-title {
+  justify-self: start;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-lg);
+  background: var(--kraft);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-paper);
+  transform: rotate(-1deg);
+}
+
+.pantry__items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--space-4) var(--space-5);
+  margin: 0;
+  padding: 0 0 var(--space-3);
+  list-style: none;
+}
+
+.pantry__item {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.pantry__jar {
+  flex: none;
+  width: 5rem;
+  height: auto;
+}
+
+/* A handwritten shelf tag hanging below each jar. */
+.pantry__tag {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.pantry__item:nth-child(odd) .pantry__tag {
+  transform: rotate(-1deg);
+}
+
+.pantry__item:nth-child(even) .pantry__tag {
+  transform: rotate(0.8deg);
+}
+
+.pantry__name {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  color: var(--ink-pen);
+}
+
+.pantry__description {
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--text-muted);
+}
+
+@media (max-width: 480px) {
+  .pantry__shelf {
+    padding-inline: var(--space-3);
+  }
+
+  .pantry__items {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pantry__jar {
+    width: 4rem;
+  }
+}
