@@ -44,6 +44,29 @@ describe('readSave', () => {
     expect(readSave(raw)).toMatchObject({ ok: false, reason: 'invalid' })
   })
 
+  it('accepts remembered bakes, including experiments', () => {
+    const raw = {
+      ...makeSave(),
+      bakedCreations: [
+        { id: 'creation_a', ingredientIds: ['ingredient_flour', 'ingredient_sugar'], recipeId: null, bakedAt: FIXED_NOW.toISOString() },
+        { id: 'creation_b', ingredientIds: ['ingredient_flour'], recipeId: 'recipe_shortbread', bakedAt: FIXED_NOW.toISOString() },
+      ],
+    }
+    expect(readSave(raw)).toMatchObject({ ok: true })
+  })
+
+  it.each([
+    ['a missing list', undefined],
+    ['a non-creation id', [{ id: 'bake_1', ingredientIds: [], recipeId: null, bakedAt: '2026-03-14T09:30:00.000Z' }]],
+    ['a bad recipe id', [{ id: 'creation_1', ingredientIds: [], recipeId: 'Shortbread', bakedAt: '2026-03-14T09:30:00.000Z' }]],
+    ['a bad date', [{ id: 'creation_1', ingredientIds: [], recipeId: null, bakedAt: 'yesterday' }]],
+    ['copied names instead of ids', [{ id: 'creation_1', ingredientIds: ['Flour'], recipeId: null, bakedAt: '2026-03-14T09:30:00.000Z' }]],
+  ])('flags bakedCreations with %s', (_, bakedCreations) => {
+    const result = readSave({ ...makeSave(), bakedCreations })
+    expect(result).toMatchObject({ ok: false, reason: 'invalid' })
+    if (!result.ok) expect(result.detail).toContain('bakedCreations')
+  })
+
   it('flags unknown settings values', () => {
     const save = makeSave()
     const raw = { ...save, settings: { ...save.settings, motion: 'wiggly' } }

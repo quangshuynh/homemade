@@ -15,7 +15,7 @@ import {
   removeFromBowl,
   type Bowl,
 } from './baking'
-import { defineId } from './ids'
+import { defineId, type CreationId } from './ids'
 import { BUTTER, CHOCOLATE_CHIPS, CINNAMON, COCOA, EGG, FLOUR, INGREDIENTS, STARTER_PANTRY, SUGAR, VANILLA } from './ingredients'
 import { findRecipeById, RECIPES } from './recipes'
 
@@ -39,9 +39,9 @@ describe('ingredient catalog', () => {
 })
 
 describe('recipe catalog', () => {
-  it('has between 5 and 8 recipes with unique ids', () => {
-    expect(RECIPES.length).toBeGreaterThanOrEqual(5)
-    expect(RECIPES.length).toBeLessThanOrEqual(8)
+  it('stays a small, curated catalog with unique ids', () => {
+    expect(RECIPES.length).toBeGreaterThanOrEqual(10)
+    expect(RECIPES.length).toBeLessThanOrEqual(14)
     expect(new Set(RECIPES.map((recipe) => recipe.id)).size).toBe(RECIPES.length)
   })
 
@@ -159,10 +159,13 @@ describe('baking', () => {
   })
 })
 
+let idCounter = 0
+const nextId = () => `creation_test-${++idCounter}` as CreationId
+
 describe('discovery', () => {
   it('records a recipe the first time it is baked', () => {
     const save = makeSave()
-    const { save: next, outcome } = recordBake(save, bake(CHOC_CHIP), NOW)
+    const { save: next, outcome } = recordBake(save, bake(CHOC_CHIP), NOW, nextId())
 
     expect(outcome.newDiscovery).toBe(true)
     expect(next.discoveredRecipes).toEqual([{ recipeId: 'recipe_chocolate-chip', discoveredAt: NOW.toISOString() }])
@@ -171,26 +174,26 @@ describe('discovery', () => {
   })
 
   it('only discovers a recipe once, keeping the first date', () => {
-    const once = recordBake(makeSave(), bake(CHOC_CHIP), NOW).save
-    const { save: twice, outcome } = recordBake(once, bake([...CHOC_CHIP].reverse()), LATER)
+    const once = recordBake(makeSave(), bake(CHOC_CHIP), NOW, nextId()).save
+    const { save: twice, outcome } = recordBake(once, bake([...CHOC_CHIP].reverse()), LATER, nextId())
 
     expect(outcome.newDiscovery).toBe(false)
-    expect(twice).toBe(once)
+    expect(twice.discoveredRecipes).toBe(once.discoveredRecipes)
     expect(twice.discoveredRecipes).toHaveLength(1)
     expect(twice.discoveredRecipes[0]?.discoveredAt).toBe(NOW.toISOString())
   })
 
-  it('does not record experiments', () => {
+  it('does not record experiments as discoveries', () => {
     const save = makeSave()
-    const { save: next, outcome } = recordBake(save, bake([EGG, CINNAMON]), NOW)
+    const { save: next, outcome } = recordBake(save, bake([EGG, CINNAMON]), NOW, nextId())
     expect(outcome.newDiscovery).toBe(false)
-    expect(next).toBe(save)
+    expect(next.discoveredRecipes).toBe(save.discoveredRecipes)
   })
 
   it('keeps discoveries in the order they were found', () => {
     let save = makeSave()
-    save = recordBake(save, bake([FLOUR, SUGAR, BUTTER]), NOW).save
-    save = recordBake(save, bake(CHOC_CHIP), LATER).save
+    save = recordBake(save, bake([FLOUR, SUGAR, BUTTER]), NOW, nextId()).save
+    save = recordBake(save, bake(CHOC_CHIP), LATER, nextId()).save
     expect(save.discoveredRecipes.map((entry) => findRecipeById(entry.recipeId)?.name)).toEqual([
       'Shortbread',
       'Chocolate Chip Cookie',

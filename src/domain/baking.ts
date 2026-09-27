@@ -1,7 +1,21 @@
-import type { IngredientId, RecipeId } from './ids'
-import { COCOA, CHOCOLATE_CHIPS, CINNAMON, findIngredient, FLOUR, listIngredientNames, SUGAR, VANILLA } from './ingredients'
-import { RECIPES } from './recipes'
-import type { CookieLook, GameSave, Recipe } from './types'
+import type { CreationId, IngredientId, RecipeId } from './ids'
+import {
+  COCOA,
+  COCONUT,
+  CHOCOLATE_CHIPS,
+  CINNAMON,
+  findIngredient,
+  FLOUR,
+  HONEY,
+  listIngredientNames,
+  OATS,
+  PEANUT_BUTTER,
+  SUGAR,
+  VANILLA,
+} from './ingredients'
+import { addCreation, makeCreation } from './creations'
+import { findRecipeById, RECIPES } from './recipes'
+import type { CookieCreation, CookieLook, GameSave, Recipe } from './types'
 
 /**
  * Baking rules. Pure functions only: the Bake screen holds the bowl in its
@@ -79,16 +93,34 @@ function keyHash(key: string): number {
   return hash
 }
 
-function describeExperiment(ids: IngredientId[]): string {
+/** What an experiment made of these ingredients says about itself. The same set always reads the same. */
+export function describeExperiment(ids: readonly IngredientId[]): string {
   const made = `Made with ${listIngredientNames(ids)}.`
   if (!ids.includes(FLOUR)) return `${made} Without flour it never quite held together, but the kitchen smells lovely.`
   if (!ids.includes(SUGAR)) return `${made} Not sweet at all. Somewhere between a cookie and a cracker.`
   return `${made} ${EXPERIMENT_ENDINGS[keyHash(ingredientKey(ids)) % EXPERIMENT_ENDINGS.length]}`
 }
 
-function experimentLook(ids: IngredientId[]): CookieLook {
-  const dough = ids.includes(COCOA) ? 'cocoa' : ids.includes(CINNAMON) ? 'spiced' : ids.includes(FLOUR) ? 'golden' : 'pale'
-  const topping = ids.includes(CHOCOLATE_CHIPS) ? 'chips' : ids.includes(VANILLA) ? 'vanilla-flecks' : 'none'
+/** How an experiment made of these ingredients looks. Always the wobbly shape, so it never passes for a recipe. */
+export function experimentLook(ids: readonly IngredientId[]): CookieLook {
+  const dough: CookieLook['dough'] = ids.includes(COCOA)
+    ? 'cocoa'
+    : ids.includes(CINNAMON)
+      ? 'spiced'
+      : ids.includes(PEANUT_BUTTER)
+        ? 'nutty'
+        : ids.includes(FLOUR) || ids.includes(OATS) || ids.includes(HONEY)
+          ? 'golden'
+          : 'pale'
+  const topping: CookieLook['topping'] = ids.includes(CHOCOLATE_CHIPS)
+    ? 'chips'
+    : ids.includes(VANILLA)
+      ? 'vanilla-flecks'
+      : ids.includes(OATS)
+        ? 'oats'
+        : ids.includes(COCONUT)
+          ? 'coconut'
+          : 'none'
   return { dough, topping, shape: 'wobbly' }
 }
 
@@ -123,18 +155,62 @@ export type BakeOutcome = {
   result: BakeResult
   /** True only the first time a recipe is ever baked in this kitchen. */
   newDiscovery: boolean
+  /** The batch as it is remembered in the save. */
+  creation: CookieCreation
 }
 
-/** Applies a bake to the save: records a first-time recipe discovery, and nothing else. */
-export function recordBake(save: GameSave, result: BakeResult, now: Date): { save: GameSave; outcome: BakeOutcome } {
-  if (result.kind !== 'recipe' || isDiscovered(save, result.recipe.id)) {
-    return { save, outcome: { result, newDiscovery: false } }
-  }
+/**
+ * Applies a bake to the save in one step: remembers the batch (every bake,
+ * recipes and experiments alike) and records a first-time recipe discovery.
+ * Returns the whole next save, so the caller writes it once and a bake can
+ * never be half-saved.
+ */
+export function recordBake(
+  save: GameSave,
+  result: BakeResult,
+  now: Date,
+  creationId: CreationId,
+): { save: GameSave; outcome: BakeOutcome } {
+  const creation = makeCreation(result, now, creationId)
+  const newDiscovery = result.kind === 'recipe' && !isDiscovered(save, result.recipe.id)
   return {
     save: {
       ...save,
-      discoveredRecipes: [...save.discoveredRecipes, { recipeId: result.recipe.id, discoveredAt: now.toISOString() }],
+      bakedCreations: addCreation(save.bakedCreations, creation),
+      discoveredRecipes: newDiscovery
+        ? [...save.discoveredRecipes, { recipeId: result.recipe.id, discoveredAt: now.toISOString() }]
+        : save.discoveredRecipes,
     },
-    outcome: { result, newDiscovery: true },
+    outcome: { result, newDiscovery, creation },
   }
+}
+
+/** A bowl laid out by "Bake again": ingredients in, nothing mixed or baked. */
+export type PreparedBake = { recipeId: RecipeId; bowl: Bowl }
+
+/**
+ * Lays out a discovered recipe's ingredients for baking it again. Returns
+ * null for a recipe the player hasn't discovered, so an undiscovered recipe
+ * can never be prepared (or given away). Only what's on the shelf goes in.
+ */
+export function prepareBowl(save: GameSave, recipeId: RecipeId): Bowl | null {
+  const recipe = findRecipeById(recipeId)
+  if (!recipe || !isDiscovered(save, recipeId)) return null
+  return recipe.ingredientIds.reduce<Bowl>((bowl, id) => addToBowl(bowl, id, save.pantryIngredientIds).bowl, [])
+}
+
+/** A remembered bake joined with what the catalogs say about it, ready to show. */
+export type CreationView =
+  | { kind: 'recipe'; creation: CookieCreation; recipe: Recipe; name: string; look: CookieLook }
+  | { kind: 'experiment'; creation: CookieCreation; name: string; description: string; look: CookieLook }
+
+/**
+ * A recipe id the catalog no longer has is shown as an experiment rather
+ * than invented: the save stays readable, and nothing is made up.
+ */
+export function viewCreation(creation: CookieCreation): CreationView {
+  const recipe = creation.recipeId ? findRecipeById(creation.recipeId) : undefined
+  if (recipe) return { kind: 'recipe', creation, recipe, name: recipe.name, look: recipe.look }
+  const ids = creation.ingredientIds
+  return { kind: 'experiment', creation, name: EXPERIMENT_NAME, description: describeExperiment(ids), look: experimentLook(ids) }
 }

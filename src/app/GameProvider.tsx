@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { bake as bakeBowl, recordBake, type Bowl } from '../domain/baking'
+import { bake as bakeBowl, prepareBowl, recordBake, type Bowl, type PreparedBake } from '../domain/baking'
+import { newCreationId } from '../domain/creations'
+import type { RecipeId } from '../domain/ids'
 import { createNewSave, touchSave, type NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
 import type { SaveRepository } from '../persistence/repository'
@@ -13,6 +15,9 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
   const [state, setState] = useState<GameState>({ status: 'loading' })
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved')
   const [loadAttempt, setLoadAttempt] = useState(0)
+  // A bowl laid out by "Bake again", waiting for the Bake screen. Deliberately
+  // not saved: a refresh just leaves the bowl empty.
+  const [preparedBowl, setPreparedBowl] = useState<PreparedBake | null>(null)
 
   // The latest save, readable synchronously so rapid updates never build on a stale copy.
   const saveRef = useRef<GameSave | null>(null)
@@ -93,25 +98,33 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       const current = saveRef.current
       if (!current) throw new Error('Nothing to bake into: the save is not loaded')
       const now = new Date()
-      const { save: next, outcome } = recordBake(current, bakeBowl(bowl), now)
-      // Only a discovery changes the save; replaying a recipe writes nothing.
-      if (next !== current) {
-        const stamped = { ...next, updatedAt: now.toISOString() }
-        saveRef.current = stamped
-        setState({ status: 'ready', save: stamped })
-        void persist(stamped).catch(() => {
-          // Surfaced through saveStatus.
-        })
-      }
+      // The batch and any discovery arrive together as one next save, written once.
+      const { save: next, outcome } = recordBake(current, bakeBowl(bowl), now, newCreationId())
+      const stamped = { ...next, updatedAt: now.toISOString() }
+      saveRef.current = stamped
+      setState({ status: 'ready', save: stamped })
+      void persist(stamped).catch(() => {
+        // Surfaced through saveStatus.
+      })
       return outcome
     },
     [persist],
   )
 
+  const prepareRecipe = useCallback((recipeId: RecipeId) => {
+    const current = saveRef.current
+    const bowl = current ? prepareBowl(current, recipeId) : null
+    setPreparedBowl(bowl ? { recipeId, bowl } : null)
+    return bowl !== null
+  }, [])
+
+  const clearPreparedBowl = useCallback(() => setPreparedBowl(null), [])
+
   const resetSave = useCallback(async () => {
     await writeQueue.current
     await repository.clear()
     saveRef.current = null
+    setPreparedBowl(null)
     setSaveStatus('saved')
     setState({ status: 'first-run' })
   }, [repository])
@@ -128,8 +141,20 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
   }, [])
 
   const value = useMemo(
-    () => ({ state, saveStatus, startGame, updateSave, bake, resetSave, archiveAndStartOver, reload }),
-    [state, saveStatus, startGame, updateSave, bake, resetSave, archiveAndStartOver, reload],
+    () => ({
+      state,
+      saveStatus,
+      startGame,
+      updateSave,
+      bake,
+      preparedBowl,
+      prepareRecipe,
+      clearPreparedBowl,
+      resetSave,
+      archiveAndStartOver,
+      reload,
+    }),
+    [state, saveStatus, startGame, updateSave, bake, preparedBowl, prepareRecipe, clearPreparedBowl, resetSave, archiveAndStartOver, reload],
   )
 
   return <GameContext value={value}>{children}</GameContext>

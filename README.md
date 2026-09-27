@@ -6,17 +6,18 @@ It is **not** an idle or clicker game. Nothing ticks up while you're away, and t
 
 ## Status
 
-**Interval 2: First baking loop.** There's one small, complete loop:
+**Interval 3: Baking memories.** The kitchen now remembers what you've made:
 
 1. **Bake:** take up to five ingredients off the shelf and put them in the bowl, mix, and bake.
-2. **Discover:** an exact set of ingredients makes one of 7 hand-written recipes. The first time you bake one, it's stamped *New recipe!* and saved.
-3. **Experiment:** anything else comes out as a *Kitchen Experiment*. You still get to eat it, but it doesn't go in the book.
-4. **Recipe Book:** recipes you've found are written out. Ones you haven't are blank cards that give nothing away.
-5. **Pantry:** the 8 ingredients on your shelves. Everyone starts with all of them, and there's no shop or currency.
+2. **Discover:** an exact set of ingredients makes one of 12 hand-written recipes. The first time you bake one, it's stamped *New recipe!* and saved.
+3. **Experiment:** anything else comes out as a *Kitchen Experiment*. It never goes in the book, but it's still remembered.
+4. **Baking memories:** every bake cools on the rack in your kitchen. The last three sit on the counter, and *Baking Memories* keeps your last 50.
+5. **Recipe Book:** recipes you've found are written out, each with **Bake again**, which lays the ingredients out in the bowl for you to mix and bake yourself. Recipes you haven't found are blank cards that only say how many ingredients they need.
+6. **Pantry:** the 12 ingredients on your shelves. Everyone has all of them, and there's no shop or currency.
 
-Also in place from Interval 1: naming your kitchen on first launch, the Home Kitchen, and Settings (sound preference, motion preference, and Start over with confirmation).
+Also in place: naming your kitchen on first launch, and Settings (sound preference, motion preference, and Start over with confirmation).
 
-Saves live in the browser's IndexedDB. No account is needed and nothing is sent anywhere. Saves from Interval 1 are upgraded automatically, and the original is kept in an archive.
+Saves live in the browser's IndexedDB (save version 3). No account is needed and nothing is sent anywhere. Older saves are upgraded automatically, and the original is kept in an archive.
 
 ## Tech stack
 
@@ -60,7 +61,7 @@ src/
   components/   Reusable UI: recipe-box tabs, paper cards, buttons, dialog, illustrations
   domain/       Game rules and catalogs: ingredients, recipes, baking, saves
   persistence/  Save schema, validation, migrations, and the IndexedDB repository
-  screens/      One file per screen (onboarding, kitchen, bake, recipe book, pantry, settings)
+  screens/      One file per screen (onboarding, kitchen, bake, recipe book, baking memories, pantry, settings)
   styles/       Design tokens and base styles
   assets/       Static art (the butcher-block counter)
   test/         Test setup and fixtures
@@ -70,7 +71,7 @@ A few design decisions worth knowing:
 
 - **The UI never touches IndexedDB.** Screens call `updateSave(change)` from `GameProvider`. The provider updates the screen right away and writes through a `SaveRepository` interface in the background. Autosave, cloud sync or a different storage backend can plug in behind that interface later.
 - **Game rules live in `domain/`.** Ingredients and recipes are static catalogs with stable ids, and saves store only ids. Matching, discovery and bowl rules are pure functions (`domain/baking.ts`), and screens call them rather than deciding anything themselves.
-- **Individual batches aren't saved yet.** Only first-time discoveries are. Nothing reads past bakes yet, and keeping every one would grow saves for no benefit. A `CookieCreation` type is ready for when a collection feature needs it.
+- **A bake is one save write.** `recordBake` returns the whole next save (the remembered batch plus any discovery), so a bake can't be half-saved. History is capped by `MAX_BAKED_CREATIONS`.
 - **Everything read from storage is checked.** `persistence/schema.ts` validates stored data and runs any migrations before the game sees it. Each save has a `version`. A save that can't be read is **never deleted automatically**: the player sees what went wrong and can download a copy, try again, or set it aside. Setting it aside moves it to an archive store rather than deleting it. Before a migrated save is written back, the original is archived too.
 - **IDs are stable and typed.** Players, recipes, ingredients and creations use prefixed, branded string IDs (`player_…`, `recipe_…`). Nothing is keyed by display name.
 - **Navigation is hash-based** (`#/bake`, `#/settings`): real links, working back button, no server config.
@@ -81,7 +82,7 @@ Semantic landmarks and headings, real links and buttons, a skip link, visible fo
 
 ## Where it's heading
 
-Likely next: more ingredients and recipes, collecting what you bake, and decorating your kitchen. None of that exists yet. Cloud saves, accounts and multiplayer aren't planned for the near term.
+Likely next: a mobile polish pass, installability, save import/export and renaming, and later decorating your kitchen. None of that exists yet. Cloud saves, accounts and multiplayer aren't planned for the near term.
 
 ## Design direction
 

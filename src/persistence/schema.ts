@@ -67,6 +67,22 @@ export function findSaveProblem(value: RawRecord): string | null {
     return 'discoveredRecipes is not a list of discoveries'
   }
 
+  const creations = value.bakedCreations
+  if (
+    !Array.isArray(creations) ||
+    !creations.every(
+      (entry) =>
+        isRecord(entry) &&
+        isIdOf('creation', entry.id) &&
+        Array.isArray(entry.ingredientIds) &&
+        entry.ingredientIds.every((id) => isIdOf('ingredient', id)) &&
+        (entry.recipeId === null || isIdOf('recipe', entry.recipeId)) &&
+        isIsoDate(entry.bakedAt),
+    )
+  ) {
+    return 'bakedCreations is not a list of bakes'
+  }
+
   const settings = value.settings
   if (!isRecord(settings)) return 'settings are missing'
   if (typeof settings.soundEnabled !== 'boolean') return 'settings.soundEnabled is not a boolean'

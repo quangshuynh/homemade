@@ -16,6 +16,10 @@ export const CHOCOLATE_CHIPS = defineId('ingredient', 'chocolate-chips')
 export const VANILLA = defineId('ingredient', 'vanilla')
 export const COCOA = defineId('ingredient', 'cocoa')
 export const CINNAMON = defineId('ingredient', 'cinnamon')
+export const OATS = defineId('ingredient', 'oats')
+export const PEANUT_BUTTER = defineId('ingredient', 'peanut-butter')
+export const HONEY = defineId('ingredient', 'honey')
+export const COCONUT = defineId('ingredient', 'coconut')
 
 export const INGREDIENTS: readonly Ingredient[] = [
   {
@@ -74,6 +78,34 @@ export const INGREDIENTS: readonly Ingredient[] = [
     category: 'flavouring',
     art: { form: 'powder', swatch: 'cinnamon' },
   },
+  {
+    id: OATS,
+    name: 'Oats',
+    description: 'Rolled oats. Chewy, nutty, and good at soaking up butter.',
+    category: 'basic',
+    art: { form: 'flakes', swatch: 'oat' },
+  },
+  {
+    id: PEANUT_BUTTER,
+    name: 'Peanut butter',
+    description: 'Smooth peanut butter, rich enough to hold a dough together on its own.',
+    category: 'flavouring',
+    art: { form: 'spread', swatch: 'peanut' },
+  },
+  {
+    id: HONEY,
+    name: 'Honey',
+    description: 'Runny honey from a squeezy bottle. Sticky, golden and floral.',
+    category: 'flavouring',
+    art: { form: 'liquid', swatch: 'honey' },
+  },
+  {
+    id: COCONUT,
+    name: 'Coconut',
+    description: 'Sweet shredded coconut that toasts at the edges.',
+    category: 'flavouring',
+    art: { form: 'flakes', swatch: 'white' },
+  },
 ]
 
 /** What every new kitchen starts with: for now, the whole catalog. */
@@ -91,9 +123,9 @@ export function getIngredient(id: IngredientId): Ingredient {
   return ingredient
 }
 
-/** "flour, sugar and butter" */
+/** "flour, sugar and butter". An id the catalog no longer has reads as "something old". */
 export function listIngredientNames(ids: readonly IngredientId[]): string {
-  const names = ids.map((id) => getIngredient(id).name.toLowerCase())
+  const names = ids.map((id) => findIngredient(id)?.name.toLowerCase() ?? 'something old')
   if (names.length <= 1) return names.join('')
   return `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`
 }

@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react'
-import type { BakeOutcome, Bowl } from '../domain/baking'
+import type { BakeOutcome, Bowl, PreparedBake } from '../domain/baking'
+import type { RecipeId } from '../domain/ids'
 import type { NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
 import type { LoadResult } from '../persistence/repository'
@@ -20,10 +21,19 @@ export type GameContextValue = {
   /** Applies a pure change to the save, updates the UI immediately and persists it in the background. */
   updateSave: (change: (save: GameSave) => GameSave) => void
   /**
-   * Bakes what's in the bowl, records any first-time discovery, and saves.
-   * Returns what came out of the oven.
+   * Bakes what's in the bowl, remembers the batch, records any first-time
+   * discovery, and saves all of it in one write. Returns what came out of the oven.
    */
   bake: (bowl: Bowl) => BakeOutcome
+  /** Ingredients laid out by "Bake again", for the Bake screen to start from. In memory only. */
+  preparedBowl: PreparedBake | null
+  /**
+   * Lays out a discovered recipe's ingredients for the Bake screen. Never
+   * mixes or bakes. Returns false (and prepares nothing) for an undiscovered recipe.
+   */
+  prepareRecipe: (recipeId: RecipeId) => boolean
+  /** Called by the Bake screen once it has taken the prepared bowl. */
+  clearPreparedBowl: () => void
   /** Deletes the save and returns to first run. Callers confirm with the player first. */
   resetSave: () => Promise<void>
   /** For unreadable saves: archive the old data, then start over. */

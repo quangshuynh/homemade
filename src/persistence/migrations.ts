@@ -53,6 +53,35 @@ export function migrateV1ToV2(raw: RawRecord): RawRecord {
   }
 }
 
+/** The ingredients added to the catalog in Interval 3, when version 3 was introduced. */
+const V3_NEW_INGREDIENTS = ['ingredient_oats', 'ingredient_peanut-butter', 'ingredient_honey', 'ingredient_coconut']
+
+/**
+ * v2 → v3 (Interval 3, baking memories):
+ * - adds `bakedCreations`, empty. Past bakes were never recorded, so none
+ *   are invented, not even from discoveries.
+ * - puts the new Interval 3 ingredients on the shelf. Every pantry has
+ *   always held the whole catalog and there's no other way to gain an
+ *   ingredient, so without this a returning player could never bake the
+ *   new recipes. Existing entries are kept exactly, in order.
+ */
+export function migrateV2ToV3(raw: RawRecord): RawRecord {
+  const pantry = raw.pantryIngredientIds
+  if (!Array.isArray(pantry)) {
+    throw new Error('version 2 save has no pantryIngredientIds list')
+  }
+  if (!Array.isArray(raw.discoveredRecipes)) {
+    throw new Error('version 2 save has no discoveredRecipes list')
+  }
+  return {
+    ...raw,
+    version: 3,
+    pantryIngredientIds: [...pantry, ...V3_NEW_INGREDIENTS.filter((id) => !pantry.includes(id))],
+    bakedCreations: [],
+  }
+}
+
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   1: migrateV1ToV2,
+  2: migrateV2ToV3,
 }

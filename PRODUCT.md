@@ -16,7 +16,7 @@ Players who want a calm, personal game they can open in a browser tab and spend 
 
 ## Product Purpose
 
-A cozy baking game about discovering recipes by experimenting with ingredients, collecting what you make, keeping a recipe book, and making a kitchen your own. Success is a player who feels the kitchen is theirs and wants to come back to see what else they can make.
+A cozy baking game about discovering recipes by experimenting with ingredients, remembering what you make, keeping a recipe book, and making a kitchen your own. Success is a player who feels the kitchen is theirs and wants to come back to see what else they can make.
 
 ## Positioning
 
@@ -42,6 +42,14 @@ These are decisions later work builds on. Change them on purpose, not by acciden
 - **Undiscovered recipes stay secret.** The Recipe Book shows a blank card for each, with no name, ingredients or hints. The total count is shown.
 - **Catalogs are static; saves store ids.** Ingredient and recipe ids are permanent once shipped. Saves never copy catalog data. A save that references an id the catalog no longer has stays loadable.
 - **No economy.** No currency, prices, scores, XP, timers or rarity. The pantry starts full.
+- **Every completed bake is remembered.** Each bake, whether a new recipe, a rebake or an experiment, becomes exactly one creation `{ id, ingredientIds, recipeId | null, bakedAt }`. Baking the same thing twice makes two creations. Creations store ids and a time only.
+- **Memory is bounded.** The kitchen keeps the last 50 bakes (`MAX_BAKED_CREATIONS`). Past that, the oldest are let go. This is a keepsake, not an archive.
+- **Memories never affect discovery.** Discoveries and creations are separate lists; trimming history never touches discoveries, and a creation is never how a recipe counts as found.
+- **Experiments can be remembered without becoming recipes.** A remembered experiment has no recipe id, never appears in the Recipe Book and never counts toward it.
+- **Bake again prepares, it never bakes.** It lays a discovered recipe's ingredients in the bowl, unmixed. The player can change them, and must still mix and bake. Undiscovered recipes never offer it.
+- **The bowl isn't saved.** A prepared or half-filled bowl lives only in the open tab; a refresh starts with an empty bowl.
+- **Undiscovered recipes give one hint: how many ingredients they need.** Never a name, ingredient, flavour or look. The count narrows the search without spoiling it.
+- **New ingredients reach existing kitchens.** Because every pantry holds the whole catalog, a save upgrade adds newly shipped ingredients to the shelf, keeping everything already there.
 
 ## Voice
 
@@ -51,5 +59,5 @@ Warm, plain, a little playful, never cutesy. Short sentences, written like a not
 
 - Whether names can be changed after setup.
 - Whether and how ingredients are ever gained (currently everyone has all of them).
-- Whether individual bakes are kept (a collection), which would change the save schema.
-- Audio direction (the sound setting is stored but nothing plays yet).
+- Audio direction (the sound setting is stored but nothing plays yet; deferred to Interval 4).
+- Whether memories should ever be exportable, or kept beyond the cap.

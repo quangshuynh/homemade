@@ -1,6 +1,6 @@
-import { useSave } from '../app/gameContext'
-import { hrefFor } from '../app/routes'
-import { LinkButton } from '../components/Button'
+import { useGame, useSave } from '../app/gameContext'
+import { hrefFor, navigate } from '../app/routes'
+import { Button, LinkButton } from '../components/Button'
 import { Cookie } from '../components/kitchenArt'
 import { HandNote } from '../components/Paper'
 import { ScreenTitle } from '../components/ScreenTitle'
@@ -13,11 +13,13 @@ function formatDate(iso: string): string {
 }
 
 /**
- * Every recipe in the catalog gets a slot. Discovered ones are written out;
- * the rest are blank cards that give away nothing about what they are.
+ * Every recipe in the catalog gets a slot. Discovered ones are written out,
+ * with a way to bake them again. The rest are blank cards whose only hint is
+ * how many ingredients they need: never a name, an ingredient or a look.
  */
 export function RecipeBookScreen() {
   const save = useSave()
+  const { prepareRecipe } = useGame()
   const discoveredAt = new Map(save.discoveredRecipes.map((entry) => [entry.recipeId, entry.discoveredAt]))
   const found = RECIPES.filter((recipe) => discoveredAt.has(recipe.id)).length
 
@@ -43,6 +45,7 @@ export function RecipeBookScreen() {
                   ?
                 </span>
                 <p className="book-card__blank-text">Not discovered yet</p>
+                <p className="book-card__hint">Needs {recipe.ingredientIds.length} ingredients</p>
               </li>
             )
           }
@@ -63,6 +66,16 @@ export function RecipeBookScreen() {
                   ))}
                 </ul>
                 <p className="book-card__date">First baked {formatDate(date)}</p>
+                <Button
+                  className="book-card__again"
+                  aria-label={`Bake again: ${recipe.name}`}
+                  onClick={() => {
+                    // Lays the ingredients out in the bowl; the player still mixes and bakes.
+                    if (prepareRecipe(recipe.id)) navigate('bake')
+                  }}
+                >
+                  Bake again
+                </Button>
               </article>
             </li>
           )

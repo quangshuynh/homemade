@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
-import type { RouteId } from '../app/routes'
+import type { TabRouteId } from '../app/routes'
 
 /** Small line icons for the recipe-box tabs: one stroke weight, drawn on a 24px grid. */
 
-const paths: Record<RouteId, ReactNode> = {
+const paths: Record<TabRouteId, ReactNode> = {
   kitchen: (
     <>
       <path d="M4 20 V9.5 L12 4 L20 9.5 V20" />
@@ -40,7 +40,7 @@ const paths: Record<RouteId, ReactNode> = {
   ),
 }
 
-export function RouteIcon({ route, className }: { route: RouteId; className?: string }) {
+export function RouteIcon({ route, className }: { route: TabRouteId; className?: string }) {
   return (
     <svg
       className={className}

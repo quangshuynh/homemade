@@ -521,3 +521,19 @@
     gap: var(--space-2);
   }
 }
+
+/* "Bake again": a pen note beside the bowl saying what was laid out. It goes as soon as anything changes. */
+.bake__prepared {
+  justify-self: start;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-md);
+  background: var(--butter-300);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(-1.2deg);
+}
+
+.bake-result__rack {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}

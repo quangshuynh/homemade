@@ -145,6 +145,17 @@
   color: var(--text-muted);
 }
 
+.book-card__hint {
+  font-family: var(--font-hand);
+  font-size: var(--text-sm);
+  color: var(--ink-pen);
+}
+
+.book-card__again {
+  justify-self: start;
+  margin-top: var(--space-2);
+}
+
 .recipe-book__foot {
   display: flex;
   flex-wrap: wrap;

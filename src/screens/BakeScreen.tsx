@@ -19,6 +19,7 @@ import {
 } from '../domain/baking'
 import type { IngredientId } from '../domain/ids'
 import { findIngredient, getIngredient, listIngredientNames } from '../domain/ingredients'
+import { findRecipeById } from '../domain/recipes'
 import type { Ingredient } from '../domain/types'
 import './BakeScreen.css'
 
@@ -31,6 +32,7 @@ const DOUGH_WORDS = {
   pale: 'pale',
   golden: 'golden',
   spiced: 'warm, speckled',
+  nutty: 'nutty brown',
   cocoa: 'chocolate-brown',
   dark: 'very dark',
 } as const
@@ -58,15 +60,29 @@ export function BakeScreen() {
   const save = useSave()
   const game = useGame()
   const reducedMotion = useReducedMotion()
-  const [bowl, setBowl] = useState<Bowl>([])
+  // "Bake again" lays a recipe out in the bowl. It starts here unmixed; the player still mixes and bakes.
+  const [prepared] = useState(() => game.preparedBowl)
+  const [bowl, setBowl] = useState<Bowl>(() => prepared?.bowl ?? [])
   const [phase, setPhase] = useState<Phase>({ kind: 'choosing' })
   const [message, setMessage] = useState('')
+  const preparedName = prepared ? findRecipeById(prepared.recipeId)?.name : undefined
   const resultHeading = useRef<HTMLHeadingElement>(null)
   const ids = { shelf: useId(), bowl: useId(), result: useId(), mixHint: useId() }
 
   const pantry = save.pantryIngredientIds.map(findIngredient).filter((item): item is Ingredient => item !== undefined)
   const inBowl = bowl.map(getIngredient)
   const mixed = phase.kind === 'mixed'
+
+  // Take the prepared bowl once, then say what was laid out. Live regions only announce
+  // changes made after they're on the page, so the message waits a frame.
+  const { clearPreparedBowl } = game
+  useEffect(() => {
+    if (!prepared) return
+    clearPreparedBowl()
+    const said = `Laid out ${listIngredientNames(prepared.bowl)}${preparedName ? ` for ${preparedName}` : ''}. Change anything you like, then mix.`
+    const frame = requestAnimationFrame(() => setMessage(said))
+    return () => cancelAnimationFrame(frame)
+  }, [prepared, preparedName, clearPreparedBowl])
 
   // The oven: a short pause for the animation, skipped entirely when motion is reduced.
   useEffect(() => {
@@ -199,6 +215,10 @@ export function BakeScreen() {
           className={['bake__bowl', mixed && 'bake__bowl--mixed'].filter(Boolean).join(' ')}
         />
 
+        {prepared && preparedName && bowl === prepared.bowl && phase.kind === 'choosing' && (
+          <HandNote className="bake__prepared">Laid out for {preparedName}. Mix when you’re ready.</HandNote>
+        )}
+
         {bowl.length === 0 ? (
           <HandNote className="bake__empty">Empty. Pick a few things from the shelf.</HandNote>
         ) : (
@@ -316,6 +336,8 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain }: BakeResultP
             <p className="bake-result__book">Experiments don’t get a card in the Recipe Book. Only recipes do.</p>
           </>
         )}
+
+        <p className="bake-result__rack">Left to cool on the rack in your kitchen.</p>
 
         <div className="bake-result__actions">
           <Button variant="primary" onClick={onBakeAgain}>
