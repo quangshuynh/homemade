@@ -1,0 +1,42 @@
+{
+  "name": "homemade",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A cozy browser baking game.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "lint": "oxlint --deny-warnings",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@fontsource-variable/gluten": "^5.3.0",
+    "@fontsource-variable/shantell-sans": "^5.3.0",
+    "@fontsource/atkinson-hyperlegible-next": "^5.3.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@types/node": "^24.13.3",
+    "oxlint": "^1.81.0",
+    "vitest": "^5.0.2",
+    "jsdom": "^30.1.1",
+    "fake-indexeddb": "^6.2.5",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1"
+  }
+}

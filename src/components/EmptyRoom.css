@@ -1,0 +1,64 @@
+.empty-room {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  grid-template-areas:
+    'title title'
+    'art text'
+    'art back';
+  align-items: start;
+  gap: var(--space-5) var(--space-7);
+  max-width: 56rem;
+  margin: 0 auto;
+  transform: rotate(-0.4deg);
+}
+
+.empty-room__title {
+  grid-area: title;
+  font-size: var(--text-2xl);
+}
+
+.empty-room__art {
+  grid-area: art;
+  align-self: center;
+  padding: var(--space-4) 0;
+}
+
+.empty-room__art svg {
+  width: 100%;
+  max-width: 20rem;
+  margin: 0 auto;
+}
+
+.empty-room__text {
+  grid-area: text;
+  display: grid;
+  gap: var(--space-3);
+  max-width: var(--measure);
+  line-height: 1.75rem; /* sits on the card's ruled lines */
+}
+
+.empty-room__text .hand-note {
+  font-size: var(--text-xl);
+  line-height: 1.75rem;
+}
+
+.empty-room__back {
+  grid-area: back;
+  justify-self: start;
+}
+
+@media (max-width: 719px) {
+  .empty-room {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'title'
+      'art'
+      'text'
+      'back';
+    transform: none;
+  }
+
+  .empty-room__art svg {
+    max-width: 15rem;
+  }
+}

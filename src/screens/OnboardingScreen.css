@@ -1,0 +1,115 @@
+.onboarding {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--space-5);
+  min-height: 100dvh;
+  padding: var(--space-6) var(--gutter) var(--space-8);
+}
+
+/* A live preview of the name painted on the kitchen sign. */
+.onboarding__sign {
+  max-width: 100%;
+  padding: var(--space-3) var(--space-6) var(--space-2);
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  text-align: center;
+  overflow-wrap: anywhere;
+  color: var(--ink-on-accent);
+  background: var(--enamel-600);
+  border: 3px solid var(--ink);
+  border-radius: 14px 18px 12px 16px;
+  box-shadow:
+    inset 0 0 0 4px var(--enamel-600),
+    inset 0 0 0 6px var(--paper),
+    var(--shadow-object);
+  transform: rotate(-1.2deg);
+}
+
+.onboarding__sign--blank {
+  opacity: 0.55;
+}
+
+.onboarding__card {
+  width: min(34rem, 100%);
+}
+
+.onboarding__form {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.onboarding__title {
+  font-size: var(--text-xl);
+}
+
+.onboarding__field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.onboarding__label {
+  font-weight: var(--weight-bold);
+  font-size: var(--text-lg);
+}
+
+.onboarding__hint {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Write-on-the-line inputs: no box, just the card's rule, which thickens when you're on it. */
+.onboarding__input {
+  width: 100%;
+  min-height: var(--tap-target);
+  margin-top: var(--space-1);
+  padding: var(--space-2) var(--space-1) var(--space-1);
+  font-family: var(--font-hand);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
+  color: var(--ink-pen);
+  background: rgb(255 250 240 / 0.7);
+  border: 0;
+  border-bottom: 2px solid var(--ink);
+  border-radius: 4px 4px 0 0;
+  transition: background-color var(--duration-quick) linear;
+}
+
+.onboarding__input:hover {
+  background: var(--surface-card-raised);
+}
+
+.onboarding__input:focus-visible {
+  background: var(--surface-card-raised);
+}
+
+.onboarding__input[aria-invalid='true'] {
+  border-bottom-color: var(--danger);
+  border-bottom-width: 3px;
+}
+
+.onboarding__error {
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  color: var(--danger);
+}
+
+.onboarding__actions {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 480px) {
+  .onboarding {
+    align-content: start;
+    padding-top: var(--space-5);
+  }
+
+  .onboarding__actions .button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,45 @@
+.trouble {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: var(--space-6) var(--gutter);
+}
+
+.trouble__card {
+  display: grid;
+  gap: var(--space-4);
+  width: min(38rem, 100%);
+}
+
+.trouble__title {
+  font-size: var(--text-xl);
+}
+
+.trouble__details summary {
+  cursor: pointer;
+  font-weight: var(--weight-bold);
+  min-height: var(--tap-target);
+  display: flex;
+  align-items: center;
+}
+
+.trouble__details p {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.trouble__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.trouble__loading {
+  padding: var(--space-3) var(--space-5);
+  background: var(--butter-300);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(-1.5deg);
+}
