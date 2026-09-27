@@ -102,7 +102,7 @@ describe('baking', () => {
 
     await user.click(screen.getByRole('link', { name: 'Open the Recipe Book' }))
     expect(await screen.findByRole('heading', { level: 2, name: 'Chocolate Chip Cookie' })).toBeInTheDocument()
-    expect(screen.getByText('1 of 7 recipes written down.')).toBeInTheDocument()
+    expect(screen.getByText('1 of 12 recipes written down.')).toBeInTheDocument()
   })
 
   it('does not rediscover a recipe baked a second time', async () => {
@@ -192,7 +192,7 @@ describe('recipe book', () => {
     startAt('#/recipe-book', stillSave())
     await screen.findByRole('heading', { level: 1, name: 'Recipe Book' })
 
-    expect(screen.getAllByText('Not discovered yet')).toHaveLength(7)
+    expect(screen.getAllByText('Not discovered yet')).toHaveLength(12)
     expect(screen.queryByText(/Shortbread|Snickerdoodle|Chocolate Chip/)).not.toBeInTheDocument()
     expect(screen.queryByText('Ingredients')).not.toBeInTheDocument()
   })
@@ -204,7 +204,7 @@ describe('recipe book', () => {
     )
     const card = (await screen.findByRole('heading', { level: 2, name: 'Snickerdoodle' })).closest('article')!
     expect(within(card).getByRole('list')).toHaveTextContent('FlourSugarButterEggCinnamon')
-    expect(screen.getAllByText('Not discovered yet')).toHaveLength(6)
+    expect(screen.getAllByText('Not discovered yet')).toHaveLength(11)
   })
 })
 
@@ -214,7 +214,7 @@ describe('pantry', () => {
     await screen.findByRole('heading', { level: 1, name: 'Pantry' })
 
     expect(screen.getByRole('heading', { level: 2, name: 'Baking basics' })).toBeInTheDocument()
-    expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(8)
+    expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(12)
     expect(screen.getByText('Plain white flour. Holds everything else together.')).toBeInTheDocument()
   })
 })

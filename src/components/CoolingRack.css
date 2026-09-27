@@ -1,0 +1,101 @@
+/* A steel cooling rack lying on the counter: a wire grid with little feet, cookies set on it. */
+.cooling-rack {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  list-style: none;
+  border: 3px solid var(--rack-wire);
+  border-radius: 8px 9px 8px 10px;
+  background-image:
+    repeating-linear-gradient(to right, transparent 0 22px, rgb(111 117 113 / 0.7) 22px 24px),
+    repeating-linear-gradient(to bottom, transparent 0 22px, rgb(111 117 113 / 0.45) 22px 24px);
+  box-shadow: 0 8px 14px -8px rgb(70 38 12 / 0.45);
+}
+
+.cooling-rack__spot {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.cooling-rack__spot:nth-child(2) {
+  transform: rotate(1.5deg);
+}
+
+.cooling-rack__spot:nth-child(3) {
+  transform: rotate(-1deg);
+}
+
+.cooling-rack__cookie {
+  width: min(6rem, 100%);
+  height: auto;
+}
+
+/* A kraft label written on in grease pencil. */
+.cooling-rack__tag {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  max-width: 100%;
+  padding: var(--space-1) var(--space-3);
+  text-align: center;
+  background: var(--paper);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.cooling-rack__name {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.cooling-rack__when {
+  font-family: var(--font-hand);
+  font-size: var(--text-xs);
+  color: var(--ink-pen);
+}
+
+/* Experiments get a dashed, unofficial label. Their name says so too. */
+.cooling-rack__spot--experiment .cooling-rack__tag {
+  background: var(--paper-shade);
+  outline: 1.5px dashed rgb(43 29 20 / 0.45);
+  outline-offset: -4px;
+}
+
+/* Narrow phones: one cookie per wire, label beside it, so names never break mid-word. */
+@media (max-width: 480px) {
+  .cooling-rack {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .cooling-rack__spot {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    align-items: center;
+    justify-items: start;
+    gap: var(--space-3);
+  }
+
+  .cooling-rack__spot:nth-child(n) {
+    transform: none;
+  }
+
+  .cooling-rack__tag {
+    justify-items: start;
+    text-align: start;
+  }
+
+  .cooling-rack__name {
+    overflow-wrap: break-word;
+  }
+}

@@ -31,6 +31,17 @@ const CHIP_PILE: readonly Point[] = [
   [58, 80],
 ]
 
+const FLAKES: readonly Point[] = [
+  [30, 74],
+  [46, 70],
+  [62, 76],
+  [72, 90],
+  [38, 88],
+  [54, 92],
+  [30, 100],
+  [64, 100],
+]
+
 const swatchColour = (ingredient: Ingredient) => `var(--swatch-${ingredient.art.swatch})`
 const doughColour = (dough: CookieLook['dough']) => `var(--dough-${dough})`
 
@@ -71,6 +82,22 @@ function JarContents({ ingredient }: { ingredient: Ingredient }) {
           {CHIP_PILE.map(([x, y]) => (
             <path key={`${x}-${y}`} d={`M${x - 6} ${y + 4} Q${x} ${y - 8} ${x + 6} ${y + 4} Z`} fill={fill} stroke={INK} strokeWidth="1" />
           ))}
+        </g>
+      )
+    case 'flakes':
+      return (
+        <g>
+          <path d="M20 68 Q34 60 50 66 Q66 60 80 68 V100 Q80 106 74 106 H26 Q20 106 20 100 Z" fill={fill} />
+          {FLAKES.map(([x, y], index) => (
+            <ellipse key={`${x}-${y}`} cx={x} cy={y} rx="4.5" ry="2.6" fill="rgb(255 255 255 / 0.55)" stroke="rgb(90 60 30 / 0.45)" strokeWidth="0.8" transform={`rotate(${index * 37} ${x} ${y})`} />
+          ))}
+        </g>
+      )
+    case 'spread':
+      return (
+        <g>
+          <path d="M20 62 Q50 54 80 62 V100 Q80 106 74 106 H26 Q20 106 20 100 Z" fill={fill} />
+          <path d="M34 66 q10 -8 18 -2 q8 6 16 -2" fill="none" stroke="rgb(255 255 255 / 0.4)" strokeWidth="3" strokeLinecap="round" />
         </g>
       )
     case 'liquid':
@@ -165,6 +192,33 @@ function Topping({ look }: { look: CookieLook }) {
         <g fill={INK} opacity="0.55">
           {TOPPING_SPOTS.map(([x, y]) => (
             <circle key={`${x}-${y}`} cx={x} cy={y} r="1.1" />
+          ))}
+        </g>
+      )
+    case 'oats':
+      return (
+        <g fill="var(--swatch-oat)" stroke="rgb(43 29 20 / 0.5)" strokeWidth="0.9">
+          {TOPPING_SPOTS.map(([x, y], index) => (
+            <ellipse key={`${x}-${y}`} cx={x} cy={y} rx="4.5" ry="2.8" transform={`rotate(${index * 41} ${x} ${y})`} />
+          ))}
+        </g>
+      )
+    case 'coconut':
+      return (
+        <g fill="none" stroke="#fffdf6" strokeWidth="2.4" strokeLinecap="round">
+          {[...TOPPING_SPOTS, ...SUGAR_EXTRA].map(([x, y], index) => (
+            <path key={`${x}-${y}`} d={`M${x - 3} ${y} q3 ${index % 2 ? -3 : 3} 6 0`} />
+          ))}
+        </g>
+      )
+    case 'fork-marks':
+      return (
+        <g fill="none" stroke="rgb(43 29 20 / 0.4)" strokeWidth="2.2" strokeLinecap="round" transform="rotate(45 50 50)">
+          {[38, 50, 62].map((at) => (
+            <path key={`v${at}`} d={`M${at} 26 V74`} />
+          ))}
+          {[38, 50, 62].map((at) => (
+            <path key={`h${at}`} d={`M26 ${at} H74`} />
           ))}
         </g>
       )

@@ -1,5 +1,6 @@
 import { useEffect, useState, type ComponentType } from 'react'
 import { HomeKitchenScreen } from '../screens/HomeKitchenScreen'
+import { MemoriesScreen } from '../screens/MemoriesScreen'
 import { OnboardingScreen } from '../screens/OnboardingScreen'
 import { PantryScreen } from '../screens/PantryScreen'
 import { RecipeBookScreen } from '../screens/RecipeBookScreen'
@@ -16,6 +17,7 @@ const SCREENS: Record<RouteId, ComponentType> = {
   'recipe-book': RecipeBookScreen,
   pantry: PantryScreen,
   settings: SettingsScreen,
+  memories: MemoriesScreen,
 }
 
 export function App() {

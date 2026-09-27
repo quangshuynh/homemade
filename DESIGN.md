@@ -1,6 +1,6 @@
 # Design
 
-The visual system as built in Interval 1. Tokens live in `src/styles/tokens.css`; this file explains them.
+The visual system as built through Interval 3. Tokens live in `src/styles/tokens.css`; this file explains them.
 
 ## World
 
@@ -55,7 +55,21 @@ Fluid scale from `--text-xs` to `--text-3xl`. Body leading 1.55; handwriting 1.4
 - **The result** is three cookies on a parchment tray beside a recipe card. A first discovery adds a jam-red *New recipe!* stamp with a puff of flour. Focus moves to the card heading, which reads "New recipe discovered: …" to screen readers.
 - **Cookies** are drawn from a recipe's `look` (dough tone, topping, shape). Experiments are always the `wobbly` shape.
 - **Recipe Book** cards are index cards; undiscovered ones are blank, taped over, with a "?".
+- **Recipe Book hints**: an undiscovered card adds only a pen-written "Needs 4 ingredients" under the tape.
+- **Bake again**: a plain stamped button at the foot of a discovered card. On the Bake screen the jars are already picked and a butter-yellow note says "Laid out for …". The note disappears the moment anything changes; the bowl stays unmixed.
 - Ingredient and dough colours are tokens (`--swatch-*`, `--dough-*`). The catalogs name a swatch or tone, never a colour value.
+
+## Baking memories
+
+- **Cooling rack** (Home Kitchen): a steel wire rack (`--rack-wire`) at the front of the counter holding the last three bakes, each with a paper label in pen: name and a grease-pencil time ("Today, 9:30 AM"). It's small and sits below the counter objects, so the kitchen stays a kitchen. Empty, it's a single note: "Nothing on the cooling rack yet."
+- **Baking Memories**: parchment slips pinned to the counter, newest first. Each shows the cookie, the name, where it came from ("From the Recipe Book" / "Not in any recipe book"), what went in, and a grease-pencil date. No numbers, stars or stats.
+- **Recipe vs experiment** never relies on colour: the name says "Kitchen Experiment", experiments are always the wobbly shape, and their labels and slips have a dashed, scrap-paper edge.
+- Cookies on the rack and slips are drawn from the same `look` data as everywhere else.
+- Reached from the rack's "All your baking memories" link rather than a new tab, so the recipe-box tabs stay at five.
+
+## Sound
+
+Nothing plays yet. The stored sound setting will govern any sound added later.
 
 ## Motion
 
@@ -70,4 +84,5 @@ Fluid scale from `--text-xs` to `--text-3xl`. Body leading 1.55; handwriting 1.4
 - Phone (<720px): bowl first and full width, recipe box and jar side by side below it, tabs fixed at the bottom.
 - Tablet: three objects in a row, content flows.
 - Desktop (≥960px): the kitchen fills the viewport, with the counter in the middle distance.
+- Cooling rack: three across; under 480px, one bake per row with its label beside it, so names never break mid-word.
 - No horizontal scroll at 320px.

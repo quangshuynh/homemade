@@ -49,15 +49,20 @@
   --swatch-chocolate: #4a2a18;
   --swatch-cocoa: #6e4128;
   --swatch-cinnamon: #a9592b;
+  --swatch-oat: #dcc393;
+  --swatch-peanut: #b9803f;
+  --swatch-honey: #d9951c;
 
   --dough-pale: #f0d8a4;
   --dough-golden: #daa55a;
   --dough-spiced: #c4854b;
+  --dough-nutty: #b98145;
   --dough-cocoa: #7a4a2e;
   --dough-dark: #4e2c1b;
 
   --oven-glow: #f39a3d;
   --glass: rgb(233 245 243 / 0.72);
+  --rack-wire: #6f7571; /* the cooling rack: dull steel */
 
   /* ---- Colour: roles ---- */
   --surface-counter: var(--wood-300);

@@ -25,8 +25,19 @@ export type GameSettings = {
 export type IngredientCategory = 'basic' | 'flavouring'
 
 /** How an ingredient looks in its jar. Presentation reads these; rules never do. */
-export type IngredientForm = 'powder' | 'granules' | 'block' | 'eggs' | 'liquid' | 'chips'
-export type IngredientSwatch = 'wheat' | 'white' | 'butter' | 'shell' | 'amber' | 'chocolate' | 'cocoa' | 'cinnamon'
+export type IngredientForm = 'powder' | 'granules' | 'block' | 'eggs' | 'liquid' | 'chips' | 'flakes' | 'spread'
+export type IngredientSwatch =
+  | 'wheat'
+  | 'white'
+  | 'butter'
+  | 'shell'
+  | 'amber'
+  | 'chocolate'
+  | 'cocoa'
+  | 'cinnamon'
+  | 'oat'
+  | 'peanut'
+  | 'honey'
 
 /** Hand-authored, static catalog data. Saves refer to ingredients only by id. */
 export type Ingredient = {
@@ -37,8 +48,17 @@ export type Ingredient = {
   art: { form: IngredientForm; swatch: IngredientSwatch }
 }
 
-export type DoughTone = 'pale' | 'golden' | 'spiced' | 'cocoa' | 'dark'
-export type CookieTopping = 'none' | 'sugar' | 'vanilla-flecks' | 'chips' | 'cinnamon-sugar' | 'crinkle'
+export type DoughTone = 'pale' | 'golden' | 'spiced' | 'nutty' | 'cocoa' | 'dark'
+export type CookieTopping =
+  | 'none'
+  | 'sugar'
+  | 'vanilla-flecks'
+  | 'chips'
+  | 'cinnamon-sugar'
+  | 'crinkle'
+  | 'oats'
+  | 'coconut'
+  | 'fork-marks'
 export type CookieShape = 'round' | 'square' | 'wobbly'
 
 /** Enough to draw a cookie; used by recipes and by experiments. */
@@ -69,13 +89,16 @@ export type DiscoveredRecipe = {
 }
 
 /**
- * Something the player actually baked. Not stored yet: nothing reads past
- * batches, and keeping every one would grow saves without a use. See README.
+ * One batch the player actually baked: a known recipe or a Kitchen
+ * Experiment. Stores ids and a time only; names, descriptions and looks are
+ * read from the catalogs when shown, so they can never go stale.
  */
 export type CookieCreation = {
   id: CreationId
-  recipeId: RecipeId | null
+  /** Normalized (unique, sorted), exactly as it went into the oven. */
   ingredientIds: IngredientId[]
+  /** The recipe it matched when baked, or null for a Kitchen Experiment. */
+  recipeId: RecipeId | null
   bakedAt: string
 }
 
@@ -87,6 +110,11 @@ export type GameSave = {
   pantryIngredientIds: IngredientId[]
   /** In the order they were found. Each recipe appears at most once. */
   discoveredRecipes: DiscoveredRecipe[]
+  /**
+   * Recent bakes, oldest first and newest last, never more than
+   * MAX_BAKED_CREATIONS. Separate from discoveries: trimming never touches those.
+   */
+  bakedCreations: CookieCreation[]
   settings: GameSettings
   /** ISO-8601 timestamps. */
   createdAt: string

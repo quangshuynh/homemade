@@ -1,5 +1,18 @@
 import { defineId, type RecipeId } from './ids'
-import { BUTTER, CHOCOLATE_CHIPS, CINNAMON, COCOA, EGG, FLOUR, SUGAR, VANILLA } from './ingredients'
+import {
+  BUTTER,
+  CHOCOLATE_CHIPS,
+  CINNAMON,
+  COCOA,
+  COCONUT,
+  EGG,
+  FLOUR,
+  HONEY,
+  OATS,
+  PEANUT_BUTTER,
+  SUGAR,
+  VANILLA,
+} from './ingredients'
 import type { Recipe } from './types'
 
 /**
@@ -73,6 +86,52 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['rich', 'snappy', 'very chocolatey'],
     look: { dough: 'dark', topping: 'chips', shape: 'square' },
     discoveryText: 'No egg, twice the chocolate. Dangerous.',
+  },
+  // ---- Interval 3 ----
+  {
+    id: defineId('recipe', 'oatmeal-cookie'),
+    name: 'Oatmeal Cookie',
+    ingredientIds: [FLOUR, SUGAR, BUTTER, EGG, OATS],
+    description: 'Chewy and rough-edged, with oats you can see and a middle that stays soft for days.',
+    descriptors: ['chewy', 'hearty', 'wholesome'],
+    look: { dough: 'golden', topping: 'oats', shape: 'round' },
+    discoveryText: 'A handful of oats turned a cookie into breakfast. Almost.',
+  },
+  {
+    id: defineId('recipe', 'peanut-butter-cookie'),
+    name: 'Peanut Butter Cookie',
+    ingredientIds: [PEANUT_BUTTER, SUGAR, EGG],
+    description: 'No flour at all. Soft, sandy and pressed flat with a fork, the way it always has been.',
+    descriptors: ['nutty', 'sandy', 'fork-pressed'],
+    look: { dough: 'nutty', topping: 'fork-marks', shape: 'round' },
+    discoveryText: 'Three things and a fork. Who needs flour?',
+  },
+  {
+    id: defineId('recipe', 'peanut-butter-chocolate'),
+    name: 'Peanut Butter Chocolate Chip',
+    ingredientIds: [PEANUT_BUTTER, SUGAR, EGG, CHOCOLATE_CHIPS],
+    description: 'The flourless peanut butter cookie, studded with chocolate that goes soft in the heat.',
+    descriptors: ['nutty', 'melty', 'rich'],
+    look: { dough: 'nutty', topping: 'chips', shape: 'round' },
+    discoveryText: 'Peanut butter and chocolate. Of course they belong together.',
+  },
+  {
+    id: defineId('recipe', 'honey-flapjack'),
+    name: 'Honey Flapjack',
+    ingredientIds: [OATS, BUTTER, HONEY],
+    description: 'Oats pressed into a tin with melted butter and honey, baked golden and cut into bars.',
+    descriptors: ['sticky', 'golden', 'chewy'],
+    look: { dough: 'golden', topping: 'oats', shape: 'square' },
+    discoveryText: 'Sticky fingers, and worth it.',
+  },
+  {
+    id: defineId('recipe', 'coconut-macaroon'),
+    name: 'Coconut Macaroon',
+    ingredientIds: [COCONUT, SUGAR, EGG],
+    description: 'Little mounds of coconut, crisp and toasted outside, soft and sweet within.',
+    descriptors: ['toasty', 'chewy', 'sweet'],
+    look: { dough: 'pale', topping: 'coconut', shape: 'round' },
+    discoveryText: 'Egg and sugar held the coconut together, just.',
   },
 ]
 

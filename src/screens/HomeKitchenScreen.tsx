@@ -1,15 +1,22 @@
 import { useSave } from '../app/gameContext'
 import { hrefFor } from '../app/routes'
+import { CoolingRack } from '../components/CoolingRack'
 import { MixingBowl, PantryJar, RecipeBox } from '../components/illustrations'
 import { HandNote } from '../components/Paper'
 import { ScreenTitle } from '../components/ScreenTitle'
+import { viewCreation } from '../domain/baking'
+import { recentCreations } from '../domain/creations'
 import { greetingFor } from './greeting'
 import './HomeKitchenScreen.css'
+
+/** How many recent bakes sit on the rack in the kitchen. */
+export const RACK_SIZE = 3
 
 export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
   const save = useSave()
   const recipeCount = save.discoveredRecipes.length
   const ingredientCount = save.pantryIngredientIds.length
+  const onRack = recentCreations(save, RACK_SIZE).map(viewCreation)
 
   return (
     <div className="kitchen">
@@ -56,6 +63,20 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
           </a>
         </li>
       </ul>
+
+      <section className="kitchen__rack" aria-labelledby="kitchen-rack">
+        <div className="kitchen__rack-top">
+          <h2 id="kitchen-rack" className="kitchen__rack-title">
+            Cooling rack
+          </h2>
+          {onRack.length > 0 && <a href={hrefFor('memories')}>All your baking memories</a>}
+        </div>
+        {onRack.length === 0 ? (
+          <HandNote className="kitchen__rack-empty">Nothing on the cooling rack yet.</HandNote>
+        ) : (
+          <CoolingRack creations={onRack} now={now} label="Just baked" />
+        )}
+      </section>
     </div>
   )
 }

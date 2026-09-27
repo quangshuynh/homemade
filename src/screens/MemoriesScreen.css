@@ -1,0 +1,120 @@
+.memories {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.memories__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+}
+
+.memories__title {
+  font-size: var(--text-2xl);
+}
+
+.memories__note {
+  max-width: 24rem;
+  padding: var(--space-2) var(--space-4);
+  background: var(--butter-300);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(1.2deg);
+}
+
+/* Parchment slips laid out on the counter, pinned at the top, a little uneven. */
+.memories__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-6) var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.memory {
+  position: relative;
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  background: #f6ecd6; /* baking parchment */
+  border-radius: 2px 5px 3px 6px;
+  box-shadow: var(--shadow-paper);
+}
+
+/* The pin. */
+.memory::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--jam-500);
+  box-shadow: 0 2px 2px rgb(70 38 12 / 0.35);
+}
+
+.memory:nth-child(3n + 1) {
+  transform: rotate(-0.7deg);
+}
+
+.memory:nth-child(3n + 2) {
+  transform: rotate(0.5deg);
+}
+
+.memory__body {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.memory__cookie {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 3.75rem;
+  height: auto;
+}
+
+.memory__name {
+  padding-right: 4.25rem;
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.memory__kind {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  color: var(--ink-pen);
+}
+
+/* A grease-pencil date, the way you'd mark a tin. */
+.memory__when {
+  justify-self: start;
+  margin-top: var(--space-1);
+  padding: 0 var(--space-2);
+  font-family: var(--font-hand);
+  color: var(--ink-soft);
+  background: rgb(201 164 122 / 0.35);
+  border-radius: var(--radius-paper);
+}
+
+/* Experiments are scrap paper: dashed edge, no pin colour, and they say so in words. */
+.memory--experiment {
+  background: var(--paper-shade);
+  outline: 1.5px dashed rgb(43 29 20 / 0.4);
+  outline-offset: -6px;
+}
+
+.memory--experiment::before {
+  background: var(--enamel-400);
+}
+
+.memories__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}

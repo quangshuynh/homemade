@@ -11,11 +11,18 @@ export const ROUTES = {
   'recipe-book': { path: '/recipe-book', title: 'Recipe Book' },
   pantry: { path: '/pantry', title: 'Pantry' },
   settings: { path: '/settings', title: 'Settings' },
+  /** Reached from the cooling rack in the kitchen rather than a tab. */
+  memories: { path: '/memories', title: 'Baking Memories' },
 } as const
 
 export type RouteId = keyof typeof ROUTES
 
-export const ROUTE_ORDER: readonly RouteId[] = ['kitchen', 'bake', 'recipe-book', 'pantry', 'settings']
+/** The places with a recipe-box tab, in tab order. */
+export const ROUTE_ORDER = ['kitchen', 'bake', 'recipe-book', 'pantry', 'settings'] as const satisfies readonly RouteId[]
+
+export type TabRouteId = (typeof ROUTE_ORDER)[number]
+
+const ALL_ROUTES = Object.keys(ROUTES) as RouteId[]
 
 export function hrefFor(route: RouteId): string {
   return `#${ROUTES[route].path}`
@@ -23,7 +30,7 @@ export function hrefFor(route: RouteId): string {
 
 export function routeFromHash(hash: string): RouteId {
   const path = hash.replace(/^#/, '') || '/'
-  const match = ROUTE_ORDER.find((id) => ROUTES[id].path === path)
+  const match = ALL_ROUTES.find((id) => ROUTES[id].path === path)
   return match ?? 'kitchen'
 }
 
