@@ -68,3 +68,29 @@ export function touchSave(save: GameSave, change: (save: GameSave) => GameSave, 
 export function updateSettings(save: GameSave, patch: Partial<GameSettings>): GameSave {
   return { ...save, settings: { ...save.settings, ...patch } }
 }
+
+export type NameChange = { playerName?: string; bakeryName?: string }
+
+export type RenameResult =
+  | { ok: true; save: GameSave; changed: boolean }
+  | { ok: false; problems: { playerName?: NameProblem; bakeryName?: NameProblem } }
+
+/**
+ * Renames the player and/or the kitchen, with the same tidying and rules as
+ * onboarding. Only the names change: the player id and everything else in
+ * the save stay exactly as they were.
+ */
+export function renameProfile(save: GameSave, change: NameChange): RenameResult {
+  const problems: { playerName?: NameProblem; bakeryName?: NameProblem } = {}
+  for (const field of ['playerName', 'bakeryName'] as const) {
+    const value = change[field]
+    const problem = value === undefined ? null : validateName(value)
+    if (problem) problems[field] = problem
+  }
+  if (problems.playerName || problems.bakeryName) return { ok: false, problems }
+
+  const name = change.playerName === undefined ? save.profile.name : normalizeName(change.playerName)
+  const bakeryName = change.bakeryName === undefined ? save.profile.bakeryName : normalizeName(change.bakeryName)
+  const changed = name !== save.profile.name || bakeryName !== save.profile.bakeryName
+  return { ok: true, changed, save: changed ? { ...save, profile: { ...save.profile, name, bakeryName } } : save }
+}

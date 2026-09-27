@@ -1,6 +1,6 @@
 import type { GameSave } from '../domain/types'
 import { openDatabase, requestToPromise, transactionDone } from './idb'
-import type { ArchivedSave, LoadResult, SaveRepository } from './repository'
+import type { ArchivedSave, LoadResult, ReplaceOptions, SaveRepository } from './repository'
 import { readSave, type ReadSaveOptions } from './schema'
 
 /**
@@ -87,6 +87,22 @@ export function createIndexedDbSaveRepository(options: IndexedDbSaveRepositoryOp
       const database = await db()
       const tx = database.transaction(SAVES, 'readwrite')
       tx.objectStore(SAVES).delete(MAIN_SLOT)
+      await transactionDone(tx)
+    },
+
+    async replace(save: GameSave, { note, alsoArchive }: ReplaceOptions): Promise<void> {
+      const database = await db()
+      // One transaction: read what's there, archive it, archive the extra, install the new save.
+      const tx = database.transaction([SAVES, ARCHIVE], 'readwrite')
+      const saves = tx.objectStore(SAVES)
+      const archiveStore = tx.objectStore(ARCHIVE)
+      const archivedAt = now().toISOString()
+      const current = saves.get(MAIN_SLOT)
+      current.onsuccess = () => {
+        if (current.result !== undefined) archiveStore.add({ archivedAt, note, data: current.result } satisfies ArchivedSave)
+        if (alsoArchive) archiveStore.add({ archivedAt, note: alsoArchive.note, data: alsoArchive.data } satisfies ArchivedSave)
+        saves.put(save, MAIN_SLOT)
+      }
       await transactionDone(tx)
     },
 

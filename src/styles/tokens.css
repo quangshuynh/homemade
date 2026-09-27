@@ -145,11 +145,37 @@
   --duration-slow: 520ms;
   --duration-ambient: 7s;
 
+  /* ---- Device edges: notches, rounded corners, the home indicator ---- */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  /* Side padding that never tucks content under a notch in landscape. */
+  --gutter-left: max(var(--gutter), calc(var(--safe-left) + var(--space-2)));
+  --gutter-right: max(var(--gutter), calc(var(--safe-right) + var(--space-2)));
+
+  /* ---- The phone tab bar: how much of the bottom of the screen it covers ---- */
+  --nav-height: 0px; /* on top, not fixed, above phone widths */
+  --nav-clearance: calc(var(--nav-height) + var(--safe-bottom));
+
   /* ---- Layering ---- */
   --layer-nav: 10;
   --layer-dialog: 100;
 
   color-scheme: light;
+}
+
+@media (max-width: 719px) {
+  :root {
+    --nav-height: 64px;
+  }
+}
+
+/* Short landscape phones: a slimmer bar, so the counter isn't all tab bar. */
+@media (max-width: 719px) and (max-height: 500px) {
+  :root {
+    --nav-height: 48px;
+  }
 }
 
 /* Motion off: the player's choice, or their device's when they haven't chosen. */

@@ -1,0 +1,29 @@
+/* Write-on-the-line inputs: no box, just the card's rule, which thickens when you're on it. */
+.line-input {
+  width: 100%;
+  min-height: var(--tap-target);
+  margin-top: var(--space-1);
+  padding: var(--space-2) var(--space-1) var(--space-1);
+  font-family: var(--font-hand);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
+  color: var(--ink-pen);
+  background: rgb(255 250 240 / 0.7);
+  border: 0;
+  border-bottom: 2px solid var(--ink);
+  border-radius: 4px 4px 0 0;
+  transition: background-color var(--duration-quick) linear;
+}
+
+.line-input:hover {
+  background: var(--surface-card-raised);
+}
+
+.line-input:focus-visible {
+  background: var(--surface-card-raised);
+}
+
+.line-input[aria-invalid='true'] {
+  border-bottom-color: var(--danger);
+  border-bottom-width: 3px;
+}

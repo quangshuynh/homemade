@@ -3,7 +3,9 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
   grid-template-areas:
     'title title'
-    'shelf station';
+    'shelf station'
+    'shelf actions';
+  grid-template-rows: auto auto 1fr;
   align-items: start;
   gap: var(--space-5) var(--space-7);
 }
@@ -256,17 +258,24 @@
 }
 
 .bake__actions {
+  grid-area: actions;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: var(--space-3);
-  margin-top: var(--space-2);
+  margin-top: calc(-1 * var(--space-3));
 }
 
 .bake__actions .bake__hint {
   flex-basis: 100%;
   color: var(--ink);
+  text-align: center;
+}
+
+/* Only needed when the bar is docked away from the bowl, on phones. */
+.bake__summary {
+  display: none;
 }
 
 .bake__go {
@@ -462,7 +471,60 @@
 @media (max-width: 879px) {
   .bake {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: 'title' 'shelf' 'station';
+    grid-template-areas: 'title' 'shelf' 'station' 'actions';
+    grid-template-rows: none;
+  }
+
+  /*
+   * The bowl's actions ride along above the tab bar while the shelf is on
+   * screen, so Mix is always in reach; scrolled down to the bowl, they settle
+   * underneath it where they belong. Pure CSS (sticky), no scroll listeners.
+   */
+  .bake__actions {
+    position: sticky;
+    bottom: calc(var(--nav-clearance) + var(--space-2));
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    margin: 0 calc(-1 * var(--space-2));
+    padding: var(--space-2) var(--space-3);
+    background: var(--paper);
+    border: var(--border-ink);
+    border-radius: var(--radius-paper);
+    box-shadow: var(--shadow-lifted);
+  }
+
+  .bake__summary {
+    display: block;
+    grid-column: 1;
+    font-family: var(--font-hand);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-snug);
+    color: var(--ink-pen);
+  }
+
+  .bake__actions .bake__go {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 7.5rem;
+  }
+
+  /* The summary says it in fewer words; the hint stays for screen readers via aria-describedby. */
+  .bake__actions .bake__hint {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .bake__actions .button:not(.bake__go) {
+    grid-column: 1 / -1;
+    justify-self: start;
+    min-height: var(--tap-target);
   }
 
   .bake-result {
@@ -524,13 +586,23 @@
 
 /* "Bake again": a pen note beside the bowl saying what was laid out. It goes as soon as anything changes. */
 .bake__prepared {
-  justify-self: start;
+  justify-self: center;
+  scroll-margin-top: var(--space-6);
   padding: var(--space-2) var(--space-4);
   font-size: var(--text-md);
   background: var(--butter-300);
   border-radius: var(--radius-paper);
   box-shadow: var(--shadow-paper);
   transform: rotate(-1.2deg);
+}
+
+.bake__prepared:focus {
+  outline: none;
+}
+
+.bake__prepared:focus-visible {
+  outline: var(--focus-width) dashed var(--focus-ring);
+  outline-offset: var(--space-1);
 }
 
 .bake-result__rack {

@@ -3,6 +3,7 @@ import type { BakeOutcome, Bowl, PreparedBake } from '../domain/baking'
 import type { RecipeId } from '../domain/ids'
 import type { NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
+import type { ImportResult } from '../persistence/portable'
 import type { LoadResult } from '../persistence/repository'
 
 export type GameState =
@@ -38,8 +39,18 @@ export type GameContextValue = {
   resetSave: () => Promise<void>
   /** For unreadable saves: archive the old data, then start over. */
   archiveAndStartOver: () => Promise<void>
+  /**
+   * Installs a save read from a file (already validated and upgraded). The
+   * current save is archived, not deleted. Callers confirm with the player first.
+   * Rejects, changing nothing, if storage fails.
+   */
+  importSave: (incoming: ImportedSave) => Promise<void>
+  /** Resolves once every change made so far has reached storage (or failed to). */
+  whenSaved: () => Promise<void>
   reload: () => void
 }
+
+export type ImportedSave = Pick<Extract<ImportResult, { ok: true }>, 'save' | 'original' | 'migratedFrom'>
 
 export const GameContext = createContext<GameContextValue | null>(null)
 

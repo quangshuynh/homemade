@@ -31,6 +31,19 @@ export interface SaveRepository {
    * be read, so nothing is lost.
    */
   archiveAndClear(note: string): Promise<void>
+  /**
+   * Installs a different save (an imported one) in a single step. Whatever
+   * is stored now is archived first, never deleted, and so is `alsoArchive`
+   * (for example an imported file's pre-upgrade original). If anything
+   * fails, nothing changes.
+   */
+  replace(save: GameSave, options: ReplaceOptions): Promise<void>
+}
+
+export type ReplaceOptions = {
+  /** Why the current save was set aside. */
+  note: string
+  alsoArchive?: { note: string; data: unknown }
 }
 
 export type ArchivedSave = {

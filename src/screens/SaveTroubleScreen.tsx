@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { downloadTextFile } from '../app/download'
 import { useGame } from '../app/gameContext'
 import { Button } from '../components/Button'
 import { ConfirmDialog } from '../components/ConfirmDialog'
@@ -11,14 +12,7 @@ import './SaveTroubleScreen.css'
 type Incompatible = Extract<LoadResult, { kind: 'incompatible' }>
 
 function downloadBackup(raw: unknown) {
-  const blob = new Blob([serializeSave(raw)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `homemade-save-backup-${new Date().toISOString().slice(0, 10)}.json`
-  link.click()
-  // Revoking straight away can cancel the download in some browsers.
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  downloadTextFile(`homemade-save-backup-${new Date().toISOString().slice(0, 10)}.json`, serializeSave(raw))
 }
 
 /** Shown when a save exists but can't be read. The save is never discarded without the player's say-so. */

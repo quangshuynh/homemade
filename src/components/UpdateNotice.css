@@ -1,0 +1,40 @@
+/* A sticky note, like the save warning: noticeable, never in the way. */
+.update-notice {
+  display: grid;
+  gap: var(--space-1);
+  width: min(24rem, 100%);
+  padding: var(--space-3) var(--space-4);
+  color: var(--ink);
+  background: var(--butter-300);
+  border: var(--border-ink);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-lifted);
+  transform: rotate(-0.6deg);
+  pointer-events: auto;
+  animation: notice-in var(--duration-base) var(--ease-settle) both;
+}
+
+.update-notice > p:first-child {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.update-notice__detail {
+  font-size: var(--text-sm);
+}
+
+.update-notice__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+@keyframes notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) rotate(-2deg);
+  }
+}

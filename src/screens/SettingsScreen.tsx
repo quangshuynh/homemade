@@ -7,6 +7,10 @@ import { RecipeCard } from '../components/Paper'
 import { ScreenTitle } from '../components/ScreenTitle'
 import { updateSettings } from '../domain/save'
 import type { MotionPreference } from '../domain/types'
+import { useCanInstall } from '../pwa/hooks'
+import { installer } from '../pwa/install'
+import { NamesForm } from './settings/NamesForm'
+import { SaveFileControls } from './settings/SaveFileControls'
 import './SettingsScreen.css'
 
 const MOTION_OPTIONS: { value: MotionPreference; label: string; hint: string }[] = [
@@ -28,6 +32,7 @@ export function SettingsScreen() {
   const [confirming, setConfirming] = useState(false)
   const [resetting, setResetting] = useState(false)
   const [resetFailed, setResetFailed] = useState(false)
+  const canInstall = useCanInstall()
 
   const openedOn = new Date(save.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
 
@@ -60,7 +65,7 @@ export function SettingsScreen() {
           <span className="check__label">Play sounds</span>
         </label>
         <p id="sound-hint" className="settings__hint">
-          The kitchen is quiet for now: there are no sounds yet. This remembers your choice for when there are.
+          A few quiet kitchen sounds: jars, the whisk, the oven timer. No music. This is separate from motion below.
         </p>
       </fieldset>
 
@@ -93,15 +98,8 @@ export function SettingsScreen() {
         <h2 id="kitchen-heading" className="settings__legend">
           Your kitchen
         </h2>
+        <NamesForm />
         <dl className="settings__facts">
-          <div>
-            <dt>Baker</dt>
-            <dd>{save.profile.name}</dd>
-          </div>
-          <div>
-            <dt>Kitchen</dt>
-            <dd>{save.profile.bakeryName}</dd>
-          </div>
           <div>
             <dt>Opened</dt>
             <dd>{openedOn}</dd>
@@ -112,13 +110,39 @@ export function SettingsScreen() {
         </p>
       </section>
 
+      <section className="settings__group" aria-labelledby="save-file-heading">
+        <h2 id="save-file-heading" className="settings__legend">
+          Save file
+        </h2>
+        <p className="settings__hint">
+          Your kitchen lives only in this browser. Download it as a file to keep a copy, or to carry it to another browser or
+          device and open it there.
+        </p>
+        <SaveFileControls />
+      </section>
+
+      {canInstall && (
+        <section className="settings__group" aria-labelledby="install-heading">
+          <h2 id="install-heading" className="settings__legend">
+            Install
+          </h2>
+          <p className="settings__hint">
+            Keep Homemade on your home screen or desktop and open it like an app. Once it’s loaded, it works without a
+            connection too.
+          </p>
+          <div className="settings__buttons">
+            <Button onClick={() => void installer.install()}>Install Homemade</Button>
+          </div>
+        </section>
+      )}
+
       <section className="settings__group settings__group--danger" aria-labelledby="reset-heading">
         <h2 id="reset-heading" className="settings__legend">
           Start over
         </h2>
         <p className="settings__hint">
-          Clears your names, settings and everything else saved for Homemade in this browser, then starts a new kitchen.
-          There’s no undo.
+          Clears your names, recipes, baking memories and settings from this browser, then starts a new kitchen. There’s
+          no undo, so download your kitchen first if you might want it back.
         </p>
         <Button variant="danger" onClick={() => setConfirming(true)}>
           Start over…

@@ -7,7 +7,7 @@ import { readSave } from './schema'
  * Used by UI tests; `stored` can be seeded with arbitrary raw data.
  */
 export function createMemorySaveRepository(stored?: unknown) {
-  const state = { stored, archive: [] as ArchivedSave[] }
+  const state = { stored, archive: [] as ArchivedSave[], failNextReplace: false }
 
   const repository: SaveRepository = {
     async load(): Promise<LoadResult> {
@@ -27,6 +27,16 @@ export function createMemorySaveRepository(stored?: unknown) {
     },
     async clear() {
       state.stored = undefined
+    },
+    async replace(save: GameSave, { note, alsoArchive }) {
+      if (state.failNextReplace) {
+        state.failNextReplace = false
+        throw new Error('Simulated storage failure')
+      }
+      const archivedAt = new Date().toISOString()
+      if (state.stored !== undefined) state.archive.push({ archivedAt, note, data: state.stored })
+      if (alsoArchive) state.archive.push({ archivedAt, ...alsoArchive })
+      state.stored = structuredClone(save)
     },
     async archiveAndClear(note: string) {
       if (state.stored === undefined) return

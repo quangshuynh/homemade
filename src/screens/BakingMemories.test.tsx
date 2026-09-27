@@ -169,15 +169,14 @@ describe('Bake again', () => {
     const { state } = startAt('#/recipe-book', discovered('sugar-cookie'))
     await user.click(await screen.findByRole('button', { name: 'Bake again: Sugar Cookie' }))
 
-    const title = await screen.findByRole('heading', { level: 1, name: 'Bake' })
-    await waitFor(() => expect(title).toHaveFocus())
+    await screen.findByRole('heading', { level: 1, name: 'Bake' })
+    // Focus lands on the note by the bowl, so the prepared bowl is the first thing seen and heard.
+    const note = screen.getByText(/^Laid out for Sugar Cookie\./)
+    await waitFor(() => expect(note).toHaveFocus())
+    expect(note).toHaveTextContent('Laid out for Sugar Cookie. Flour, sugar, butter and egg are in the bowl. Mix when you’re ready.')
     for (const name of ['Flour', 'Sugar', 'Butter', 'Egg']) expect(jar(name)).toHaveAttribute('aria-pressed', 'true')
     expect(jar('Vanilla')).toHaveAttribute('aria-pressed', 'false')
     expect(within(screen.getByRole('list', { name: 'In the bowl' })).getAllByRole('listitem')).toHaveLength(4)
-    await waitFor(() =>
-      expect(screen.getByRole('status')).toHaveTextContent('Laid out flour, sugar, butter and egg for Sugar Cookie. Change anything you like, then mix.'),
-    )
-    expect(screen.getByText('Laid out for Sugar Cookie. Mix when you’re ready.')).toBeInTheDocument()
 
     // Not mixed, not baked, nothing written.
     expect(screen.getByRole('button', { name: 'Mix' })).toBeEnabled()
@@ -208,8 +207,11 @@ describe('Bake again', () => {
     again.focus()
     await user.keyboard('{Enter}')
 
-    const title = await screen.findByRole('heading', { level: 1, name: 'Bake' })
-    await waitFor(() => expect(title).toHaveFocus())
+    await screen.findByRole('heading', { level: 1, name: 'Bake' })
+    await waitFor(() => expect(screen.getByText(/^Laid out for Shortbread\./)).toHaveFocus())
+    // The bowl's controls follow the note in tab order: the take-out buttons, then Mix.
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Take the flour out' })).toHaveFocus()
     screen.getByRole('button', { name: 'Mix' }).focus()
     await user.keyboard('{Enter}')
     screen.getByRole('button', { name: 'Bake it' }).focus()

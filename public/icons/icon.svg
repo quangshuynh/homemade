@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs><radialGradient id="glow" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#e8f2ee" stop-opacity="0.7"/><stop offset="1" stop-color="#e8f2ee" stop-opacity="0"/></radialGradient></defs>
+  <rect x="8" y="8" width="496" height="496" rx="112" fill="#8cc2ba" stroke="#2b1d14" stroke-width="10"/>
+  <rect x="13" y="13" width="486" height="486" rx="107" fill="url(#glow)"/>
+  <g transform="translate(256 262) scale(1.2480000000000002)"><!-- The Homemade mark: the chocolate-chip cookie "o" from the wordmark, with a bite out of it. -->
+<g id="cookie">
+  <defs>
+    <mask id="bite">
+      <rect x="-200" y="-200" width="400" height="400" fill="white"/>
+      <circle cx="118" cy="-86" r="34" fill="black"/>
+      <circle cx="136" cy="-40" r="30" fill="black"/>
+      <circle cx="84" cy="-118" r="28" fill="black"/>
+    </mask>
+    <clipPath id="dough"><circle cx="0" cy="0" r="150"/></clipPath>
+  </defs>
+  <g mask="url(#bite)">
+    <circle cx="6" cy="10" r="150" fill="rgb(70 38 12 / 0.3)"/>
+    <circle cx="0" cy="0" r="150" fill="#daa55a" stroke="#2b1d14" stroke-width="12"/>
+    <circle cx="0" cy="0" r="120" fill="none" stroke="rgb(255 255 255 / 0.22)" stroke-width="16"/>
+    <!-- the bitten edge gets the same ink line as the rest of the cookie -->
+    <g clip-path="url(#dough)" fill="none" stroke="#2b1d14" stroke-width="24">
+      <circle cx="118" cy="-86" r="34"/>
+      <circle cx="136" cy="-40" r="30"/>
+      <circle cx="84" cy="-118" r="28"/>
+    </g>
+  </g>
+  <g fill="#4a2a18" stroke="#2b1d14" stroke-width="5" stroke-linejoin="round">
+    <path d="M-72 -70 q18 -22 38 -4 q10 22 -12 34 q-30 4 -26 -30 z"/>
+    <path d="M22 -96 q20 -10 30 8 q4 20 -18 22 q-20 -6 -12 -30 z"/>
+    <path d="M-100 20 q16 -18 34 -2 q8 22 -14 30 q-26 0 -20 -28 z"/>
+    <path d="M-10 -10 q22 -16 40 2 q10 26 -16 34 q-30 -2 -24 -36 z"/>
+    <path d="M62 40 q20 -14 36 4 q6 24 -18 28 q-24 -4 -18 -32 z"/>
+    <path d="M-52 82 q18 -12 32 4 q4 20 -16 24 q-22 -4 -16 -28 z"/>
+    <path d="M28 96 q14 -10 26 2 q4 16 -12 20 q-18 -2 -14 -22 z"/>
+  </g>
+  <g fill="#daa55a" stroke="#2b1d14" stroke-width="5">
+    <circle cx="150" cy="-128" r="11"/>
+    <circle cx="176" cy="-96" r="7"/>
+  </g>
+</g>
+</g>
+</svg>
