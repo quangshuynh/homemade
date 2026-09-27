@@ -1,0 +1,117 @@
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.shell__skip {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: var(--layer-dialog);
+  padding: var(--space-2) var(--space-4);
+  font-weight: var(--weight-bold);
+  color: var(--ink);
+  background: var(--butter-300);
+  border: var(--border-ink);
+  border-radius: var(--radius-control);
+  transform: translateY(-200%);
+}
+
+.shell__skip:focus {
+  transform: none;
+}
+
+.shell__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+  padding: var(--space-4) var(--gutter) 0;
+}
+
+.shell__header > nav:only-child {
+  margin-left: auto;
+}
+
+.shell__sign {
+  display: inline-block;
+  max-width: 100%;
+  margin-bottom: var(--space-3);
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.shell__sign:hover {
+  text-decoration: underline wavy var(--jam-500) 2px;
+  text-underline-offset: 0.25em;
+}
+
+.shell__screen {
+  flex: 1;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--space-6) var(--gutter) var(--space-8);
+  animation: screen-settle var(--duration-slow) var(--ease-settle);
+}
+
+.shell__screen[data-route='kitchen'] {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The kitchen's scene is the page; other screens are a card set down on the counter. */
+@keyframes screen-settle {
+  from {
+    opacity: 0.6;
+    transform: translateY(8px);
+  }
+}
+
+.shell__save-warning {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-4);
+  z-index: var(--layer-nav);
+  width: min(30rem, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-3) var(--space-4);
+  font-weight: var(--weight-bold);
+  color: var(--ink);
+  background: var(--butter-300);
+  border: var(--border-ink);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-lifted);
+  transform: translateX(-50%) rotate(-0.5deg);
+}
+
+#screen-title:focus {
+  outline: none;
+}
+
+#screen-title:focus-visible {
+  outline: var(--focus-width) dashed var(--focus-ring);
+  outline-offset: var(--space-1);
+}
+
+@media (max-width: 719px) {
+  .shell__header {
+    padding-top: var(--space-3);
+  }
+
+  .shell__screen {
+    padding-top: var(--space-4);
+    /* clear the fixed tab bar at the bottom */
+    padding-bottom: calc(var(--space-8) + 56px + env(safe-area-inset-bottom));
+  }
+
+  .shell__save-warning {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+}

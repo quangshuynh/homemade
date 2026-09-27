@@ -1,0 +1,230 @@
+.kitchen {
+  display: grid;
+  gap: var(--space-7);
+}
+
+/* On landscape screens the scene fills the view, with the counter in the middle distance. */
+@media (min-width: 960px) {
+  .kitchen {
+    flex: 1;
+    grid-template-rows: auto 1fr;
+  }
+}
+
+.kitchen__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5) var(--space-7);
+}
+
+/* The bakery's name, painted straight onto the wall above the counter. */
+.kitchen__name {
+  flex: 1 1 22rem;
+  font-size: var(--text-3xl);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  text-shadow: 0 2px 0 rgb(255 232 196 / 0.55);
+}
+
+.kitchen__greeting {
+  flex: 0 1 18rem;
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-5);
+  background: var(--butter-300);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(2deg);
+}
+
+.kitchen__counter {
+  align-self: center;
+  display: grid;
+  grid-template-columns: 1fr 1.45fr 1fr;
+  align-items: end;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kitchen__spot {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---- Objects on the counter: each one is a link to a part of the kitchen ---- */
+
+.counter-object {
+  --art-width: 11rem;
+
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  color: var(--ink);
+  text-decoration: none;
+  border-radius: var(--radius-control);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.counter-object__art {
+  width: var(--art-width);
+  height: auto;
+  transition: transform var(--duration-base) var(--ease-out);
+  transform-origin: 50% 90%;
+}
+
+.counter-object:hover .counter-object__art,
+.counter-object:focus-visible .counter-object__art {
+  transform: translateY(calc(var(--lift-hover) * 2)) rotate(-1.5deg);
+}
+
+.counter-object:active .counter-object__art {
+  transform: scale(var(--press-scale));
+}
+
+.counter-object__tag {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 9rem;
+  padding: var(--space-2) var(--space-4);
+  background: var(--paper);
+  border: var(--border-ink);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(-1.5deg);
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.kitchen__spot--pantry .counter-object__tag {
+  transform: rotate(1.8deg);
+}
+
+.counter-object:hover .counter-object__tag {
+  transform: rotate(0deg);
+}
+
+.counter-object__name {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.counter-object__detail {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Bake is the heart of the kitchen: the biggest object, with a jam-red tag. */
+.counter-object--primary {
+  --art-width: 17rem;
+}
+
+.counter-object--primary .counter-object__tag {
+  min-width: 12rem;
+  padding: var(--space-3) var(--space-6);
+  color: var(--ink-on-accent);
+  background: var(--action-primary);
+  transform: rotate(0.8deg);
+}
+
+.counter-object--primary:hover .counter-object__tag {
+  background: var(--action-primary-hover);
+}
+
+.counter-object--primary .counter-object__name {
+  font-size: var(--text-xl);
+}
+
+.counter-object--primary .sticker {
+  position: absolute;
+  top: -14px;
+  right: -26px;
+}
+
+/* The dough rises, very slowly. Stops entirely when motion is reduced. */
+.mixing-bowl__dough {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: dough-rise var(--duration-ambient) ease-in-out infinite alternate;
+}
+
+@keyframes dough-rise {
+  to {
+    transform: scale(1.03, 1.09);
+  }
+}
+
+/* ---- Large screens: the counter gets more room, so do the objects ---- */
+@media (min-width: 1200px) and (min-height: 760px) {
+  .counter-object {
+    --art-width: 13rem;
+  }
+
+  .counter-object--primary {
+    --art-width: 21rem;
+  }
+}
+
+/* ---- Tablet ---- */
+@media (max-width: 959px) {
+  .counter-object {
+    --art-width: 9rem;
+  }
+
+  .counter-object--primary {
+    --art-width: 14rem;
+  }
+}
+
+/* ---- Phone: the bowl leads, the box and jar share the row below ---- */
+@media (max-width: 719px) {
+  .kitchen {
+    gap: var(--space-6);
+  }
+
+  .kitchen__heading {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .kitchen__greeting {
+    justify-self: start;
+    max-width: 20rem;
+    transform: rotate(-1deg);
+  }
+
+  .kitchen__counter {
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+    row-gap: var(--space-6);
+  }
+
+  .kitchen__spot--bake {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  .counter-object {
+    --art-width: min(9rem, 36vw);
+  }
+
+  .counter-object--primary {
+    --art-width: min(16rem, 70vw);
+  }
+
+  .counter-object__tag {
+    min-width: 0;
+    padding-inline: var(--space-3);
+  }
+
+  .counter-object--primary .sticker {
+    right: -18px;
+  }
+}

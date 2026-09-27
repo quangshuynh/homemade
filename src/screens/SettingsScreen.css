@@ -1,0 +1,167 @@
+.settings {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 44rem;
+  margin: 0 auto;
+}
+
+.settings__title {
+  font-size: var(--text-2xl);
+}
+
+.settings__group {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-5) 0 0;
+  border: 0;
+  border-top: 2px dashed rgb(43 29 20 / 0.28);
+}
+
+.settings__legend {
+  float: left; /* lets the legend sit inside the grid like a normal heading */
+  width: 100%;
+  padding: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.settings__legend + * {
+  clear: both;
+}
+
+.settings__hint {
+  max-width: var(--measure);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.settings__error {
+  font-weight: var(--weight-bold);
+  color: var(--danger);
+}
+
+.settings__options {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.settings__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-7);
+  margin: 0;
+}
+
+.settings__facts dt {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.settings__facts dd {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+  color: var(--ink-pen);
+  overflow-wrap: anywhere;
+}
+
+.settings__group--danger {
+  justify-items: start;
+}
+
+/* ---- Hand-drawn check boxes and radio circles ---- */
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--tap-target);
+  padding: var(--space-2) var(--space-3);
+  margin-inline: calc(-1 * var(--space-3));
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  transition: background-color var(--duration-quick) linear;
+}
+
+.check:hover {
+  background: rgb(245 212 121 / 0.3);
+}
+
+.check__box {
+  appearance: none;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  background: var(--surface-card-raised);
+  border: var(--border-ink);
+  border-radius: 4px 6px 5px 3px;
+  cursor: pointer;
+}
+
+/* A pen tick, drawn slightly past the box like a real one. */
+.check__box::after {
+  content: '';
+  width: 22px;
+  height: 22px;
+  margin: -4px -6px 0 0;
+  background: var(--ink-pen);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3.5 12.5c2 1.2 3.6 3 4.8 5.3C11 11.6 15 6.4 21 2.8' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  transform: scale(0);
+  transform-origin: 30% 70%;
+  transition: transform var(--duration-quick) var(--ease-out);
+}
+
+.check__box:checked::after {
+  transform: scale(1);
+}
+
+.check--radio .check__box {
+  border-radius: 50% 46% 52% 48%;
+}
+
+.check--radio .check__box::after {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  border-radius: 50%;
+  mask: none;
+  transform-origin: center;
+}
+
+.check--radio .check__box:checked::after {
+  transform: scale(1);
+}
+
+.check__label {
+  display: grid;
+  gap: 2px;
+  padding-top: 1px;
+  font-weight: var(--weight-bold);
+}
+
+.check__hint {
+  font-weight: var(--weight-regular);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+@media (forced-colors: active) {
+  .check__box::after {
+    background: CanvasText;
+  }
+}
+
+/* The title's red line already separates the first group. */
+.settings__title + .settings__group {
+  padding-top: 0;
+  border-top: 0;
+}
