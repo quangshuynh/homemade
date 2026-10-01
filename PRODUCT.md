@@ -39,7 +39,7 @@ These are decisions later work builds on. Change them on purpose, not by acciden
 - **A recipe is an exact ingredient set.** No two recipes share a set; tests enforce this. Extra or missing ingredients mean it's not that recipe.
 - **Every bake produces something.** Unmatched sets become a *Kitchen Experiment*. Its description is deterministic for a given set. Experiments are never saved as recipes and never appear in the Recipe Book.
 - **Discovery happens once.** The first bake of a recipe records `{ recipeId, discoveredAt }`, and rebakes change nothing in the save.
-- **Undiscovered recipes stay secret.** The Recipe Book shows a blank card for each, with no name, ingredients or hints. The total count is shown.
+- **Undiscovered recipes stay secret.** The Recipe Book shows a blank card for each ordinary recipe, with no name, ingredients, rarity or look. A *secret* recipe has no card at all until it's found (see Interval 6). The count shown is of ordinary recipes only.
 - **Catalogs are static; saves store ids.** Ingredient and recipe ids are permanent once shipped. Saves never copy catalog data. A save that references an id the catalog no longer has stays loadable.
 - **Every completed bake is remembered.** Each bake, whether a new recipe, a rebake or an experiment, becomes exactly one creation `{ id, ingredientIds, recipeId | null, bakedAt }`. Baking the same thing twice makes two creations. Creations store ids and a time only.
 - **Memory is bounded.** The kitchen keeps the last 50 bakes (`MAX_BAKED_CREATIONS`). Past that, the oldest are let go. This is a keepsake, not an archive.
@@ -47,7 +47,7 @@ These are decisions later work builds on. Change them on purpose, not by acciden
 - **Experiments can be remembered without becoming recipes.** A remembered experiment has no recipe id, never appears in the Recipe Book and never counts toward it.
 - **Bake again prepares, it never bakes.** It lays a discovered recipe's ingredients in the bowl, unmixed. The player can change them, and must still mix and bake. Undiscovered recipes never offer it.
 - **The bowl isn't saved.** A prepared or half-filled bowl lives only in the open tab; a refresh starts with an empty bowl.
-- **Undiscovered recipes give one hint: how many ingredients they need.** Never a name, ingredient, flavour or look. The count narrows the search without spoiling it.
+- **Undiscovered recipes give a few gentle hints, never the answer.** How many ingredients they need, the family divider they sit behind, and (once every ingredient they need is owned) a line Marmalade scribbled. Never a name, an ingredient, a rarity or a look. See Interval 6 for the rules.
 - **Ingredients are owned, never lost.** Through Interval 4 every pantry held the whole catalog. From Interval 5 a new kitchen starts with five (flour, sugar, butter, egg, vanilla) and adds the rest from the Pantry. Anything a kitchen already owns stays owned forever: no upgrade, rebalance or reset of progression ever takes an ingredient away.
 
 ## Portability, installs and sound (Interval 4)
@@ -69,7 +69,7 @@ The loop is *experiment → discover → see its rarity → earn Crumbs and XP �
 - **Rarity is fixed.** Every recipe has one authored rarity (common, uncommon, rare, epic, legendary, mythic). It's part of the recipe, the same every bake, and never rolled. High rarities are genuinely scarce.
 - **First discoveries earn; nothing else does.** A recipe's first bake pays Crumbs and Baker XP by its rarity, exactly once. Rebakes and Kitchen Experiments earn nothing, so there is nothing to farm. Reward values live in domain code (`RARITY_REWARDS`); screens only show them.
 - **One currency: Crumbs.** Earned, kept and spent only by the player. Never bought, never expiring, never regenerating, never needed to bake. There is no energy, no timer, no waiting.
-- **Levels open up access, not power.** Baker Levels 1–10 come from total XP (derived, never stored). A level makes ingredients available to add; it never makes baking faster, luckier, better or rarer. No stats.
+- **Levels open up access, not power.** Baker Levels 1–11 (1–10 until Interval 6) come from total XP (derived, never stored). A level makes ingredients available to add; it never makes baking faster, luckier, better or rarer. No stats.
 - **Adding an ingredient is clear and permanent.** Each locked ingredient shows its level and Crumb cost up front, and why it can't be added yet. The player confirms; the Crumbs, the ingredient and its small XP thank-you change in one save write.
 - **Nothing can get stuck.** Costs are balanced so that whatever order ingredients are added in, the next one is always reachable from discoveries the pantry allows. A test checks every reachable pantry.
 - **Undiscovered recipes still give nothing away.** Locked ingredients never say which recipes they're for, and a blank Recipe Book card never shows rarity or ingredients.
@@ -78,14 +78,31 @@ The loop is *experiment → discover → see its rarity → earn Crumbs and XP �
 - **Marmalade is company, not a nag.** She speaks during the tutorial, for a first card, the first recipe of a new rarity, a new level and a new ingredient. An ordinary bake gets no reaction.
 - **Story stays light.** The kitchen's old recipe box has faded cards; baking a recipe writes its card back in. Chapters come later.
 
+## Families, secrets and clues (Interval 6)
+
+Interval 6 adds seven ingredients and fifteen recipes (19 and 27 in all), and gives the discovery space some structure and some surprise without turning it into a checklist.
+
+- **Family is theme, nothing else.** Every recipe belongs to exactly one family: Classics, Chocolate, Warm & Spiced, Nutty, Fruity, Sweet & Sticky or Strange & Wonderful. It decides which divider the card is filed behind and nothing more: never whether a bake matches, never a reward, never a rarity.
+- **Secret is not a rarity.** A recipe's family, its rarity and whether it's secret are three separate, authored facts. Secrets can be Rare, Epic, Legendary or Mythic (never Common or Uncommon) and belong to an ordinary family. Today's three are Rare, Epic and Legendary; the first Mythic is *not* secret.
+- **A secret doesn't exist until it's found.** Before its first bake a secret has no card, slot, count, family hint, rarity or clue, and isn't in the page at all (not merely hidden). The main count is "found of visible"; secrets found are counted separately ("Secrets found: 1"), so the total never reveals how many secrets there are. A family whose only recipes were undiscovered secrets would get no divider (the catalog checks forbid such a family).
+- **Secrets are found by baking, like everything else.** The same exact-set, order-independent match. No chance, no timer, no hidden condition. Once found, a secret appears in its family marked *Secret* in words, can be baked again, and pays its rarity's reward exactly once.
+- **Progression never depends on a secret.** The balance test assumes no secret is ever found.
+- **Clue rules.** Every blank card shows how many ingredients it needs; the divider it sits behind is its family. Once every ingredient it needs is on the player's shelf, it also shows a line Marmalade scribbled: a feeling, a texture or a time of day, never an ingredient's name (a catalog check enforces this). Clues are free: never bought, never paid for with Crumbs. Secrets get no clues.
+- **Families show light progress, with no reward.** Each divider shows "3 of 5 discovered" (plus any secrets found there). Finishing a family earns nothing; Marmalade just notices the first one. Family rewards were considered and left out: discoveries already pay, and a completion bonus would push toward a checklist.
+- **The first Mythic is Millionaire's Shortbread:** a shortbread base, salted caramel and chocolate, made from flour, butter, brown sugar, sea salt and chocolate chips (no white sugar: that's the twist). Difficult but fair: five ingredients, two of them late, its family and count on the card, and once they're all owned, Marmalade's scribble about three layers and a salty-sweet middle. It pays the Mythic reward (300 Crumbs, 320 XP) once.
+- **One more level, for a reason.** Level 11 (1,100 XP) opens sea salt, the Mythic's last ingredient. Levels 1–10 and Interval 5's seven additions keep their exact thresholds, levels and prices, so nobody's level or plans move. The new additions are cheaper than their level suggests so that a kitchen upgraded from Interval 4 (which owns the old twelve but started with no Crumbs) can always buy its way in.
+- **Progression stays deterministic and can't deadlock.** A test walks every order of pantry additions from a new kitchen (thousands of pantries) and from that upgraded kitchen, and checks there's always an affordable next step. Two new recipes (Meringue Kiss, Honeycomb Crunch) use only older ingredients, so upgraded kitchens have something new to find straight away.
+- **Nothing is copied into the save.** Families, secrecy, clues and milestones are worked out from the catalog and the list of discoveries. The save version stays 4; older saves keep every name, setting, ingredient, discovery and date, and the new ingredients start locked.
+- **Marmalade has a few new firsts:** the first secret, the first Mythic (with a starstruck face of its own), the first finished family and a kitchen's first pantry addition. Each is said once, because each happens once.
+
 ## Voice
 
 Warm, plain, a little playful, never cutesy. Short sentences, written like a note left on the counter. Controls say what they do ("Open the kitchen", "Keep my kitchen"). Errors say what happened and what's safe.
 
 ## Open decisions
 
-- How the level curve extends when new recipes arrive (finishing today's catalog lands exactly on Level 10).
-- Whether a mythic recipe ships (the tier exists, with rewards, sound and seal, but no recipe uses it yet).
+- Whether finishing a family should ever earn something (deliberately not, for now).
+- Whether secrets should ever get a clue (a margin note, a rare Marmalade line, or the story), or stay purely found by curiosity.
 - Whether memories should ever be kept beyond the cap.
 - Whether to offer background music (deliberately not yet).
 - Whether archived saves should ever be visible to the player (today they're kept, but only reachable through browser devtools).

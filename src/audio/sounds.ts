@@ -5,6 +5,7 @@ import discoverEpic from '../assets/sounds/discover-epic.wav'
 import discoverLegendary from '../assets/sounds/discover-legendary.wav'
 import discoverMythic from '../assets/sounds/discover-mythic.wav'
 import discoverRare from '../assets/sounds/discover-rare.wav'
+import discoverSecret from '../assets/sounds/discover-secret.wav'
 import discoverUncommon from '../assets/sounds/discover-uncommon.wav'
 import ingredientUnlock from '../assets/sounds/ingredient-unlock.wav'
 import levelUp from '../assets/sounds/level-up.wav'
@@ -24,6 +25,7 @@ export type SoundId =
   | 'mix'
   | 'ding'
   | `discover-${CookieRarity}`
+  | 'discover-secret'
   | 'level-up'
   | 'ingredient-unlock'
   | 'tutorial-next'
@@ -46,6 +48,8 @@ export const SOUNDS: Record<SoundId, SoundDefinition> = {
   'discover-epic': { url: discoverEpic, volume: 0.4 },
   'discover-legendary': { url: discoverLegendary, volume: 0.4 },
   'discover-mythic': { url: discoverMythic, volume: 0.4 },
+  // A layer before the rarity chime when the find is a secret. Not a rarity: any rarity can be secret.
+  'discover-secret': { url: discoverSecret, volume: 0.35 },
   'level-up': { url: levelUp, volume: 0.35 },
   'ingredient-unlock': { url: ingredientUnlock, volume: 0.4 },
   'tutorial-next': { url: tutorialNext, volume: 0.3 },

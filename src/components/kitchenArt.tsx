@@ -100,6 +100,28 @@ function JarContents({ ingredient }: { ingredient: Ingredient }) {
           <path d="M34 66 q10 -8 18 -2 q8 6 16 -2" fill="none" stroke="rgb(255 255 255 / 0.4)" strokeWidth="3" strokeLinecap="round" />
         </g>
       )
+    case 'fruit':
+      // Lemon halves, cut side out, stacked in the jar.
+      return (
+        <g stroke={INK} strokeWidth="1.8">
+          <ellipse cx="36" cy="92" rx="14" ry="12" fill={fill} />
+          <ellipse cx="64" cy="92" rx="14" ry="12" fill={fill} />
+          <circle cx="50" cy="72" r="13" fill={fill} />
+          <circle cx="50" cy="72" r="8.5" fill="#fbf0b0" strokeWidth="1" />
+          <path d="M50 64 V80 M42 72 H58 M44.5 66.5 L55.5 77.5 M55.5 66.5 L44.5 77.5" stroke="rgb(200 160 40 / 0.7)" strokeWidth="1" />
+        </g>
+      )
+    case 'nuts':
+      return (
+        <g>
+          {CHIP_PILE.map(([x, y], index) => (
+            <g key={`${x}-${y}`} transform={`rotate(${index * 47} ${x} ${y})`}>
+              <ellipse cx={x} cy={y} rx="7" ry="4.6" fill="#d8c39a" stroke={INK} strokeWidth="1" />
+              <ellipse cx={x} cy={y} rx="4.4" ry="2.6" fill={fill} />
+            </g>
+          ))}
+        </g>
+      )
     case 'liquid':
       return null
   }
@@ -249,6 +271,76 @@ function Topping({ look }: { look: CookieLook }) {
             <path key={`h${at}`} d={`M26 ${at} H74`} />
           ))}
         </g>
+      )
+    case 'jam-dot':
+      // A thumbprint well, filled with glossy jam.
+      return (
+        <g>
+          <circle cx="50" cy="50" r="17" fill="rgb(70 38 12 / 0.25)" />
+          <circle cx="50" cy="49" r="14" fill="var(--swatch-jam)" stroke={INK} strokeWidth="1.5" />
+          <ellipse cx="45" cy="44" rx="5" ry="2.5" fill="rgb(255 255 255 / 0.55)" />
+        </g>
+      )
+    case 'zest':
+      return (
+        <g fill="none" stroke="#e9c42e" strokeWidth="2.6" strokeLinecap="round">
+          {TOPPING_SPOTS.map(([x, y], index) => (
+            <path key={`${x}-${y}`} d={`M${x - 4} ${y} q4 ${index % 2 ? -4 : 4} 8 0`} />
+          ))}
+        </g>
+      )
+    case 'bubbles':
+      return (
+        <g fill="rgb(255 240 200 / 0.45)" stroke="rgb(90 50 15 / 0.5)" strokeWidth="1.2">
+          {[...TOPPING_SPOTS, ...SUGAR_EXTRA].map(([x, y], index) => (
+            <circle key={`${x}-${y}`} cx={x} cy={y} r={2.5 + (index % 3) * 1.4} />
+          ))}
+        </g>
+      )
+    case 'white-chips':
+      return (
+        <g fill="var(--swatch-white-chocolate)" stroke={INK} strokeWidth="1">
+          {TOPPING_SPOTS.slice(0, 6).map(([x, y]) => (
+            <circle key={`${x}-${y}`} cx={x} cy={y} r="4.5" />
+          ))}
+        </g>
+      )
+    case 'pistachio':
+      return (
+        <g fill="var(--swatch-pistachio)" stroke="rgb(43 29 20 / 0.55)" strokeWidth="0.9">
+          {[...TOPPING_SPOTS, ...SUGAR_EXTRA].map(([x, y], index) => (
+            <path key={`${x}-${y}`} d={`M${x - 3} ${y} l3 -3 l3 3 l-3 3 Z`} transform={`rotate(${index * 29} ${x} ${y})`} />
+          ))}
+        </g>
+      )
+    case 'salt-flakes':
+      return (
+        <g fill="#fdfcf8" stroke="rgb(43 29 20 / 0.45)" strokeWidth="0.7">
+          {TOPPING_SPOTS.map(([x, y], index) => (
+            <path key={`${x}-${y}`} d={`M${x} ${y - 3} L${x + 3} ${y + 1} L${x - 1} ${y + 3} L${x - 3} ${y} Z`} transform={`rotate(${index * 53} ${x} ${y})`} />
+          ))}
+        </g>
+      )
+    case 'swirl':
+      // A piped spiral, seen from above.
+      return (
+        <path
+          d="M50 50 m0 -4 a4 4 0 1 1 -4 4 a9 9 0 1 1 9 9 a15 15 0 1 1 -15 -15 a22 22 0 1 1 22 22"
+          fill="none"
+          stroke="rgb(150 120 90 / 0.45)"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+      )
+    case 'drizzle':
+      return (
+        <path
+          d="M18 34 Q30 28 36 40 T56 38 T78 30 M20 58 Q34 50 42 62 T62 60 T84 52 M28 76 Q40 70 50 80 T72 74"
+          fill="none"
+          stroke="#fdf6e6"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
       )
     case 'crinkle':
       return (

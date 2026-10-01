@@ -50,10 +50,10 @@ describe('progress on the counter', () => {
   })
 
   it('says when the top level is reached rather than showing a target that doesn’t exist', async () => {
-    startAt('#/', fresh({ progression: { crumbs: 0, xp: 900 } }))
+    startAt('#/', fresh({ progression: { crumbs: 0, xp: 1200 } }))
     await screen.findByRole('heading', { level: 1, name: 'Crumb & Co.' })
-    expect(plaque()).toHaveTextContent('Baker Level 10')
-    expect(plaque()).toHaveTextContent('900 XP · top level for now (of 10)')
+    expect(plaque()).toHaveTextContent('Baker Level 11')
+    expect(plaque()).toHaveTextContent('1200 XP · top level for now (of 11)')
   })
 })
 
@@ -135,7 +135,7 @@ describe('pantry additions', () => {
     expect(chips).not.toHaveTextContent(/cookie|recipe/i)
     // Only the five starter ingredients are on the shelves.
     expect(screen.getByRole('region', { name: 'Baking basics' })).toHaveTextContent('Flour')
-    expect(within(additions()).getAllByRole('listitem').filter((item) => item.classList.contains('addition'))).toHaveLength(7)
+    expect(within(additions()).getAllByRole('listitem').filter((item) => item.classList.contains('addition'))).toHaveLength(14)
   })
 
   it('explains, in words a screen reader reaches, why an addition isn’t possible yet', async () => {
@@ -166,7 +166,7 @@ describe('pantry additions', () => {
 
     const news = await screen.findByRole('generic', { name: 'Added chocolate chips to the pantry' })
     await waitFor(() => expect(news).toHaveFocus())
-    expect(news).toHaveTextContent('Chocolate chips, on the shelf for good.')
+    expect(news).toHaveTextContent('Chocolate chips! Your first addition. The shelf’s starting to look like yours.')
     expect(news).toHaveTextContent('+10 XP')
     expect(played).toContain('ingredient-unlock')
     expect(screen.getByRole('region', { name: 'Flavourings' })).toHaveTextContent('Chocolate chips')
@@ -203,7 +203,7 @@ describe('pantry additions', () => {
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Add it' }))
 
     const news = await screen.findByRole('generic', { name: 'Added chocolate chips to the pantry' })
-    expect(news).toHaveTextContent('Baker Level 3! Oats and cocoa powder can go in the pantry now.')
+    expect(news).toHaveTextContent('Baker Level 3! Strawberry jam, oats and cocoa powder can go in the pantry now.')
     await waitFor(() => expect(played).toContain('level-up'))
   })
 
@@ -229,11 +229,11 @@ describe('the Recipe Book', () => {
       ...first,
       discoveredRecipes: [{ recipeId: 'recipe_vanilla-kiss' as never, discoveredAt: first.createdAt }],
     })
-    const card = (await screen.findByRole('heading', { level: 2, name: 'Vanilla Kiss' })).closest('li')!
+    const card = (await screen.findByRole('heading', { level: 3, name: 'Vanilla Kiss' })).closest('li')!
     expect(within(card).getByText('Uncommon')).toBeInTheDocument()
 
     const blanks = screen.getAllByText('Not discovered yet').map((text) => text.closest('li')!)
-    expect(blanks).toHaveLength(11)
+    expect(blanks).toHaveLength(23)
     for (const blank of blanks) {
       expect(blank).not.toHaveTextContent(/common|rare|epic|legendary|mythic|peanut|honey|chocolate/i)
     }

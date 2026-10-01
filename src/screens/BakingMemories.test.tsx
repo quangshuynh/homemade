@@ -223,7 +223,7 @@ describe('Bake again', () => {
     // Reduced motion: the result is there straight away, focused.
     const heading = await screen.findByRole('heading', { level: 2, name: 'Shortbread' })
     await waitFor(() => expect(heading).toHaveFocus())
-    expect(screen.getByText('Already in your Recipe Book.')).toBeInTheDocument()
+    expect(screen.getByText('Already in your Recipe Book, under Classics.')).toBeInTheDocument()
   })
 
   it('brings the prepared bowl into view when it starts off screen, without animating when motion is reduced', async () => {
@@ -291,12 +291,12 @@ describe('Bake again', () => {
 })
 
 describe('undiscovered recipe hints', () => {
-  it('say only how many ingredients a recipe needs', async () => {
+  it('say how many ingredients a recipe needs, and never which', async () => {
     startAt('#/recipe-book', discovered())
     await screen.findByRole('heading', { level: 1, name: 'Recipe Book' })
 
     const hints = screen.getAllByText(/^Needs \d ingredients$/)
-    expect(hints).toHaveLength(12)
+    expect(hints).toHaveLength(24)
     expect(hints.map((hint) => hint.textContent)).toContain('Needs 3 ingredients')
     expect(screen.queryByText(/Shortbread|Peanut|Macaroon|Flapjack|Oatmeal/)).not.toBeInTheDocument()
     expect(document.querySelectorAll('.book-card--blank svg')).toHaveLength(0)

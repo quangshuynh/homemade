@@ -3,17 +3,22 @@ import { makeNewKitchen, makeSave } from '../test/fixtures'
 import { bake, recordBake, type Bowl } from './baking'
 import { defineId, type CreationId, type IngredientId } from './ids'
 import {
+  BROWN_SUGAR,
   BUTTER,
   CHOCOLATE_CHIPS,
   CINNAMON,
   COCOA,
+  COCONUT,
   EGG,
   FLOUR,
   HONEY,
   INGREDIENTS,
   OATS,
   PEANUT_BUTTER,
+  PISTACHIO,
+  SEA_SALT,
   STARTER_PANTRY,
+  STRAWBERRY_JAM,
   SUGAR,
   VANILLA,
 } from './ingredients'
@@ -54,9 +59,9 @@ describe('rarity', () => {
     const count = (rarity: string) => RECIPES.filter((recipe) => recipe.rarity === rarity).length
     expect(count('common')).toBeGreaterThanOrEqual(count('uncommon'))
     expect(count('uncommon')).toBeGreaterThanOrEqual(count('rare'))
-    expect(count('epic')).toBeLessThanOrEqual(2)
-    expect(count('legendary')).toBeLessThanOrEqual(1)
-    expect(count('mythic')).toBeLessThanOrEqual(1)
+    expect(count('epic')).toBeLessThanOrEqual(3)
+    expect(count('legendary')).toBeLessThanOrEqual(2)
+    expect(count('mythic')).toBe(1)
   })
 
   it('makes the tutorial recipe and the rest of the starter pantry grounded', () => {
@@ -133,10 +138,21 @@ describe('discovery rewards', () => {
 })
 
 describe('Baker Levels', () => {
-  it('starts at Level 1 and tops out at Level 10', () => {
+  it('starts at Level 1 and tops out at Level 11', () => {
     expect(levelForXp(0)).toBe(1)
-    expect(MAX_LEVEL).toBe(10)
+    expect(MAX_LEVEL).toBe(11)
     expect(levelForXp(1_000_000)).toBe(MAX_LEVEL)
+  })
+
+  it('keeps Interval 5’s first ten levels exactly, so nobody’s level moves', () => {
+    expect(LEVEL_THRESHOLDS.slice(0, 10)).toEqual([0, 40, 100, 170, 250, 340, 440, 560, 700, 850])
+  })
+
+  it('only adds levels that open something: Level 11 is for sea salt', () => {
+    for (let level = 11; level <= MAX_LEVEL; level++) {
+      expect(INGREDIENT_UNLOCKS.some((unlock) => unlock.level === level), `Level ${level}`).toBe(true)
+    }
+    expect(findUnlock(SEA_SALT)!.level).toBe(MAX_LEVEL)
   })
 
   it('has hand-authored thresholds that strictly rise from zero', () => {
@@ -247,12 +263,20 @@ describe('ingredient unlocks', () => {
   it('reports a level-up when the unlock’s XP crosses a level', () => {
     const result = unlockIngredient(withProgress(100, 95), CHOCOLATE_CHIPS)
     if (!result.ok) throw new Error(result.reason)
-    expect(result.levelUp).toEqual({ from: 2, to: 3, newlyAvailable: [OATS, COCOA] })
+    expect(result.levelUp).toEqual({ from: 2, to: 3, newlyAvailable: [STRAWBERRY_JAM, OATS, COCOA] })
   })
 
   it('points at the next thing to aim for', () => {
     expect(nextUnlock(makeNewKitchen())?.ingredientId).toBe(CHOCOLATE_CHIPS)
     expect(nextUnlock(makeSave())).toBeNull()
+  })
+
+  it('makes nothing available before its level, and everything at it', () => {
+    for (const unlock of INGREDIENT_UNLOCKS) {
+      const threshold = LEVEL_THRESHOLDS[unlock.level - 1]!
+      expect(unlockStatus(withProgress(9999, threshold - 1), unlock.ingredientId).kind, unlock.ingredientId).toBe('needs-level')
+      expect(unlockStatus(withProgress(9999, threshold), unlock.ingredientId).kind, unlock.ingredientId).toBe('available')
+    }
   })
 
   it('never takes away anything an older kitchen already owned', () => {
@@ -263,14 +287,34 @@ describe('ingredient unlocks', () => {
 })
 
 describe('balance', () => {
+  /** Everything the catalog had through Interval 4: what an upgraded kitchen already owns. */
+  const INTERVAL_4_PANTRY = INGREDIENTS.slice(0, 12).map((ingredient) => ingredient.id)
+  const INTERVAL_4_RECIPES = RECIPES.slice(0, 12)
+
+  const NEW_KITCHEN = makeNewKitchen()
   /**
-   * The best a player can be doing with a given set of pantry additions:
-   * every recipe those ingredients allow discovered, every addition paid for.
-   * Discovering is always possible once the ingredients are owned, so if
-   * this state has no affordable next step, a player could truly be stuck.
+   * The hardest place to start from: a kitchen upgraded from Interval 4 with
+   * its whole book already found. It owns the old twelve ingredients, its XP
+   * is that book's worth, and the upgrade gave it no Crumbs (back then it
+   * had nothing to buy).
    */
-  function bestCase(added: readonly IngredientId[]): GameSave {
-    let save = makeNewKitchen()
+  const VETERAN = makeNewKitchen({
+    pantryIngredientIds: INTERVAL_4_PANTRY,
+    discoveredRecipes: INTERVAL_4_RECIPES.map((recipe) => ({ recipeId: recipe.id, discoveredAt: NOW.toISOString() })),
+    progression: { crumbs: 0, xp: INTERVAL_4_RECIPES.reduce((total, recipe) => total + discoveryReward(recipe).xp, 0) },
+    tutorial: { completed: true, skipped: false },
+  })
+
+  /**
+   * The best a player can be doing from `start` with a given set of pantry
+   * additions: every recipe those ingredients allow discovered, every
+   * addition paid for. Secrets are left out on purpose: progression must
+   * never depend on finding one. Discovering is always possible once the
+   * ingredients are owned, so if this state has no affordable next step, a
+   * player could truly be stuck.
+   */
+  function bestCase(start: GameSave, added: readonly IngredientId[]): GameSave {
+    let save = start
     for (const id of added) {
       const unlock = findUnlock(id)!
       save = {
@@ -279,7 +323,9 @@ describe('balance', () => {
         progression: { crumbs: save.progression.crumbs - unlock.crumbs, xp: save.progression.xp + INGREDIENT_UNLOCK_XP },
       }
     }
+    const found = new Set(save.discoveredRecipes.map((entry) => entry.recipeId))
     for (const recipe of RECIPES) {
+      if (recipe.isSecret || found.has(recipe.id)) continue
       if (recipe.ingredientIds.every((id) => save.pantryIngredientIds.includes(id))) {
         const reward = discoveryReward(recipe)
         save = { ...save, progression: { crumbs: save.progression.crumbs + reward.crumbs, xp: save.progression.xp + reward.xp } }
@@ -288,8 +334,9 @@ describe('balance', () => {
     return save
   }
 
-  it('can never leave a player stuck, whatever order they add ingredients in', () => {
-    const all = INGREDIENT_UNLOCKS.map((unlock) => unlock.ingredientId)
+  /** Every pantry reachable from `start`, in every order of additions, and any with no way forward. */
+  function explore(start: GameSave) {
+    const all = INGREDIENT_UNLOCKS.map((unlock) => unlock.ingredientId).filter((id) => !start.pantryIngredientIds.includes(id))
     const seen = new Set<string>()
     const queue: IngredientId[][] = [[]]
     const stuck: string[] = []
@@ -298,31 +345,104 @@ describe('balance', () => {
       const key = [...added].sort().join()
       if (seen.has(key)) continue
       seen.add(key)
-      const save = bestCase(added)
-      const next = all.filter((id) => unlockStatus(save, id).kind === 'available')
-      if (added.length < all.length && next.length === 0) stuck.push(key)
+      const save = bestCase(start, added)
+      const next = all.filter((id) => !added.includes(id) && unlockStatus(save, id).kind === 'available')
+      if (added.length < all.length && next.length === 0) stuck.push(`${key} (${save.progression.crumbs} Crumbs, ${save.progression.xp} XP)`)
       for (const id of next) queue.push([...added, id])
     }
+    return { seen, stuck, everything: [...all].sort().join() }
+  }
+
+  it.each([
+    ['a brand-new kitchen', NEW_KITCHEN],
+    ['an upgraded Interval 4 kitchen with no Crumbs', VETERAN],
+  ])('can never leave %s stuck, whatever order ingredients are added in', (_, start) => {
+    const { seen, stuck, everything } = explore(start)
     expect(stuck).toEqual([])
     // And the whole pantry is reachable.
-    expect(seen.has([...all].sort().join())).toBe(true)
+    expect(seen.has(everything)).toBe(true)
   })
 
-  it('reaches the top level exactly by finding every recipe and filling the pantry', () => {
-    const complete = bestCase(INGREDIENT_UNLOCKS.map((unlock) => unlock.ingredientId))
+  it('really does try a great many orders', () => {
+    expect(explore(NEW_KITCHEN).seen.size).toBeGreaterThan(1000)
+  })
+
+  it('reaches the top level by filling the pantry and finding every recipe that isn’t secret', () => {
+    const complete = bestCase(NEW_KITCHEN, INGREDIENT_UNLOCKS.map((unlock) => unlock.ingredientId))
     expect(levelForXp(complete.progression.xp)).toBe(MAX_LEVEL)
     expect(complete.progression.crumbs).toBeGreaterThanOrEqual(0)
   })
 
+  it('opens the last ingredient without needing any recipe that uses it', () => {
+    for (const start of [NEW_KITCHEN, VETERAN]) {
+      const allButSalt = INGREDIENT_UNLOCKS.map((unlock) => unlock.ingredientId).filter(
+        (id) => id !== SEA_SALT && !start.pantryIngredientIds.includes(id),
+      )
+      expect(unlockStatus(bestCase(start, allButSalt), SEA_SALT).kind).toBe('available')
+    }
+  })
+
   it('lets the starter pantry alone reach Level 2 and the first additions', () => {
-    const starter = bestCase([])
+    const starter = bestCase(NEW_KITCHEN, [])
     expect(levelForXp(starter.progression.xp)).toBeGreaterThanOrEqual(2)
     expect(unlockStatus(starter, CHOCOLATE_CHIPS).kind).toBe('available')
+  })
+
+  it('gives an upgraded kitchen something new to find with what it already owns, so it can buy its way in', () => {
+    const fromOldShelf = RECIPES.filter(
+      (recipe) =>
+        !recipe.isSecret && !INTERVAL_4_RECIPES.includes(recipe) && recipe.ingredientIds.every((id) => INTERVAL_4_PANTRY.includes(id)),
+    )
+    expect(fromOldShelf.map((recipe) => recipe.name)).toEqual(['Meringue Kiss', 'Honeycomb Crunch'])
+    const newAdditions = INGREDIENT_UNLOCKS.filter((unlock) => !INTERVAL_4_PANTRY.includes(unlock.ingredientId))
+    const cheapest = Math.min(...newAdditions.map((unlock) => unlock.crumbs))
+    expect(bestCase(VETERAN, []).progression.crumbs).toBeGreaterThanOrEqual(cheapest)
   })
 
   it('keeps the late ingredients late', () => {
     expect(findUnlock(HONEY)!.level).toBeGreaterThan(findUnlock(PEANUT_BUTTER)!.level)
     expect(findUnlock(PEANUT_BUTTER)!.level).toBeGreaterThan(findUnlock(CHOCOLATE_CHIPS)!.level)
+    expect(findUnlock(PISTACHIO)!.level).toBeGreaterThan(findUnlock(BROWN_SUGAR)!.level)
+    // Sea salt, which the Mythic needs, comes last of all.
+    for (const unlock of INGREDIENT_UNLOCKS) expect(unlock.level).toBeLessThanOrEqual(findUnlock(SEA_SALT)!.level)
+  })
+
+  it('keeps Interval 5’s pantry additions at the same level and price', () => {
+    const old = INGREDIENT_UNLOCKS.filter((unlock) => INTERVAL_4_PANTRY.includes(unlock.ingredientId))
+    expect(old.map(({ ingredientId, level, crumbs }) => [ingredientId, level, crumbs])).toEqual([
+      [CHOCOLATE_CHIPS, 2, 20],
+      [CINNAMON, 2, 20],
+      [OATS, 3, 25],
+      [COCOA, 3, 30],
+      [COCONUT, 4, 40],
+      [PEANUT_BUTTER, 5, 60],
+      [HONEY, 6, 100],
+    ])
+  })
+})
+
+describe('the first Mythic', () => {
+  const MILLIONAIRES = findRecipeById(defineId('recipe', 'millionaires-shortbread'))!
+
+  it('is Millionaire’s Shortbread: a shortbread base, salted caramel and chocolate', () => {
+    expect(MILLIONAIRES.rarity).toBe('mythic')
+    expect(MILLIONAIRES.isSecret).toBe(false)
+    expect(new Set(MILLIONAIRES.ingredientIds)).toEqual(new Set([FLOUR, BUTTER, BROWN_SUGAR, SEA_SALT, CHOCOLATE_CHIPS]))
+  })
+
+  it('pays the Mythic reward exactly once, in any order', () => {
+    const first = bakeInto(makeSave(), [CHOCOLATE_CHIPS, SEA_SALT, BROWN_SUGAR, BUTTER, FLOUR], 1)
+    expect(first.outcome.reward).toEqual({ rarity: 'mythic', crumbs: 300, xp: 320 })
+    expect(first.outcome.firstOfRarity).toBe(true)
+    expect(first.save.progression).toEqual({ crumbs: 300, xp: 320 })
+    const again = bakeInto(first.save, MILLIONAIRES.ingredientIds, 2)
+    expect(again.outcome.reward).toBeNull()
+    expect(again.save.progression).toEqual(first.save.progression)
+  })
+
+  it('stays an experiment one ingredient off', () => {
+    expect(bake([FLOUR, BUTTER, SUGAR, SEA_SALT, CHOCOLATE_CHIPS]).kind).toBe('experiment')
+    expect(bake([FLOUR, BUTTER, BROWN_SUGAR, CHOCOLATE_CHIPS]).kind).toBe('experiment')
   })
 })
 

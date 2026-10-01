@@ -9,7 +9,7 @@ import { IngredientJar, WrappedJar } from '../components/kitchenArt'
 import { MascotSays } from '../components/Mascot'
 import { ScreenTitle } from '../components/ScreenTitle'
 import type { IngredientId } from '../domain/ids'
-import { findIngredient, getIngredient } from '../domain/ingredients'
+import { findIngredient, getIngredient, STARTER_PANTRY } from '../domain/ingredients'
 import { lockedIngredients, unlockStatus, type LevelUp, type UnlockStatus } from '../domain/progression'
 import type { Ingredient, IngredientCategory } from '../domain/types'
 import { describeLevelUp, unlockReaction } from '../mascot/reactions'
@@ -21,7 +21,7 @@ const SHELVES: { category: IngredientCategory; title: string }[] = [
   { category: 'flavouring', title: 'Flavourings' },
 ]
 
-type Added = { ingredientId: IngredientId; xp: number; levelUp: LevelUp | null }
+type Added = { ingredientId: IngredientId; xp: number; levelUp: LevelUp | null; firstAddition: boolean }
 
 /** Why an addition can't be made yet, in words. Null when it can. */
 function notYet(status: UnlockStatus): string | null {
@@ -64,16 +64,18 @@ export function PantryScreen() {
 
   function confirm() {
     if (!confirming) return
+    // Worked out before adding: was the shelf still just the starter pantry?
+    const firstAddition = save.pantryIngredientIds.every((id) => STARTER_PANTRY.includes(id))
     const result = unlockIngredient(confirming)
     setConfirming(null)
     if (!result.ok) return
     playSound('ingredient-unlock')
-    setAdded({ ingredientId: result.ingredientId, xp: result.xp, levelUp: result.levelUp })
+    setAdded({ ingredientId: result.ingredientId, xp: result.xp, levelUp: result.levelUp, firstAddition })
   }
 
   const pending = confirming ? { ingredient: getIngredient(confirming), status: unlockStatus(save, confirming) } : null
   const cost = pending?.status.kind === 'available' ? pending.status.unlock.crumbs : 0
-  const reaction = added ? unlockReaction(added.ingredientId, added.levelUp) : null
+  const reaction = added ? unlockReaction(added.ingredientId, added.levelUp, added.firstAddition) : null
 
   return (
     <div className="pantry">

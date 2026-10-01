@@ -15,7 +15,23 @@ export const REVEAL_BEAT_MS: Record<CookieRarity, number> = {
   mythic: 400,
 }
 
-/** The rarity stamp lands on beat 3; its chime is timed to that. */
-export function discoverySoundDelay(rarity: CookieRarity, reducedMotion: boolean): number {
-  return reducedMotion ? 350 : REVEAL_BEAT_MS[rarity] * 3 + 180
+/**
+ * A secret takes one beat more: "Something unexpected…" comes first, and
+ * everything else follows a beat later (BakeScreen.css shifts the beats to match).
+ */
+export const SECRET_LEAD_BEATS = 1
+
+/**
+ * When the rarity's chime rings: as the stamp lands, on beat 3 (beat 4 for a
+ * secret). With motion reduced everything is already on screen, so the
+ * sounds simply follow the oven's ding in order.
+ */
+export function discoverySoundDelay(rarity: CookieRarity, reducedMotion: boolean, secret = false): number {
+  if (reducedMotion) return secret ? 900 : 350
+  return REVEAL_BEAT_MS[rarity] * (3 + (secret ? SECRET_LEAD_BEATS : 0)) + 180
+}
+
+/** A secret's hush plays with "Something unexpected…", before the rarity's chime. */
+export function secretSoundDelay(rarity: CookieRarity, reducedMotion: boolean): number {
+  return reducedMotion ? 250 : REVEAL_BEAT_MS[rarity] + 180
 }

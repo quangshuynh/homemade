@@ -321,6 +321,7 @@
 .bake-result {
   /* Reveal beats. --reveal-beat is set per rarity by the page; --motion-scale is 0 when motion is reduced. */
   --beat: calc(var(--reveal-beat, 110ms) * var(--motion-scale));
+  --reveal-at-1: var(--beat);
   --reveal-at-2: calc(var(--beat) * 2);
   --reveal-at-3: calc(var(--beat) * 3);
   --reveal-at-4: calc(var(--beat) * 4);
@@ -471,7 +472,8 @@
   animation-delay: var(--reveal-at-2);
 }
 
-.bake-result--new .bake-result__rarity {
+/* Each stamp is pressed on by itself (rarity, and a secret's seal), so only small things ever scale up: never the whole line, which would push past a phone's edge. */
+.bake-result--new .bake-result__rarity > * {
   animation: seal-press var(--duration-base) var(--ease-settle) both;
   animation-delay: var(--reveal-at-3);
 }
@@ -489,6 +491,36 @@
 .bake-result--new .bake-result__mascot {
   animation: reveal-rise var(--duration-slow) var(--ease-settle) both;
   animation-delay: var(--reveal-at-6);
+}
+
+/*
+ * A secret takes one beat more: "Something unexpected…" on beat 1, then the
+ * name and everything after it a beat later than usual. Still zero with reduced motion.
+ */
+.bake-result--secret {
+  --reveal-at-2: calc(var(--beat) * 3);
+  --reveal-at-3: calc(var(--beat) * 4);
+  --reveal-at-4: calc(var(--beat) * 5);
+  --reveal-at-5: calc(var(--beat) * 6);
+  --reveal-at-6: calc(var(--beat) * 7);
+}
+
+.bake-result__unexpected {
+  padding-right: 9rem; /* room for the stamp */
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-md);
+  color: var(--secret-ink);
+}
+
+.bake-result--secret .bake-result__unexpected {
+  animation: reveal-rise var(--duration-base) var(--ease-settle) both;
+  animation-delay: var(--reveal-at-1);
+}
+
+.bake-result--secret .bake-result__stamp {
+  color: var(--secret-ink);
+  border-color: var(--secret-ink);
 }
 
 @keyframes reveal-rise {
@@ -509,7 +541,12 @@
   }
 }
 
+/* The rarity stamp, and a secret's seal beside it. */
 .bake-result__rarity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
   line-height: 1;
 }
 
@@ -589,6 +626,52 @@
 
 .bake-result[data-rarity='mythic'] {
   --seal-accent: var(--rarity-mythic);
+}
+
+/* A secret's card is folded like a note passed under a door: a midnight-ink rule just inside the edge. */
+.bake-result[data-secret] .bake-result__card {
+  box-shadow: var(--shadow-paper), inset 0 0 0 5px var(--surface-card), inset 0 0 0 6.5px var(--secret-ink);
+}
+
+.bake-result[data-secret][data-rarity='epic'] .bake-result__card,
+.bake-result[data-secret][data-rarity='legendary'] .bake-result__card,
+.bake-result[data-secret][data-rarity='mythic'] .bake-result__card {
+  box-shadow:
+    var(--shadow-paper),
+    inset 0 0 0 5px var(--surface-card),
+    inset 0 0 0 6.5px var(--secret-ink),
+    inset 0 0 0 12px var(--surface-card),
+    inset 0 0 0 14px var(--seal-accent);
+}
+
+
+/*
+ * The Mythic: gold-leaf parchment, a gilded inner rule and a line of its own
+ * in gold ink. The strongest card in the kitchen, and still just paper: no
+ * glow, no shake, nothing that flashes.
+ */
+.bake-result[data-rarity='mythic'] .bake-result__card {
+  background-color: var(--mythic-paper);
+  background-image: radial-gradient(circle at 12% 8%, rgb(243 210 122 / 0.45), transparent 40%),
+    radial-gradient(circle at 92% 96%, rgb(243 210 122 / 0.4), transparent 45%);
+}
+
+.bake-result__mythic-note {
+  justify-self: start;
+  padding: 2px var(--space-3);
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+  color: var(--rarity-mythic);
+  background: var(--foil);
+  border: 1.5px solid var(--rarity-mythic);
+  border-radius: var(--radius-paper);
+}
+
+.bake-result--new .bake-result__mythic-note {
+  animation: reveal-rise var(--duration-slow) var(--ease-settle) both;
+  animation-delay: var(--reveal-at-4);
 }
 
 /* Hand-painted stars around the tray for rare finds. They twinkle once and fade; never with reduced motion. */
@@ -791,6 +874,21 @@
     top: var(--space-4);
     right: auto;
     left: var(--space-5);
+  }
+
+  /* The Mythic's outermost stars sit just past the tray; on a phone the tray is the full width, so they come in. */
+  .bake-result__sparkles {
+    inset: -8px;
+  }
+
+  /* A secret's first line sits under the stamp instead, and the name follows it closely. */
+  .bake-result__unexpected {
+    padding-right: 0;
+    padding-top: var(--space-6);
+  }
+
+  .bake-result--secret .bake-result__name {
+    padding-top: 0;
   }
 }
 

@@ -52,6 +52,7 @@ describe('exporting and importing', () => {
       playerName: 'Robin',
       bakeryName: 'Crumb & Co.',
       recipeCount: 1,
+      secretCount: 0,
       memoryCount: 2,
       lastSaved: save.updatedAt,
     })

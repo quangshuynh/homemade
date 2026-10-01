@@ -1,3 +1,4 @@
+import { bookCounts } from '../domain/recipeBook'
 import type { GameSave } from '../domain/types'
 import { readSave, serializeSave, type ReadSaveOptions } from './schema'
 
@@ -42,7 +43,10 @@ export function exportSave(save: GameSave, now: Date = new Date()): { fileName: 
 export type ImportSummary = {
   playerName: string
   bakeryName: string
+  /** Recipes found that aren't secret: what "x of y recipes" counts. */
   recipeCount: number
+  /** Secrets found, counted apart so the file never hints at how many there are. */
+  secretCount: number
   memoryCount: number
   /** When the kitchen in the file was last changed. */
   lastSaved: string
@@ -117,6 +121,7 @@ export function readSaveFile(text: string, options: ReadSaveOptions = {}): Impor
   }
 
   const { save } = result
+  const counts = bookCounts(save)
   return {
     ok: true,
     save,
@@ -125,7 +130,8 @@ export function readSaveFile(text: string, options: ReadSaveOptions = {}): Impor
     summary: {
       playerName: save.profile.name,
       bakeryName: save.profile.bakeryName,
-      recipeCount: save.discoveredRecipes.length,
+      recipeCount: counts.found,
+      secretCount: counts.secretsFound,
       memoryCount: save.bakedCreations.length,
       lastSaved: save.updatedAt,
     },

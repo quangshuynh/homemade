@@ -10,11 +10,11 @@ import './Mascot.css'
  *
  * Purely decorative: whatever she says is written next to her as text.
  */
-export type MascotExpression = 'idle' | 'happy' | 'thinking' | 'surprised' | 'excited' | 'proud' | 'celebrate'
+export type MascotExpression = 'idle' | 'happy' | 'thinking' | 'surprised' | 'excited' | 'proud' | 'celebrate' | 'starstruck'
 
 export const MASCOT_NAME = 'Marmalade'
 
-type Eyes = 'open' | 'closed' | 'wide' | 'lidded' | 'sparkle' | 'glance'
+type Eyes = 'open' | 'closed' | 'wide' | 'lidded' | 'sparkle' | 'glance' | 'stars'
 type Mouth = 'smile' | 'open' | 'o' | 'smirk'
 
 const FACES: Record<MascotExpression, { eyes: Eyes; mouth: Mouth; blush: boolean; brow?: 'raised' | 'smug' }> = {
@@ -25,6 +25,8 @@ const FACES: Record<MascotExpression, { eyes: Eyes; mouth: Mouth; blush: boolean
   excited: { eyes: 'sparkle', mouth: 'open', blush: true },
   proud: { eyes: 'lidded', mouth: 'smirk', blush: true, brow: 'smug' },
   celebrate: { eyes: 'closed', mouth: 'open', blush: true },
+  // Saved for the rarest moment there is: a first Mythic.
+  starstruck: { eyes: 'stars', mouth: 'open', blush: true },
 }
 
 const INK = 'var(--ink)'
@@ -40,6 +42,17 @@ const EYE_CENTRES = [
 
 function Eye({ cx, cy, eyes }: { cx: number; cy: number; eyes: Eyes }) {
   switch (eyes) {
+    case 'stars':
+      // Gold five-pointed stars where her eyes were.
+      return (
+        <path
+          d={`M${cx} ${cy - 11} L${cx + 3.2} ${cy - 3.6} L${cx + 11} ${cy - 3} L${cx + 5} ${cy + 2.4} L${cx + 7} ${cy + 10} L${cx} ${cy + 5.6} L${cx - 7} ${cy + 10} L${cx - 5} ${cy + 2.4} L${cx - 11} ${cy - 3} L${cx - 3.2} ${cy - 3.6} Z`}
+          fill="var(--foil)"
+          stroke={INK}
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+      )
     case 'closed':
       // Happy crescents: ^ ^
       return <path d={`M${cx - 9} ${cy + 2} Q${cx} ${cy - 9} ${cx + 9} ${cy + 2}`} fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round" />

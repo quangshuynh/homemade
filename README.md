@@ -16,15 +16,14 @@ It is **not** an idle or clicker game. Nothing ticks up while you're away, and n
 
 ## Status
 
-**Interval 5: Progression, rewards, tutorial and mascot.** Through Interval 4 the game was a complete baking loop (pick up to five of 12 ingredients, mix, bake, discover 12 hand-written recipes, remember your last 50 bakes, Bake again) that installs and plays offline, with save files and quiet sounds. Interval 5 gives discoveries some weight:
+**Interval 6: Recipe families, secrets and the first Mythic.** The game is a complete baking loop (pick up to five ingredients, mix, bake, discover hand-written recipes, remember your last 50 bakes, Bake again) that installs and plays offline, with save files and quiet sounds. Since Interval 5, every recipe has a fixed rarity, a *first* discovery earns Crumbs and Baker XP (rebakes and experiments earn nothing), levels open up ingredients to add from the Pantry, and Marmalade the kitchen cat reacts to big moments. Interval 6 deepens what there is to find:
 
-- **Rarity:** every recipe has one fixed rarity, from Common to Mythic, shown as an ink stamp. It never changes between bakes; nothing is rolled.
-- **Crumbs and Baker XP:** a recipe's *first* discovery earns both, by rarity. Rebakes and experiments earn nothing. Crumbs are the only currency: never bought, never expiring, never needed to bake.
-- **Baker Levels 1–10:** levels open up ingredients. They never make baking faster or luckier.
-- **Pantry additions:** new kitchens start with five ingredients (flour, sugar, butter, egg, vanilla). The other seven show their level and Crumb cost in the Pantry and are added for good. Existing kitchens keep every ingredient they already had.
-- **Marmalade:** an original ginger chef-cat who reacts to big moments (a first card, a new rarity, a new level, a new ingredient) and stays quiet otherwise.
-- **Tutorial:** a short, playable, skippable walk through a first bake for new kitchens, replayable from Settings without earning anything twice.
-- **Reveal and sound:** first discoveries are revealed in rarity-paced beats with a chime that grows with rarity; reduced motion shows it all at once.
+- **19 ingredients, 27 recipes:** seven new ingredients (strawberry jam, lemon, brown sugar, white chocolate, maple syrup, pistachios, sea salt) and fifteen new recipes. New kitchens still start with the same five.
+- **Recipe families:** the Recipe Book is filed behind seven dividers (Classics, Chocolate, Warm & Spiced, Nutty, Fruity, Sweet & Sticky, Strange & Wonderful), each with its own progress. Families are theme only; they never affect a bake.
+- **Secret recipes:** three recipes the book doesn't admit exist until you bake them. Found the ordinary way, by the exact ingredients, and counted apart ("Secrets found: 1"). Secret is not a rarity.
+- **The first Mythic:** Millionaire's Shortbread, with the strongest (still tasteful) reveal in the kitchen.
+- **Better clues:** blank cards still say how many ingredients they need, sit behind their family's divider, and get a line Marmalade scribbled once everything they need is on your shelf.
+- **Baker Level 11:** one new level, which opens sea salt. Interval 5's levels and prices are unchanged.
 
 Saves live in the browser's IndexedDB (save version 4; older saves upgrade on load, with the original archived). No account, no server, nothing sent anywhere.
 
@@ -105,11 +104,11 @@ Homemade is a static site with no environment variables, secrets or backend. On 
 
 Semantic landmarks and headings, real links and buttons, a skip link, visible focus rings, and focus that moves to each new screen's heading after navigation. Text meets WCAG AA contrast. Everything works with a keyboard alone, touch targets are at least 44px, and focus is never hidden under the phone tab bar. Motion respects `prefers-reduced-motion` unless the player overrides it in Settings, and nothing relies on animation to convey meaning. Sound and motion are separate settings.
 
-Rarity is always written, never colour alone; Marmalade's lines are plain text; the tutorial works with a keyboard alone and can be skipped at any point. Browser checks are recorded in [`docs/verification/`](docs/verification/) ([Interval 4](docs/verification/interval-4.md), [Interval 5](docs/verification/interval-5.md)).
+Rarity is always written, never colour alone; Marmalade's lines are plain text; the tutorial works with a keyboard alone and can be skipped at any point. Browser checks are recorded in [`docs/verification/`](docs/verification/) ([Interval 4](docs/verification/interval-4.md), [Interval 5](docs/verification/interval-5.md), [Interval 6](docs/verification/interval-6.md)).
 
 ## Where it's heading
 
-Likely next: recipe families and more recipes to discover, then story chapters and decorating your kitchen. Cloud saves, accounts and multiplayer aren't planned for the near term.
+Likely next: story chapters, then decorating your kitchen. Cloud saves, accounts and multiplayer aren't planned for the near term.
 
 ## Design direction
 

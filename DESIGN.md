@@ -21,7 +21,8 @@ Colours are named after the materials they come from.
 | Text | `--ink` (cocoa), `--ink-soft` | never pure black |
 | Pen | `--ink-pen` | ballpoint blue: handwriting, ticks, focus ring |
 | Marmalade | `--marmalade-*`, `--chef-white` | ginger fur, tabby stripes, cream muzzle, olive eyes, her toque |
-| Rarity inks | `--rarity-*`, `--foil` | stamp inks (cocoa, enamel, ballpoint, damson, sealing wax, gold leaf); always paired with the word |
+| Rarity inks | `--rarity-*`, `--foil`, `--mythic-paper` | stamp inks (cocoa, enamel, ballpoint, damson, sealing wax, gold leaf); always paired with the word |
+| Secrets | `--secret-ink` | midnight ink for a secret's wax seal and its marks; never a rarity colour, always with the word *Secret* |
 
 All text pairs meet WCAG AA; most meet AAA (`--ink-soft` on paper is 8.5:1, on a rule line 6.7:1). The focus ring (`--ink-pen`) is 3.6:1 against the lightest wood.
 
@@ -56,8 +57,8 @@ Fluid scale from `--text-xs` to `--text-3xl`. Body leading 1.55; handwriting 1.4
 - **The oven** is a brief reveal (900ms) after the result is already decided and saved. Reduced motion skips it.
 - **The result** is three cookies on a parchment tray beside a recipe card. A first discovery adds a jam-red *New recipe!* stamp with a puff of flour. Focus moves to the card heading, which reads "New recipe discovered: …" to screen readers.
 - **Cookies** are drawn from a recipe's `look` (dough tone, topping, shape). Experiments are always the `wobbly` shape.
-- **Recipe Book** cards are index cards; undiscovered ones are blank, taped over, with a "?".
-- **Recipe Book hints**: an undiscovered card adds only a pen-written "Needs 4 ingredients" under the tape.
+- **Recipe Book** cards are index cards; undiscovered ones are blank, taped over, with a "?". Since Interval 6 they're filed behind family dividers (see *Recipe families*).
+- **Recipe Book hints**: an undiscovered card has a pen-written "Needs 4 ingredients" under the tape and, once everything it needs is owned, Marmalade's scribble (see *Clues*).
 - **Bake again**: a plain stamped button at the foot of a discovered card. On the Bake screen the jars are already picked and a butter-yellow note says "Laid out for …". The note disappears the moment anything changes; the bowl stays unmixed.
 - Ingredient and dough colours are tokens (`--swatch-*`, `--dough-*`). The catalogs name a swatch or tone, never a colour value.
 
@@ -74,9 +75,9 @@ Fluid scale from `--text-xs` to `--text-3xl`. Body leading 1.55; handwriting 1.4
 The kitchen cat: an original ginger chef with olive-green eyes, darker tabby stripes, a cream muzzle, a small toque worn at an angle and an apron with a jam heart on the pocket. Drawn once in SVG (`components/Mascot.tsx`); her colours are tokens (`--marmalade-*`).
 
 - **Personality:** warm, curious, clever, a little dramatic, a little mischievous. Encouraging, never sarcastic, never cutesy. One or two short sentences at a time, in her own handwriting (Shantell Sans), with her name written on the card so it's read out as "Marmalade: …".
-- **Expressions:** `idle`, `happy` (closed crescent eyes), `thinking` (glance up, one brow), `surprised` (wide eyes, small "o"), `excited` (sparkly eyes, open mouth), `proud` (half-lidded, smirk: the mischief), `celebrate` (crescents, open mouth, blush). Each is a different face on the same drawing.
+- **Expressions:** `idle`, `happy` (closed crescent eyes), `thinking` (glance up, one brow), `surprised` (wide eyes, small "o"), `excited` (sparkly eyes, open mouth), `proud` (half-lidded, smirk: the mischief), `celebrate` (crescents, open mouth, blush), and `starstruck` (gold stars for eyes, open mouth, blush), kept for a first Mythic. Each is a different face on the same drawing.
 - **Limited animation:** a blink every few seconds, an occasional ear twitch, a slow tail sway, and on big moments (`excited`, `celebrate`) one hat wobble and a small hop. No cinematics, no animation engine, nothing looping that draws the eye.
-- **When she appears:** the tutorial; a first card; the first recipe of a new rarity; a new level; a new ingredient. In the kitchen she sits quietly beside the Baker plaque and says nothing. An ordinary bake gets no Marmalade at all.
+- **When she appears:** the tutorial; a first card; the first recipe of a new rarity; a new level; a new ingredient. Since Interval 6, also once each for a kitchen's first secret (`surprised`: "A secret! Let's keep it between us."), first Mythic (`starstruck`), first finished family (`proud`: "Every Fruity card, back in the box.") and first pantry addition. When several firsts land at once she says the biggest: Mythic, then secret, then a new rarity, then a family, then a level. In the kitchen she sits quietly beside the Baker plaque and says nothing. An ordinary bake gets no Marmalade at all.
 - **Reduced motion:** every animation stops. She still changes expression, because that carries meaning.
 
 ## Tutorial
@@ -122,16 +123,50 @@ The same information arrives, just all at once:
 - The reveal's beats (`--motion-scale` is 0) and every duration collapse, so name, rarity, reward, level and Marmalade appear together. No sparkles.
 - Marmalade's blink, twitch, tail, hat wobble and hop stop; her expression still changes.
 - Tutorial cards and the "added" note appear without sliding. Nothing scrolls smoothly. The plaque ribbon never animates.
+- A secret's extra beat collapses too: "Something unexpected…", the Secret seal and everything after it appear together. The Mythic's stars don't appear at all; its parchment, gold slip and Marmalade's starstruck face stay, because they carry meaning.
+- Each stamp is pressed on by itself, never the whole line, so nothing ever scales past a phone's edge even mid-animation.
 - Sound is independent: chimes still play if sound is on.
 
 ## Sound
 
 - Sounds are the kitchen's own objects: a glass jar lid (pick), a wooden tock (take out), a whisk (mix), an oven timer bell (result), three rising bell notes (a new recipe), a music-box ta-da (a new level), a paper bag and a jar set down (a new ingredient), a paper flick (a tutorial card). Short, soft, and mixed well under the page.
+- **A secret adds a hush** before its rarity's chime (see *Secrets*). It's a layer, not a tier: any rarity can be secret.
 - **A new recipe's chime grows with its rarity**, from the same three notes: Uncommon adds a fourth, Rare a glassy shimmer, Epic a warm chord underneath, Legendary a second phrase, Mythic both and longer. Longer and fuller, never louder: every file is normalised to the same peak.
 - Every sound answers something the player just did. Nothing plays on load, nothing loops, and there's no music.
 - Screens ask for a meaning (`playSound('mix')`) and never see a file. The sound setting is checked in one place; turning it off also stops anything still ringing.
 - The same sound can't stack on itself, and only a few play at once. A sound that isn't ready is skipped, never late.
 - Sound and motion are independent: reduced motion keeps sound, and muting keeps motion.
+
+## Recipe families (Interval 6)
+
+- **The recipe box has dividers.** Above the cards, a row of kraft divider tabs (*Every family*, *Classics 1/5*, *Chocolate 0/4* …) filters the book to one family. They're real toggle buttons (`aria-pressed`) in a labelled group, so Tab, Enter and Space work and the chosen one is announced; a polite status line says what's shown ("Showing Chocolate: 3 of 4 discovered."). The chosen tab is pulled up out of the box: paper-coloured with a pen underline. No dropdown, no animation.
+- **Each family is a section** with a kraft divider card across its top: the family name as a heading (`h2`) on the tab, and its progress beside it in handwriting ("3 of 5 discovered", "· 1 secret", "· every card back"). Cards are `h3` beneath it.
+- **Empty families say so quietly:** "No recipes written here yet." in pen, above their blank cards. Never a hidden name.
+- **On phones** the tabs wrap onto a few rows (smaller type, same 44px height) rather than scrolling sideways; long recipe names wrap inside their card.
+
+## Clues
+
+- Every blank card: "Needs 4 ingredients" in pen.
+- Once every ingredient it needs is on the shelf: a small scrap of butter paper, tilted, in Marmalade's handwriting: "Marmalade scribbled: “Autumn leaves, in biscuit form.”" The label is part of the text, so it's read out in full. A feeling or a texture, never an ingredient, a rarity or a name.
+- Secrets have no card, so they never have a clue.
+
+## Secrets
+
+- **Before it's found, nothing.** No card, no blank, no divider, no count and no word "secret" anywhere in the page.
+- **The secret reveal** is one beat longer than usual, and quiet rather than loud: "Something unexpected…" in midnight ink (beat 1), then the name, then the rarity stamp with a round **Secret** wax seal pressed beside it (a keyhole in midnight ink, always with the word), then the reward and Marmalade. The *New recipe!* stamp reads *Secret recipe!* in the same ink, and the card gets a thin midnight rule just inside its edge, like a note slipped under a door. No confetti, no fanfare, nothing that looks like a prize draw.
+- Screen readers hear "Secret recipe discovered: …" as the heading and "Something unexpected: a secret recipe! Rare recipe. Earned 40 Crumbs and 70 XP." as the status, in reveal order.
+- **In the book** a found secret sits in its own family like any card, with the same Secret seal beside its rarity and the same midnight rule; the count line adds "Secrets found: 1".
+- **Sound:** a hushed minor chord with three bell notes stepping *down* (`discover-secret`), played with "Something unexpected…", before the rarity's own chime. Only on a first discovery.
+
+## The Mythic reveal
+
+The strongest card in the kitchen, still made of paper:
+
+- **Gold-leaf parchment** (`--mythic-paper` with two soft foil washes in opposite corners), inside the stitched gold border Epic and up already have.
+- The stamp reads *Mythic find!*; the five-star gold-leaf seal lands on its slower beat (400ms); a gold-ink slip reads "✦ A Mythic recipe. Hardly any kitchen ever writes one down. ✦" (the stars are decorative and hidden from screen readers).
+- Seven hand-painted stars twinkle once around the tray, and the longest chime plays.
+- Marmalade is **starstruck**: gold stars for eyes, mouth open, a blush, one hat wobble and a hop.
+- No glow, no screen shake, no flashing, no loop. A stylesheet test checks the Mythic rules for any of those.
 
 ## Motion
 
