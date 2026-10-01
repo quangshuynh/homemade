@@ -216,7 +216,8 @@ describe('Interval 3 catalog additions', () => {
     expect(INGREDIENTS.map((ingredient) => ingredient.id)).toEqual(
       expect.arrayContaining([OATS, PEANUT_BUTTER, HONEY, COCONUT]),
     )
-    expect(INGREDIENTS).toHaveLength(12)
+    // Interval 6 added seven more after them; nothing was removed.
+    expect(INGREDIENTS.slice(8, 12).map((ingredient) => ingredient.id)).toEqual([OATS, PEANUT_BUTTER, HONEY, COCONUT])
   })
 
   it.each([

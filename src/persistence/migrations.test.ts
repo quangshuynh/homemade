@@ -1,9 +1,26 @@
 import { describe, expect, it } from 'vitest'
 import { CURRENT_SAVE_VERSION } from '../domain/save'
-import { INGREDIENTS } from '../domain/ingredients'
-import { makeV1Save, makeV2Save, makeV3Save } from '../test/fixtures'
+import { INGREDIENT_UNLOCKS, unlockStatus } from '../domain/progression'
+import { bookCounts } from '../domain/recipeBook'
+import { makeSave, makeV1Save, makeV2Save, makeV3Save } from '../test/fixtures'
 import { migrateV1ToV2, migrateV2ToV3, migrateV3ToV4 } from './migrations'
 import { readSave } from './schema'
+
+/** Every ingredient the catalog had through Interval 4. Later ingredients are earned, never handed out by an upgrade. */
+const INTERVAL_4_INGREDIENTS = [
+  'ingredient_flour',
+  'ingredient_sugar',
+  'ingredient_butter',
+  'ingredient_egg',
+  'ingredient_chocolate-chips',
+  'ingredient_vanilla',
+  'ingredient_cocoa',
+  'ingredient_cinnamon',
+  'ingredient_oats',
+  'ingredient_peanut-butter',
+  'ingredient_honey',
+  'ingredient_coconut',
+]
 
 describe('save version 1 → 2', () => {
   it('loads an Interval 1 save as the current version', () => {
@@ -30,7 +47,7 @@ describe('save version 1 → 2', () => {
     if (!result.ok) throw new Error(result.detail)
 
     // An Interval 1 kitchen predates locked ingredients, so it upgrades through the full Interval 2/3 pantry.
-    expect(new Set(result.save.pantryIngredientIds)).toEqual(new Set(INGREDIENTS.map((ingredient) => ingredient.id)))
+    expect(new Set(result.save.pantryIngredientIds)).toEqual(new Set(INTERVAL_4_INGREDIENTS))
     expect(result.save.discoveredRecipes).toEqual([])
     expect(result.save).not.toHaveProperty('discoveredRecipeIds')
   })
@@ -103,7 +120,7 @@ describe('save version 2 → 3', () => {
       'ingredient_honey',
       'ingredient_coconut',
     ])
-    expect(new Set(migrated.pantryIngredientIds as string[])).toEqual(new Set(INGREDIENTS.map((ingredient) => ingredient.id)))
+    expect(new Set(migrated.pantryIngredientIds as string[])).toEqual(new Set(INTERVAL_4_INGREDIENTS))
   })
 
   it('does not add an ingredient twice', () => {
@@ -195,5 +212,37 @@ describe('save version 3 → 4', () => {
   it('reports a version 3 save it cannot upgrade instead of guessing', () => {
     expect(readSave(makeV3Save({ pantryIngredientIds: 'flour' }))).toMatchObject({ ok: false, reason: 'migration-failed', version: 3 })
     expect(readSave(makeV3Save({ discoveredRecipes: null }))).toMatchObject({ ok: false, reason: 'migration-failed', version: 3 })
+  })
+})
+
+describe('Interval 6 content on older saves', () => {
+  it('keeps everything an upgraded kitchen had, and leaves the new ingredients to be earned', () => {
+    const v3 = makeV3Save()
+    const result = readSave(v3)
+    if (!result.ok) throw new Error(result.detail)
+    const { save } = result
+
+    expect(save.version).toBe(4)
+    expect(save.pantryIngredientIds).toEqual(v3.pantryIngredientIds)
+    expect(save.discoveredRecipes).toEqual(v3.discoveredRecipes)
+    expect(save.bakedCreations).toEqual(v3.bakedCreations)
+    expect(save.profile).toEqual(v3.profile)
+    expect(save.settings).toEqual(v3.settings)
+    expect(save.tutorial).toEqual({ completed: true, skipped: false })
+
+    for (const unlock of INGREDIENT_UNLOCKS.filter((entry) => !INTERVAL_4_INGREDIENTS.includes(entry.ingredientId))) {
+      expect(unlockStatus(save, unlock.ingredientId).kind, unlock.ingredientId).not.toBe('owned')
+    }
+    // Families and secrecy come from the catalog: nothing new was written into the save.
+    expect(Object.keys(save).sort()).toEqual(
+      ['bakedCreations', 'createdAt', 'discoveredRecipes', 'pantryIngredientIds', 'profile', 'progression', 'settings', 'tutorial', 'updatedAt', 'version'],
+    )
+    expect(bookCounts(save)).toEqual({ found: 3, total: 24, secretsFound: 0 })
+  })
+
+  it('reads an Interval 5 save exactly as it was written: no new save version', () => {
+    const interval5 = makeSave({ progression: { crumbs: 37, xp: 412 }, discoveredRecipes: [{ recipeId: 'recipe_shortbread' as never, discoveredAt: '2026-08-01T10:00:00.000Z' }] })
+    const result = readSave(JSON.parse(JSON.stringify(interval5)))
+    expect(result).toEqual({ ok: true, save: interval5, migratedFrom: null })
   })
 })

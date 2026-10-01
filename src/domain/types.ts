@@ -25,7 +25,7 @@ export type GameSettings = {
 export type IngredientCategory = 'basic' | 'flavouring'
 
 /** How an ingredient looks in its jar. Presentation reads these; rules never do. */
-export type IngredientForm = 'powder' | 'granules' | 'block' | 'eggs' | 'liquid' | 'chips' | 'flakes' | 'spread'
+export type IngredientForm = 'powder' | 'granules' | 'block' | 'eggs' | 'liquid' | 'chips' | 'flakes' | 'spread' | 'fruit' | 'nuts'
 export type IngredientSwatch =
   | 'wheat'
   | 'white'
@@ -38,6 +38,13 @@ export type IngredientSwatch =
   | 'oat'
   | 'peanut'
   | 'honey'
+  | 'brown-sugar'
+  | 'lemon'
+  | 'jam'
+  | 'salt'
+  | 'white-chocolate'
+  | 'maple'
+  | 'pistachio'
 
 /** Hand-authored, static catalog data. Saves refer to ingredients only by id. */
 export type Ingredient = {
@@ -48,7 +55,7 @@ export type Ingredient = {
   art: { form: IngredientForm; swatch: IngredientSwatch }
 }
 
-export type DoughTone = 'pale' | 'golden' | 'spiced' | 'nutty' | 'cocoa' | 'dark'
+export type DoughTone = 'pale' | 'golden' | 'spiced' | 'nutty' | 'cocoa' | 'dark' | 'caramel' | 'lemon' | 'snow'
 export type CookieTopping =
   | 'none'
   | 'sugar'
@@ -59,6 +66,14 @@ export type CookieTopping =
   | 'oats'
   | 'coconut'
   | 'fork-marks'
+  | 'jam-dot'
+  | 'zest'
+  | 'bubbles'
+  | 'white-chips'
+  | 'pistachio'
+  | 'salt-flakes'
+  | 'swirl'
+  | 'drizzle'
 export type CookieShape = 'round' | 'square' | 'wobbly'
 
 /** Enough to draw a cookie; used by recipes and by experiments. */
@@ -74,7 +89,20 @@ export type CookieLook = {
  */
 export type CookieRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic'
 
-/** Hand-authored, static catalog data. A recipe is an exact set of ingredients. */
+/**
+ * Which divider a recipe is filed behind in the Recipe Book. Thematic only:
+ * a family never decides whether a bake matches, and it says nothing about
+ * rarity or secrecy.
+ */
+export type RecipeFamily = 'classics' | 'chocolate' | 'warm-spiced' | 'nutty' | 'fruity' | 'sweet-sticky' | 'curious'
+
+/**
+ * Hand-authored, static catalog data. A recipe is an exact set of ingredients.
+ *
+ * Three separate dimensions, never derived from each other: `family` (its
+ * theme), `rarity` (how special a find it is) and `isSecret` (whether the
+ * book admits it exists before it's found).
+ */
 export type Recipe = {
   id: RecipeId
   name: string
@@ -87,6 +115,18 @@ export type Recipe = {
   /** Written on the card the first time the player bakes it. */
   discoveryText: string
   rarity: CookieRarity
+  family: RecipeFamily
+  /**
+   * A secret recipe has no card, count or clue until it's baked: the book
+   * doesn't admit it exists. It's still found the ordinary way, by baking
+   * exactly its ingredients.
+   */
+  isSecret: boolean
+  /**
+   * Marmalade's scribbled hint for an undiscovered card: a feeling, never an
+   * ingredient. Null for secrets, which get no clues.
+   */
+  clue: string | null
 }
 
 /** A recipe the player has baked at least once. */

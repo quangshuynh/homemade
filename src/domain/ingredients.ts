@@ -20,6 +20,14 @@ export const OATS = defineId('ingredient', 'oats')
 export const PEANUT_BUTTER = defineId('ingredient', 'peanut-butter')
 export const HONEY = defineId('ingredient', 'honey')
 export const COCONUT = defineId('ingredient', 'coconut')
+// Interval 6
+export const STRAWBERRY_JAM = defineId('ingredient', 'strawberry-jam')
+export const LEMON = defineId('ingredient', 'lemon')
+export const BROWN_SUGAR = defineId('ingredient', 'brown-sugar')
+export const WHITE_CHOCOLATE = defineId('ingredient', 'white-chocolate')
+export const MAPLE_SYRUP = defineId('ingredient', 'maple-syrup')
+export const PISTACHIO = defineId('ingredient', 'pistachio')
+export const SEA_SALT = defineId('ingredient', 'sea-salt')
 
 export const INGREDIENTS: readonly Ingredient[] = [
   {
@@ -105,6 +113,56 @@ export const INGREDIENTS: readonly Ingredient[] = [
     description: 'Sweet shredded coconut that toasts at the edges.',
     category: 'flavouring',
     art: { form: 'flakes', swatch: 'white' },
+  },
+  // ---- Interval 6 ----
+  {
+    id: STRAWBERRY_JAM,
+    name: 'Strawberry jam',
+    description: 'Homemade strawberry jam, thick enough to stand a spoon in.',
+    category: 'flavouring',
+    art: { form: 'spread', swatch: 'jam' },
+  },
+  {
+    id: LEMON,
+    name: 'Lemon',
+    description: 'A fat, waxy lemon: bright zest and a sharp squeeze of juice.',
+    category: 'flavouring',
+    art: { form: 'fruit', swatch: 'lemon' },
+  },
+  {
+    id: BROWN_SUGAR,
+    name: 'Brown sugar',
+    description: 'Soft, dark and a little damp, with a smell of toffee.',
+    category: 'basic',
+    art: { form: 'granules', swatch: 'brown-sugar' },
+  },
+  {
+    id: WHITE_CHOCOLATE,
+    name: 'White chocolate',
+    description: 'Creamy white chocolate buttons. Sweeter than they look.',
+    category: 'flavouring',
+    art: { form: 'chips', swatch: 'white-chocolate' },
+  },
+  {
+    id: MAPLE_SYRUP,
+    name: 'Maple syrup',
+    description: 'Dark amber maple syrup, poured slowly from a tin.',
+    category: 'flavouring',
+    art: { form: 'liquid', swatch: 'maple' },
+  },
+  {
+    id: PISTACHIO,
+    name: 'Pistachios',
+    description: 'Shelled green pistachios, roughly chopped.',
+    category: 'flavouring',
+    art: { form: 'nuts', swatch: 'pistachio' },
+  },
+  {
+    id: SEA_SALT,
+    name: 'Sea salt',
+    description: 'Crunchy flakes of sea salt. A pinch changes everything around it.',
+    category: 'basic',
+    art: { form: 'granules', swatch: 'salt' },
   },
 ]
 

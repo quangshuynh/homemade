@@ -1,5 +1,6 @@
 import type { CreationId, IngredientId, RecipeId } from './ids'
 import {
+  BROWN_SUGAR,
   COCOA,
   COCONUT,
   CHOCOLATE_CHIPS,
@@ -7,16 +8,23 @@ import {
   findIngredient,
   FLOUR,
   HONEY,
+  LEMON,
   listIngredientNames,
+  MAPLE_SYRUP,
   OATS,
   PEANUT_BUTTER,
+  PISTACHIO,
+  SEA_SALT,
+  STRAWBERRY_JAM,
   SUGAR,
   VANILLA,
+  WHITE_CHOCOLATE,
 } from './ingredients'
 import { addCreation, makeCreation } from './creations'
 import { addReward, discoveryReward, levelUpBetween, type DiscoveryReward, type LevelUp } from './progression'
+import { completedFamilies } from './recipeBook'
 import { findRecipeById, RECIPES } from './recipes'
-import type { CookieCreation, CookieLook, GameSave, Recipe } from './types'
+import type { CookieCreation, CookieLook, GameSave, Recipe, RecipeFamily } from './types'
 
 /**
  * Baking rules. Pure functions only: the Bake screen holds the bowl in its
@@ -102,26 +110,40 @@ export function describeExperiment(ids: readonly IngredientId[]): string {
   return `${made} ${EXPERIMENT_ENDINGS[keyHash(ingredientKey(ids)) % EXPERIMENT_ENDINGS.length]}`
 }
 
-/** How an experiment made of these ingredients looks. Always the wobbly shape, so it never passes for a recipe. */
+/**
+ * How an experiment made of these ingredients looks. Always the wobbly
+ * shape, so it never passes for a recipe. The first match in each list
+ * wins; ingredients added later sit after the earlier ones, so an old
+ * experiment still looks the way it always did.
+ */
+const EXPERIMENT_DOUGH: readonly (readonly [IngredientId, CookieLook['dough']])[] = [
+  [COCOA, 'cocoa'],
+  [CINNAMON, 'spiced'],
+  [PEANUT_BUTTER, 'nutty'],
+  [BROWN_SUGAR, 'caramel'],
+  [MAPLE_SYRUP, 'caramel'],
+  [FLOUR, 'golden'],
+  [OATS, 'golden'],
+  [HONEY, 'golden'],
+  [LEMON, 'lemon'],
+]
+
+const EXPERIMENT_TOPPING: readonly (readonly [IngredientId, CookieLook['topping']])[] = [
+  [CHOCOLATE_CHIPS, 'chips'],
+  [VANILLA, 'vanilla-flecks'],
+  [OATS, 'oats'],
+  [COCONUT, 'coconut'],
+  [WHITE_CHOCOLATE, 'white-chips'],
+  [STRAWBERRY_JAM, 'jam-dot'],
+  [PISTACHIO, 'pistachio'],
+  [LEMON, 'zest'],
+  [SEA_SALT, 'salt-flakes'],
+  [MAPLE_SYRUP, 'drizzle'],
+]
+
 export function experimentLook(ids: readonly IngredientId[]): CookieLook {
-  const dough: CookieLook['dough'] = ids.includes(COCOA)
-    ? 'cocoa'
-    : ids.includes(CINNAMON)
-      ? 'spiced'
-      : ids.includes(PEANUT_BUTTER)
-        ? 'nutty'
-        : ids.includes(FLOUR) || ids.includes(OATS) || ids.includes(HONEY)
-          ? 'golden'
-          : 'pale'
-  const topping: CookieLook['topping'] = ids.includes(CHOCOLATE_CHIPS)
-    ? 'chips'
-    : ids.includes(VANILLA)
-      ? 'vanilla-flecks'
-      : ids.includes(OATS)
-        ? 'oats'
-        : ids.includes(COCONUT)
-          ? 'coconut'
-          : 'none'
+  const dough = EXPERIMENT_DOUGH.find(([id]) => ids.includes(id))?.[1] ?? 'pale'
+  const topping = EXPERIMENT_TOPPING.find(([id]) => ids.includes(id))?.[1] ?? 'none'
   return { dough, topping, shape: 'wobbly' }
 }
 
@@ -162,6 +184,12 @@ export type BakeOutcome = {
   reward: DiscoveryReward | null
   /** True when this discovery is the first recipe of its rarity in the book. */
   firstOfRarity: boolean
+  /** True when this discovery is a secret, and the first secret this kitchen has found. */
+  firstSecret: boolean
+  /** The family this discovery finished (every non-secret card in it found), if it did. */
+  completedFamily: RecipeFamily | null
+  /** True when `completedFamily` is the first family this kitchen has finished. */
+  firstCompletedFamily: boolean
   /** Set when the reward crossed one or more Baker Levels. */
   levelUp: LevelUp | null
 }
@@ -183,27 +211,46 @@ export function recordBake(
   if (result.kind !== 'recipe' || isDiscovered(save, result.recipe.id)) {
     return {
       save: { ...save, bakedCreations },
-      outcome: { result, newDiscovery: false, creation, reward: null, firstOfRarity: false, levelUp: null },
+      outcome: {
+        result,
+        newDiscovery: false,
+        creation,
+        reward: null,
+        firstOfRarity: false,
+        firstSecret: false,
+        completedFamily: null,
+        firstCompletedFamily: false,
+        levelUp: null,
+      },
     }
   }
 
   const { recipe } = result
   const reward = discoveryReward(recipe)
   const progression = addReward(save.progression, reward)
-  const firstOfRarity = !save.discoveredRecipes.some((entry) => findRecipeById(entry.recipeId)?.rarity === recipe.rarity)
+  const previously = save.discoveredRecipes.map((entry) => findRecipeById(entry.recipeId))
+  const firstOfRarity = !previously.some((found) => found?.rarity === recipe.rarity)
+  const firstSecret = recipe.isSecret && !previously.some((found) => found?.isSecret)
+  const next: GameSave = {
+    ...save,
+    bakedCreations,
+    discoveredRecipes: [...save.discoveredRecipes, { recipeId: recipe.id, discoveredAt: now.toISOString() }],
+    progression,
+  }
+  // Milestones are worked out from the book itself, so nothing extra is saved for them.
+  const completeBefore = completedFamilies(save)
+  const completedFamily = completedFamilies(next).find((family) => !completeBefore.includes(family)) ?? null
   return {
-    save: {
-      ...save,
-      bakedCreations,
-      discoveredRecipes: [...save.discoveredRecipes, { recipeId: recipe.id, discoveredAt: now.toISOString() }],
-      progression,
-    },
+    save: next,
     outcome: {
       result,
       newDiscovery: true,
       creation,
       reward,
       firstOfRarity,
+      firstSecret,
+      completedFamily,
+      firstCompletedFamily: completedFamily !== null && completeBefore.length === 0,
       levelUp: levelUpBetween(save.progression.xp, progression.xp, save.pantryIngredientIds),
     },
   }

@@ -1,5 +1,21 @@
 import type { IngredientId } from './ids'
-import { CHOCOLATE_CHIPS, CINNAMON, COCOA, COCONUT, findIngredient, HONEY, OATS, PEANUT_BUTTER } from './ingredients'
+import {
+  BROWN_SUGAR,
+  CHOCOLATE_CHIPS,
+  CINNAMON,
+  COCOA,
+  COCONUT,
+  findIngredient,
+  HONEY,
+  LEMON,
+  MAPLE_SYRUP,
+  OATS,
+  PEANUT_BUTTER,
+  PISTACHIO,
+  SEA_SALT,
+  STRAWBERRY_JAM,
+  WHITE_CHOCOLATE,
+} from './ingredients'
 import type { CookieRarity, GameSave, Progression, Recipe } from './types'
 
 /**
@@ -50,10 +66,15 @@ export const INGREDIENT_UNLOCK_XP = 10
 
 /**
  * Total XP needed for each Baker Level: index 0 is Level 1. Finite on
- * purpose. Discovering the whole current catalog and filling the pantry lands
- * exactly on the last level; later content extends the curve.
+ * purpose, and only ever extended at the end, so nobody's level moves.
+ *
+ * Levels 1–10 are unchanged from Interval 5. Level 11 (Interval 6) exists
+ * for one reason: it opens sea salt, the last ingredient the first Mythic
+ * needs. It sits where a player has found most of what the other
+ * ingredients allow, and well short of everything, so it never depends on
+ * secrets. Later content extends the curve again.
  */
-export const LEVEL_THRESHOLDS: readonly number[] = [0, 40, 100, 170, 250, 340, 440, 560, 700, 850]
+export const LEVEL_THRESHOLDS: readonly number[] = [0, 40, 100, 170, 250, 340, 440, 560, 700, 850, 1100]
 
 export const MAX_LEVEL = LEVEL_THRESHOLDS.length
 
@@ -67,17 +88,32 @@ export type IngredientUnlock = {
 
 /**
  * Everything not in the starter pantry, and what it takes to add it. Ordered
- * as the pantry lists them. Balanced so no order of choices can leave a
- * player stuck (progression.test checks every reachable pantry).
+ * as the pantry lists them: by level, then cost. Balanced so no order of
+ * choices can leave a player stuck, whether they started fresh or arrived
+ * from an older save, and without ever counting on a secret
+ * (progression.test checks every reachable pantry).
+ *
+ * Interval 5's seven keep their levels and costs. The Interval 6 additions
+ * are cheaper than their level suggests on purpose: a kitchen upgraded from
+ * Interval 4 owns the old twelve but started Interval 5 with no Crumbs, and
+ * must still be able to buy its way in. Most of them also make something
+ * with just the starter pantry, so adding one is never a dead end.
  */
 export const INGREDIENT_UNLOCKS: readonly IngredientUnlock[] = [
   { ingredientId: CHOCOLATE_CHIPS, level: 2, crumbs: 20 },
   { ingredientId: CINNAMON, level: 2, crumbs: 20 },
+  { ingredientId: STRAWBERRY_JAM, level: 3, crumbs: 20 },
   { ingredientId: OATS, level: 3, crumbs: 25 },
   { ingredientId: COCOA, level: 3, crumbs: 30 },
+  { ingredientId: LEMON, level: 4, crumbs: 25 },
   { ingredientId: COCONUT, level: 4, crumbs: 40 },
+  { ingredientId: BROWN_SUGAR, level: 5, crumbs: 25 },
   { ingredientId: PEANUT_BUTTER, level: 5, crumbs: 60 },
   { ingredientId: HONEY, level: 6, crumbs: 100 },
+  { ingredientId: WHITE_CHOCOLATE, level: 7, crumbs: 35 },
+  { ingredientId: MAPLE_SYRUP, level: 8, crumbs: 35 },
+  { ingredientId: PISTACHIO, level: 9, crumbs: 40 },
+  { ingredientId: SEA_SALT, level: 11, crumbs: 60 },
 ]
 
 const unlocksById = new Map(INGREDIENT_UNLOCKS.map((unlock) => [unlock.ingredientId, unlock]))

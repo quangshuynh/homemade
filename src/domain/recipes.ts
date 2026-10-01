@@ -1,5 +1,6 @@
 import { defineId, type RecipeId } from './ids'
 import {
+  BROWN_SUGAR,
   BUTTER,
   CHOCOLATE_CHIPS,
   CINNAMON,
@@ -8,17 +9,23 @@ import {
   EGG,
   FLOUR,
   HONEY,
+  LEMON,
+  MAPLE_SYRUP,
   OATS,
   PEANUT_BUTTER,
+  PISTACHIO,
+  SEA_SALT,
+  STRAWBERRY_JAM,
   SUGAR,
   VANILLA,
+  WHITE_CHOCOLATE,
 } from './ingredients'
 import type { Recipe } from './types'
 
 /**
  * The recipe catalog. Each recipe is an exact set of ingredients; the order
  * they went into the bowl never matters. Every set must be unique, which the
- * catalog tests enforce.
+ * catalog checks (domain/catalog) enforce.
  *
  * Never reuse or rename an id once shipped; saves record discoveries by id.
  *
@@ -26,6 +33,13 @@ import type { Recipe } from './types'
  * Keep it mostly grounded. Starter recipes are common; a recipe earns a
  * higher rarity by being genuinely unusual to find (no flour, two kinds of
  * chocolate, ingredients that only arrive late).
+ *
+ * Family, rarity and secrecy are separate choices. A secret can be any
+ * rarity from Rare up, and it belongs to an ordinary family like any other
+ * recipe; it just has no card and no clue until it's baked.
+ *
+ * Clues are Marmalade's scribbles for undiscovered cards: a feeling, a
+ * texture, a time of day. Never an ingredient's name.
  */
 
 export const RECIPES: readonly Recipe[] = [
@@ -38,6 +52,9 @@ export const RECIPES: readonly Recipe[] = [
     look: { dough: 'pale', topping: 'none', shape: 'square' },
     discoveryText: 'The oldest trick in the tin: flour, sugar, butter.',
     rarity: 'common',
+    family: 'classics',
+    isSecret: false,
+    clue: 'Plain in the best way. Just the basics.',
   },
   {
     id: defineId('recipe', 'sugar-cookie'),
@@ -48,6 +65,9 @@ export const RECIPES: readonly Recipe[] = [
     look: { dough: 'golden', topping: 'sugar', shape: 'round' },
     discoveryText: 'An egg made all the difference. A proper cookie.',
     rarity: 'common',
+    family: 'classics',
+    isSecret: false,
+    clue: 'Soft in the middle and golden at the edge.',
   },
   {
     id: defineId('recipe', 'vanilla-kiss'),
@@ -58,6 +78,9 @@ export const RECIPES: readonly Recipe[] = [
     look: { dough: 'pale', topping: 'vanilla-flecks', shape: 'round' },
     discoveryText: 'Just a few drops, and the whole kitchen smells of it.',
     rarity: 'uncommon',
+    family: 'classics',
+    isSecret: false,
+    clue: 'Smells like a warm kitchen long after it cools.',
   },
   {
     id: defineId('recipe', 'chocolate-chip'),
@@ -68,6 +91,9 @@ export const RECIPES: readonly Recipe[] = [
     look: { dough: 'golden', topping: 'chips', shape: 'round' },
     discoveryText: 'Everyone’s favourite. Worth writing down.',
     rarity: 'common',
+    family: 'chocolate',
+    isSecret: false,
+    clue: 'Everyone’s favourite. You know the one.',
   },
   {
     id: defineId('recipe', 'snickerdoodle'),
@@ -78,6 +104,9 @@ export const RECIPES: readonly Recipe[] = [
     look: { dough: 'spiced', topping: 'cinnamon-sugar', shape: 'round' },
     discoveryText: 'A silly name for a very serious cookie.',
     rarity: 'uncommon',
+    family: 'warm-spiced',
+    isSecret: false,
+    clue: 'Something warm and spiced, with a silly name.',
   },
   {
     id: defineId('recipe', 'cocoa-crinkle'),
@@ -88,6 +117,9 @@ export const RECIPES: readonly Recipe[] = [
     look: { dough: 'cocoa', topping: 'crinkle', shape: 'round' },
     discoveryText: 'It split open in the oven, and that’s exactly right.',
     rarity: 'uncommon',
+    family: 'chocolate',
+    isSecret: false,
+    clue: 'Dark and fudgy, and it cracks open in the oven.',
   },
   {
     id: defineId('recipe', 'double-chocolate'),
@@ -98,6 +130,9 @@ export const RECIPES: readonly Recipe[] = [
     look: { dough: 'dark', topping: 'chips', shape: 'square' },
     discoveryText: 'No egg, twice the chocolate. Dangerous.',
     rarity: 'epic',
+    family: 'chocolate',
+    isSecret: false,
+    clue: 'Twice as dark, and crisp rather than chewy.',
   },
   // ---- Interval 3 ----
   {
@@ -109,6 +144,9 @@ export const RECIPES: readonly Recipe[] = [
     look: { dough: 'golden', topping: 'oats', shape: 'round' },
     discoveryText: 'A handful of oats turned a cookie into breakfast. Almost.',
     rarity: 'common',
+    family: 'classics',
+    isSecret: false,
+    clue: 'Hearty enough to call breakfast. Almost.',
   },
   {
     id: defineId('recipe', 'peanut-butter-cookie'),
@@ -119,6 +157,9 @@ export const RECIPES: readonly Recipe[] = [
     look: { dough: 'nutty', topping: 'fork-marks', shape: 'round' },
     discoveryText: 'Three things and a fork. Who needs flour?',
     rarity: 'rare',
+    family: 'nutty',
+    isSecret: false,
+    clue: 'Rich and sandy, and pressed flat with a fork.',
   },
   {
     id: defineId('recipe', 'peanut-butter-chocolate'),
@@ -129,6 +170,9 @@ export const RECIPES: readonly Recipe[] = [
     look: { dough: 'nutty', topping: 'chips', shape: 'round' },
     discoveryText: 'Peanut butter and chocolate. Of course they belong together.',
     rarity: 'epic',
+    family: 'nutty',
+    isSecret: false,
+    clue: 'Two things that were always meant to meet.',
   },
   {
     id: defineId('recipe', 'honey-flapjack'),
@@ -139,6 +183,9 @@ export const RECIPES: readonly Recipe[] = [
     look: { dough: 'golden', topping: 'oats', shape: 'square' },
     discoveryText: 'Sticky fingers, and worth it.',
     rarity: 'legendary',
+    family: 'sweet-sticky',
+    isSecret: false,
+    clue: 'Sticky, golden, and cut into bars.',
   },
   {
     id: defineId('recipe', 'coconut-macaroon'),
@@ -149,6 +196,207 @@ export const RECIPES: readonly Recipe[] = [
     look: { dough: 'pale', topping: 'coconut', shape: 'round' },
     discoveryText: 'Egg and sugar held the coconut together, just.',
     rarity: 'rare',
+    family: 'curious',
+    isSecret: false,
+    clue: 'Toasty little mounds that barely hold together.',
+  },
+  // ---- Interval 6 ----
+  {
+    id: defineId('recipe', 'meringue-kiss'),
+    name: 'Meringue Kiss',
+    ingredientIds: [EGG, SUGAR],
+    description: 'Whipped until it stands in peaks, piped into little kisses and dried slowly until they rattle.',
+    descriptors: ['airy', 'crisp', 'melting'],
+    look: { dough: 'snow', topping: 'swirl', shape: 'round' },
+    discoveryText: 'Two things, and it turned into a cloud.',
+    rarity: 'uncommon',
+    family: 'curious',
+    isSecret: false,
+    clue: 'Light as a cloud. Hardly anything to it.',
+  },
+  {
+    id: defineId('recipe', 'jam-thumbprint'),
+    name: 'Jam Thumbprint',
+    ingredientIds: [FLOUR, SUGAR, BUTTER, STRAWBERRY_JAM],
+    description: 'A soft round of shortbread with a thumb pressed into the middle and filled with glossy jam.',
+    descriptors: ['tender', 'glossy', 'fruity'],
+    look: { dough: 'golden', topping: 'jam-dot', shape: 'round' },
+    discoveryText: 'Press, fill, bake. A little jewel on every one.',
+    rarity: 'common',
+    family: 'fruity',
+    isSecret: false,
+    clue: 'Press a thumb in the middle and fill it with something bright.',
+  },
+  {
+    id: defineId('recipe', 'lemon-shortbread'),
+    name: 'Lemon Shortbread',
+    ingredientIds: [FLOUR, SUGAR, BUTTER, LEMON],
+    description: 'Shortbread with zest rubbed into the sugar, so every bite tastes of sunshine.',
+    descriptors: ['zesty', 'buttery', 'snappy'],
+    look: { dough: 'pale', topping: 'zest', shape: 'square' },
+    discoveryText: 'The kitchen suddenly smells like summer.',
+    rarity: 'common',
+    family: 'fruity',
+    isSecret: false,
+    clue: 'Sunny and sharp, and very simple.',
+  },
+  {
+    id: defineId('recipe', 'blondie'),
+    name: 'Blondie',
+    ingredientIds: [FLOUR, BROWN_SUGAR, BUTTER, EGG],
+    description: 'Fudgy, chewy squares that taste of toffee and butterscotch, with a crackly top.',
+    descriptors: ['fudgy', 'toffee-ish', 'chewy'],
+    look: { dough: 'caramel', topping: 'none', shape: 'square' },
+    discoveryText: 'Like a brownie, if a brownie had never met chocolate.',
+    rarity: 'common',
+    family: 'classics',
+    isSecret: false,
+    clue: 'A brownie that never went dark.',
+  },
+  {
+    id: defineId('recipe', 'honeycomb'),
+    name: 'Honeycomb Crunch',
+    ingredientIds: [SUGAR, HONEY],
+    description: 'Bubbled up in the pan and set into golden, glassy shards that shatter when you bite.',
+    descriptors: ['crunchy', 'golden', 'bubbly'],
+    look: { dough: 'caramel', topping: 'bubbles', shape: 'square' },
+    discoveryText: 'It foamed up like magic and set like glass.',
+    rarity: 'common',
+    family: 'sweet-sticky',
+    isSecret: false,
+    clue: 'Golden and crackly. Not really a biscuit at all.',
+  },
+  {
+    id: defineId('recipe', 'lemon-crinkle'),
+    name: 'Lemon Crinkle',
+    ingredientIds: [FLOUR, SUGAR, BUTTER, EGG, LEMON],
+    description: 'Soft and bright, rolled in sugar so the top crackles into a crazy-paving pattern.',
+    descriptors: ['bright', 'soft', 'crackly'],
+    look: { dough: 'lemon', topping: 'crinkle', shape: 'round' },
+    discoveryText: 'Sharp, sweet and cracked all over. Lovely.',
+    rarity: 'uncommon',
+    family: 'fruity',
+    isSecret: false,
+    clue: 'Bright and sharp, and it cracks as it bakes.',
+  },
+  {
+    id: defineId('recipe', 'maple-cinnamon-snap'),
+    name: 'Maple Cinnamon Snap',
+    ingredientIds: [FLOUR, BROWN_SUGAR, BUTTER, CINNAMON, MAPLE_SYRUP],
+    description: 'Thin, crisp and deeply spiced, with a drizzle of maple glaze across the top.',
+    descriptors: ['crisp', 'spiced', 'glazed'],
+    look: { dough: 'spiced', topping: 'drizzle', shape: 'round' },
+    discoveryText: 'It snaps clean in half and smells like a bonfire night.',
+    rarity: 'uncommon',
+    family: 'warm-spiced',
+    isSecret: false,
+    clue: 'Autumn leaves, in biscuit form.',
+  },
+  {
+    id: defineId('recipe', 'pancake-cookie'),
+    name: 'Pancake Cookie',
+    ingredientIds: [FLOUR, BUTTER, EGG, MAPLE_SYRUP],
+    description: 'No sugar at all: just maple, so it tastes exactly like a stack of pancakes.',
+    descriptors: ['soft', 'buttery', 'breakfast-y'],
+    look: { dough: 'golden', topping: 'drizzle', shape: 'round' },
+    discoveryText: 'Wait. This is breakfast. You’ve baked breakfast.',
+    rarity: 'uncommon',
+    family: 'curious',
+    isSecret: false,
+    clue: 'Tastes like a slow Sunday morning.',
+  },
+  {
+    id: defineId('recipe', 'white-chocolate-snowdrop'),
+    name: 'White Chocolate Snowdrop',
+    ingredientIds: [FLOUR, SUGAR, BUTTER, VANILLA, WHITE_CHOCOLATE],
+    description: 'Pale, fragrant shortbread rounds studded with creamy white chocolate.',
+    descriptors: ['creamy', 'fragrant', 'pale'],
+    look: { dough: 'pale', topping: 'white-chips', shape: 'round' },
+    discoveryText: 'Pale as a snowdrop and twice as sweet.',
+    rarity: 'rare',
+    family: 'chocolate',
+    isSecret: false,
+    clue: 'Pale as snow, and sweeter than it looks.',
+  },
+  {
+    id: defineId('recipe', 'pistachio-biscotti'),
+    name: 'Pistachio Biscotti',
+    ingredientIds: [FLOUR, SUGAR, EGG, PISTACHIO],
+    description: 'Baked once as a log, sliced, then baked again until crisp. No butter, all crunch.',
+    descriptors: ['crunchy', 'nutty', 'twice-baked'],
+    look: { dough: 'pale', topping: 'pistachio', shape: 'square' },
+    discoveryText: 'Baked twice and made for dunking.',
+    rarity: 'rare',
+    family: 'nutty',
+    isSecret: false,
+    clue: 'Baked twice, and made for dunking.',
+  },
+  {
+    id: defineId('recipe', 'salted-butterscotch'),
+    name: 'Salted Butterscotch',
+    ingredientIds: [BROWN_SUGAR, BUTTER, SEA_SALT],
+    description: 'Brown sugar and butter cooked to a deep amber, poured into drops and finished with salt.',
+    descriptors: ['toffee-ish', 'salty-sweet', 'melting'],
+    look: { dough: 'caramel', topping: 'salt-flakes', shape: 'round' },
+    discoveryText: 'Just a pinch of salt, and suddenly it’s grown up.',
+    rarity: 'rare',
+    family: 'sweet-sticky',
+    isSecret: false,
+    clue: 'Sweet, but not too sweet. Melts like toffee.',
+  },
+  {
+    id: defineId('recipe', 'millionaires-shortbread'),
+    name: 'Millionaire’s Shortbread',
+    ingredientIds: [FLOUR, BUTTER, BROWN_SUGAR, SEA_SALT, CHOCOLATE_CHIPS],
+    description:
+      'A crisp shortbread base, a thick layer of salted caramel, and dark chocolate set over the top. Cut into very small squares, because it is very rich.',
+    descriptors: ['layered', 'salted caramel', 'decadent'],
+    look: { dough: 'dark', topping: 'salt-flakes', shape: 'square' },
+    discoveryText: 'Three layers, every one of them perfect. This one’s worth a fortune.',
+    rarity: 'mythic',
+    family: 'sweet-sticky',
+    isSecret: false,
+    clue: 'Three layers, and the middle one is salty-sweet. Worth a fortune.',
+  },
+  // ---- Interval 6 secrets: no card, count or clue until they're baked ----
+  {
+    id: defineId('recipe', 'snowball'),
+    name: 'Snowball',
+    ingredientIds: [COCONUT, SUGAR, EGG, WHITE_CHOCOLATE],
+    description: 'A coconut macaroon with a heart of white chocolate, rolled until it looks like a snowball.',
+    descriptors: ['snowy', 'chewy', 'creamy'],
+    look: { dough: 'snow', topping: 'coconut', shape: 'round' },
+    discoveryText: 'It looks like it fell out of a winter sky.',
+    rarity: 'rare',
+    family: 'curious',
+    isSecret: true,
+    clue: null,
+  },
+  {
+    id: defineId('recipe', 'peanut-butter-jam'),
+    name: 'Peanut Butter & Jam Thumbprint',
+    ingredientIds: [PEANUT_BUTTER, SUGAR, EGG, STRAWBERRY_JAM],
+    description: 'The flourless peanut butter cookie with a pool of strawberry jam in the middle. A lunchbox in a bite.',
+    descriptors: ['nutty', 'jammy', 'nostalgic'],
+    look: { dough: 'nutty', topping: 'jam-dot', shape: 'round' },
+    discoveryText: 'Somebody’s school lunch, turned into a cookie.',
+    rarity: 'epic',
+    family: 'nutty',
+    isSecret: true,
+    clue: null,
+  },
+  {
+    id: defineId('recipe', 'baklava-bite'),
+    name: 'Baklava Bite',
+    ingredientIds: [FLOUR, BUTTER, PISTACHIO, HONEY, CINNAMON],
+    description: 'Paper-thin layers brushed with butter, packed with spiced pistachios and soaked in honey.',
+    descriptors: ['flaky', 'honeyed', 'spiced'],
+    look: { dough: 'golden', topping: 'pistachio', shape: 'square' },
+    discoveryText: 'Layer on layer on layer. Nobody told you about this one.',
+    rarity: 'legendary',
+    family: 'warm-spiced',
+    isSecret: true,
+    clue: null,
   },
 ]
 
