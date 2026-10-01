@@ -14,6 +14,7 @@ import {
   VANILLA,
 } from './ingredients'
 import { addCreation, makeCreation } from './creations'
+import { addReward, discoveryReward, levelUpBetween, type DiscoveryReward, type LevelUp } from './progression'
 import { findRecipeById, RECIPES } from './recipes'
 import type { CookieCreation, CookieLook, GameSave, Recipe } from './types'
 
@@ -157,13 +158,19 @@ export type BakeOutcome = {
   newDiscovery: boolean
   /** The batch as it is remembered in the save. */
   creation: CookieCreation
+  /** What a first discovery earned. Null for rebakes and experiments, which earn nothing. */
+  reward: DiscoveryReward | null
+  /** True when this discovery is the first recipe of its rarity in the book. */
+  firstOfRarity: boolean
+  /** Set when the reward crossed one or more Baker Levels. */
+  levelUp: LevelUp | null
 }
 
 /**
  * Applies a bake to the save in one step: remembers the batch (every bake,
- * recipes and experiments alike) and records a first-time recipe discovery.
- * Returns the whole next save, so the caller writes it once and a bake can
- * never be half-saved.
+ * recipes and experiments alike), records a first-time recipe discovery and
+ * pays its reward. Returns the whole next save, so the caller writes it once
+ * and a bake can never be half-saved, or rewarded twice.
  */
 export function recordBake(
   save: GameSave,
@@ -172,16 +179,33 @@ export function recordBake(
   creationId: CreationId,
 ): { save: GameSave; outcome: BakeOutcome } {
   const creation = makeCreation(result, now, creationId)
-  const newDiscovery = result.kind === 'recipe' && !isDiscovered(save, result.recipe.id)
+  const bakedCreations = addCreation(save.bakedCreations, creation)
+  if (result.kind !== 'recipe' || isDiscovered(save, result.recipe.id)) {
+    return {
+      save: { ...save, bakedCreations },
+      outcome: { result, newDiscovery: false, creation, reward: null, firstOfRarity: false, levelUp: null },
+    }
+  }
+
+  const { recipe } = result
+  const reward = discoveryReward(recipe)
+  const progression = addReward(save.progression, reward)
+  const firstOfRarity = !save.discoveredRecipes.some((entry) => findRecipeById(entry.recipeId)?.rarity === recipe.rarity)
   return {
     save: {
       ...save,
-      bakedCreations: addCreation(save.bakedCreations, creation),
-      discoveredRecipes: newDiscovery
-        ? [...save.discoveredRecipes, { recipeId: result.recipe.id, discoveredAt: now.toISOString() }]
-        : save.discoveredRecipes,
+      bakedCreations,
+      discoveredRecipes: [...save.discoveredRecipes, { recipeId: recipe.id, discoveredAt: now.toISOString() }],
+      progression,
     },
-    outcome: { result, newDiscovery, creation },
+    outcome: {
+      result,
+      newDiscovery: true,
+      creation,
+      reward,
+      firstOfRarity,
+      levelUp: levelUpBetween(save.progression.xp, progression.xp, save.pantryIngredientIds),
+    },
   }
 }
 

@@ -68,6 +68,12 @@ export type CookieLook = {
   shape: CookieShape
 }
 
+/**
+ * How special a recipe is. Authored once per recipe and never rolled: the
+ * same recipe is always the same rarity. Ordered from most to least common.
+ */
+export type CookieRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic'
+
 /** Hand-authored, static catalog data. A recipe is an exact set of ingredients. */
 export type Recipe = {
   id: RecipeId
@@ -80,6 +86,7 @@ export type Recipe = {
   look: CookieLook
   /** Written on the card the first time the player bakes it. */
   discoveryText: string
+  rarity: CookieRarity
 }
 
 /** A recipe the player has baked at least once. */
@@ -102,11 +109,31 @@ export type CookieCreation = {
   bakedAt: string
 }
 
+/**
+ * What the player has earned. Only ever grows, except Crumbs, which go down
+ * only when the player spends them. The Baker Level is derived from `xp`
+ * (see domain/progression), never stored, so the two can't disagree.
+ */
+export type Progression = {
+  crumbs: number
+  xp: number
+}
+
+export type TutorialState = {
+  /** Finished at least once (or arrived from an older save, which never needed it). */
+  completed: boolean
+  /** Turned down the first time. Either flag means it never starts by itself again. */
+  skipped: boolean
+}
+
 export type GameSave = {
   /** Save schema version. Bump it and add a migration when the shape changes. */
   version: number
   profile: PlayerProfile
-  /** Ingredients on the player's shelves. Catalog details live in domain/ingredients. */
+  /**
+   * Ingredients the player owns, in the order they arrived. Owned for good:
+   * nothing ever takes one away. Catalog details live in domain/ingredients.
+   */
   pantryIngredientIds: IngredientId[]
   /** In the order they were found. Each recipe appears at most once. */
   discoveredRecipes: DiscoveredRecipe[]
@@ -115,6 +142,8 @@ export type GameSave = {
    * MAX_BAKED_CREATIONS. Separate from discoveries: trimming never touches those.
    */
   bakedCreations: CookieCreation[]
+  progression: Progression
+  tutorial: TutorialState
   settings: GameSettings
   /** ISO-8601 timestamps. */
   createdAt: string

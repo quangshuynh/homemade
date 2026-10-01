@@ -81,7 +81,65 @@ export function migrateV2ToV3(raw: RawRecord): RawRecord {
   }
 }
 
+/**
+ * The Baker XP each recipe was worth when version 4 introduced rarity
+ * (Interval 5). Written out literally: if a recipe's rarity or the reward
+ * table is ever rebalanced, saves that were already upgraded must not shift.
+ */
+const V4_DISCOVERY_XP: Readonly<Record<string, number>> = {
+  recipe_shortbread: 20,
+  'recipe_sugar-cookie': 20,
+  'recipe_vanilla-kiss': 40,
+  'recipe_chocolate-chip': 20,
+  recipe_snickerdoodle: 40,
+  'recipe_cocoa-crinkle': 40,
+  'recipe_double-chocolate': 120,
+  'recipe_oatmeal-cookie': 20,
+  'recipe_peanut-butter-cookie': 70,
+  'recipe_peanut-butter-chocolate': 120,
+  'recipe_honey-flapjack': 200,
+  'recipe_coconut-macaroon': 70,
+}
+
+/**
+ * v3 → v4 (Interval 5, progression):
+ * - keeps `pantryIngredientIds` exactly. Earlier kitchens held the whole
+ *   catalog, and nothing a player already owned is ever taken back, so a
+ *   returning player keeps every ingredient even though new kitchens now
+ *   start with five.
+ * - adds `progression`. Crumbs start at 0: there's nothing for an existing
+ *   kitchen to buy, since it already owns every ingredient. XP is the sum of
+ *   what each recipe already in the book is worth, counted once per recipe,
+ *   so the Baker Level matches the book. Ids not in the table count for 0.
+ *   Those recipes stay discovered, so baking them again earns nothing more.
+ * - adds `tutorial`, marked completed: a returning player is never sent
+ *   through the first-time tutorial. It can be replayed from Settings.
+ */
+export function migrateV3ToV4(raw: RawRecord): RawRecord {
+  if (!Array.isArray(raw.pantryIngredientIds)) {
+    throw new Error('version 3 save has no pantryIngredientIds list')
+  }
+  const discovered = raw.discoveredRecipes
+  if (!Array.isArray(discovered)) {
+    throw new Error('version 3 save has no discoveredRecipes list')
+  }
+  const recipeIds = new Set<string>()
+  for (const entry of discovered) {
+    if (typeof entry === 'object' && entry !== null && typeof (entry as RawRecord).recipeId === 'string') {
+      recipeIds.add((entry as RawRecord).recipeId as string)
+    }
+  }
+  const xp = [...recipeIds].reduce((total, id) => total + (Object.hasOwn(V4_DISCOVERY_XP, id) ? V4_DISCOVERY_XP[id]! : 0), 0)
+  return {
+    ...raw,
+    version: 4,
+    progression: { crumbs: 0, xp },
+    tutorial: { completed: true, skipped: false },
+  }
+}
+
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   1: migrateV1ToV2,
   2: migrateV2ToV3,
+  3: migrateV3ToV4,
 }

@@ -108,8 +108,12 @@ export const INGREDIENTS: readonly Ingredient[] = [
   },
 ]
 
-/** What every new kitchen starts with: for now, the whole catalog. */
-export const STARTER_PANTRY: readonly IngredientId[] = INGREDIENTS.map((ingredient) => ingredient.id)
+/**
+ * What every new kitchen starts with: enough for the first three recipes and
+ * the tutorial's shortbread. Everything else is added from the Pantry (see
+ * INGREDIENT_UNLOCKS in domain/progression).
+ */
+export const STARTER_PANTRY: readonly IngredientId[] = [FLOUR, SUGAR, BUTTER, EGG, VANILLA]
 
 const byId = new Map(INGREDIENTS.map((ingredient) => [ingredient.id, ingredient]))
 
