@@ -64,3 +64,31 @@ describe('phone layout contract', () => {
     for (const { file, css } of stylesheets()) expect(css, file).not.toMatch(/100vh/)
   })
 })
+
+describe('reduced motion contract', () => {
+  const read = (file: string) => readFileSync(join(SRC, file), 'utf8')
+
+  it('zeroes the reveal beat scale wherever durations are zeroed', () => {
+    const tokens = read('styles/tokens.css')
+    expect(tokens).toMatch(/--motion-scale:\s*1;/)
+    expect(tokens.match(/--motion-scale:\s*0;/g)).toHaveLength(2)
+  })
+
+  it('stages the discovery reveal only through beats that reduced motion collapses', () => {
+    const bake = read('screens/BakeScreen.css')
+    expect(bake).toMatch(/--beat:\s*calc\(var\(--reveal-beat, \d+ms\) \* var\(--motion-scale\)\)/)
+    const staged = rules(bake.replace(/\/\*[\s\S]*?\*\//g, '')).filter(({ selector }) => selector.includes('.bake-result'))
+    for (const { selector, body } of staged) {
+      const delay = declaration(body, 'animation-delay')
+      // Either a reveal beat or a duration token: both are zero when motion is reduced.
+      if (delay) expect(delay, selector).toMatch(/var\(--(reveal-at-\d|duration-(quick|base|slow))\)/)
+    }
+  })
+
+  it('stops every mascot animation, and the reveal’s sparkles, when motion is reduced', () => {
+    const mascot = read('components/Mascot.css')
+    expect(mascot).toMatch(/:root\[data-motion='reduced'\] \.mascot \*/)
+    expect(mascot).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*:root:not\(\[data-motion='full'\]\) \.mascot \*/)
+    expect(read('screens/BakeScreen.css')).toMatch(/:root\[data-motion='reduced'\] \.bake-result__sparkles \{\s*display: none/)
+  })
+})

@@ -17,6 +17,7 @@ import {
 } from './baking'
 import { defineId, type CreationId } from './ids'
 import { BUTTER, CHOCOLATE_CHIPS, CINNAMON, COCOA, EGG, FLOUR, INGREDIENTS, STARTER_PANTRY, SUGAR, VANILLA } from './ingredients'
+import { INGREDIENT_UNLOCKS } from './progression'
 import { findRecipeById, RECIPES } from './recipes'
 
 const NOW = new Date('2026-05-01T10:00:00.000Z')
@@ -60,12 +61,15 @@ describe('recipe catalog', () => {
     }
   })
 
-  it('can make every recipe from the starter pantry', () => {
+  it('can make every recipe from ingredients a kitchen can have: the starter pantry or a pantry addition', () => {
+    const obtainable = new Set([...STARTER_PANTRY, ...INGREDIENT_UNLOCKS.map((unlock) => unlock.ingredientId)])
     for (const recipe of RECIPES) {
-      expect(recipe.ingredientIds.every((id) => STARTER_PANTRY.includes(id))).toBe(true)
+      expect(recipe.ingredientIds.every((id) => obtainable.has(id)), recipe.name).toBe(true)
     }
   })
 })
+
+const ALL_INGREDIENTS = INGREDIENTS.map((ingredient) => ingredient.id)
 
 describe('the bowl', () => {
   it('adds ingredients in the order they go in', () => {
@@ -83,7 +87,7 @@ describe('the bowl', () => {
 
   it(`holds at most ${BOWL_CAPACITY} ingredients`, () => {
     const full: Bowl = [FLOUR, SUGAR, BUTTER, EGG, VANILLA]
-    const change = addToBowl(full, COCOA, STARTER_PANTRY)
+    const change = addToBowl(full, COCOA, ALL_INGREDIENTS)
     expect(change.outcome).toBe('bowl-full')
     expect(change.bowl).toBe(full)
   })

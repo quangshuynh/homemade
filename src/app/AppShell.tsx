@@ -3,6 +3,7 @@ import { useStopSoundsWhenMuted } from '../audio/soundContext'
 import { RecipeTabs } from '../components/RecipeTabs'
 import { SCREEN_TITLE_ID } from '../components/ScreenTitle'
 import { UpdateNotice } from '../components/UpdateNotice'
+import { TutorialGuide } from '../tutorial/TutorialGuide'
 import { useGame, useSave } from './gameContext'
 import { hrefFor, ROUTES, type RouteId } from './routes'
 import './AppShell.css'
@@ -61,6 +62,7 @@ export function AppShell({ route, focusOnMount = false, children }: AppShellProp
         <RecipeTabs current={route} />
       </header>
       <main id="screen" className="shell__screen" key={route} data-route={route}>
+        <TutorialGuide route={route} />
         {children}
       </main>
       {/* Notes stuck above the tabs. Empty most of the time. */}

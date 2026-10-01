@@ -319,6 +319,14 @@
 /* ---- The result ---- */
 
 .bake-result {
+  /* Reveal beats. --reveal-beat is set per rarity by the page; --motion-scale is 0 when motion is reduced. */
+  --beat: calc(var(--reveal-beat, 110ms) * var(--motion-scale));
+  --reveal-at-2: calc(var(--beat) * 2);
+  --reveal-at-3: calc(var(--beat) * 3);
+  --reveal-at-4: calc(var(--beat) * 4);
+  --reveal-at-5: calc(var(--beat) * 5);
+  --reveal-at-6: calc(var(--beat) * 6);
+
   grid-area: main;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
@@ -331,6 +339,7 @@
 
 /* A baking tray with three cookies on parchment. */
 .bake-result__tray {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-3);
@@ -427,7 +436,7 @@
   background: rgb(255 250 240 / 0.8);
   transform: rotate(-9deg);
   animation: stamp-down var(--duration-base) var(--ease-settle) both;
-  animation-delay: var(--duration-slow);
+  animation-delay: var(--reveal-at-5);
 }
 
 .bake-result__stamp::before,
@@ -440,18 +449,202 @@
   opacity: 0;
   pointer-events: none;
   animation: flour-puff var(--duration-slow) var(--ease-out) both;
-  animation-delay: calc(var(--duration-slow) + var(--duration-quick));
+  animation-delay: calc(var(--reveal-at-5) + var(--duration-quick));
 }
 
 .bake-result__stamp::after {
   inset: -4px -30px;
-  animation-delay: calc(var(--duration-slow) + var(--duration-quick) * 1.5);
+  animation-delay: calc(var(--reveal-at-5) + var(--duration-quick) * 1.5);
 }
 
 @keyframes stamp-down {
   from {
     opacity: 0;
     transform: rotate(-20deg) scale(1.7);
+  }
+}
+
+/* ---- The discovery reveal: name, rarity, reward, level, Marmalade. All present from the start; only shown in turn. ---- */
+
+.bake-result--new .bake-result__name {
+  animation: reveal-rise var(--duration-base) var(--ease-settle) both;
+  animation-delay: var(--reveal-at-2);
+}
+
+.bake-result--new .bake-result__rarity {
+  animation: seal-press var(--duration-base) var(--ease-settle) both;
+  animation-delay: var(--reveal-at-3);
+}
+
+.bake-result--new .bake-result__reward {
+  animation: reveal-rise var(--duration-base) var(--ease-settle) both;
+  animation-delay: var(--reveal-at-4);
+}
+
+.bake-result--new .bake-result__level {
+  animation: reveal-rise var(--duration-slow) var(--ease-settle) both;
+  animation-delay: var(--reveal-at-5);
+}
+
+.bake-result--new .bake-result__mascot {
+  animation: reveal-rise var(--duration-slow) var(--ease-settle) both;
+  animation-delay: var(--reveal-at-6);
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes seal-press {
+  0% {
+    opacity: 0;
+    transform: scale(1.6) rotate(-8deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.96);
+  }
+}
+
+.bake-result__rarity {
+  line-height: 1;
+}
+
+.bake-result__reward {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: start;
+  padding: 2px var(--space-3);
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-md);
+  color: var(--ink);
+  background: var(--butter-300);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-paper);
+  transform: rotate(-1deg);
+}
+
+.bake-result__crumbs-mark {
+  width: 1.5em;
+  height: auto;
+}
+
+/* A new level: a butter ribbon pinned across the card, with notched ends. */
+.bake-result__level {
+  display: grid;
+  gap: var(--space-1);
+  margin-inline: calc(-1 * var(--space-3));
+  padding: var(--space-2) var(--space-5);
+  background: var(--butter-400);
+  border-block: 2px solid var(--ink);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%, 12px 50%);
+}
+
+.bake-result__level-text {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+}
+
+.bake-result__level a {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: var(--tap-target);
+  font-weight: var(--weight-bold);
+  color: var(--ink);
+}
+
+.bake-result__mascot {
+  margin-top: var(--space-2);
+}
+
+/* Rarer cards are finished a little more: a stitched edge for Rare, a second row for Epic and up. */
+.bake-result[data-rarity='rare'] .bake-result__card {
+  outline: 2px dashed var(--rarity-rare);
+  outline-offset: -8px;
+}
+
+.bake-result[data-rarity='epic'] .bake-result__card,
+.bake-result[data-rarity='legendary'] .bake-result__card,
+.bake-result[data-rarity='mythic'] .bake-result__card {
+  outline: 2px dashed var(--seal-accent);
+  outline-offset: -8px;
+  box-shadow: var(--shadow-paper), inset 0 0 0 12px var(--surface-card), inset 0 0 0 14px var(--seal-accent);
+}
+
+.bake-result[data-rarity='epic'] {
+  --seal-accent: var(--rarity-epic);
+}
+
+.bake-result[data-rarity='legendary'] {
+  --seal-accent: var(--rarity-legendary);
+}
+
+.bake-result[data-rarity='mythic'] {
+  --seal-accent: var(--rarity-mythic);
+}
+
+/* Hand-painted stars around the tray for rare finds. They twinkle once and fade; never with reduced motion. */
+.bake-result__sparkles {
+  position: absolute;
+  inset: -18px;
+  pointer-events: none;
+}
+
+.bake-result__sparkle {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  fill: var(--butter-400);
+  stroke: var(--ink);
+  stroke-width: 1.2;
+  opacity: 0;
+  animation: sparkle-twinkle 1.1s var(--ease-out) both;
+  animation-delay: calc(var(--reveal-at-3) + var(--sparkle) * 70ms);
+}
+
+.bake-result[data-rarity='legendary'] .bake-result__sparkle,
+.bake-result[data-rarity='mythic'] .bake-result__sparkle {
+  fill: var(--foil);
+}
+
+.bake-result__sparkle:nth-child(1) { top: 0; left: 8%; }
+.bake-result__sparkle:nth-child(2) { top: 6%; right: 4%; }
+.bake-result__sparkle:nth-child(3) { bottom: 4%; left: 2%; }
+.bake-result__sparkle:nth-child(4) { bottom: 0; right: 12%; }
+.bake-result__sparkle:nth-child(5) { top: -4%; left: 48%; }
+.bake-result__sparkle:nth-child(6) { top: 46%; right: -2%; }
+.bake-result__sparkle:nth-child(7) { top: 50%; left: -3%; }
+
+@keyframes sparkle-twinkle {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) rotate(-30deg);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.15) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8) rotate(15deg);
+  }
+}
+
+:root[data-motion='reduced'] .bake-result__sparkles {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) .bake-result__sparkles {
+    display: none;
   }
 }
 

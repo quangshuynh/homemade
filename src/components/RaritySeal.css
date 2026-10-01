@@ -1,0 +1,81 @@
+/* A rubber stamp pressed onto the card, slightly crooked. */
+.rarity-seal {
+  --seal-ink: var(--rarity-common);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 1px var(--space-2);
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-sm);
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: var(--seal-ink);
+  background: rgb(255 250 240 / 0.85);
+  border: 2px solid var(--seal-ink);
+  border-radius: 5px 7px 4px 8px;
+  transform: rotate(-3deg);
+  white-space: nowrap;
+}
+
+.rarity-seal__stars {
+  display: inline-flex;
+  gap: 1px;
+}
+
+.rarity-seal__star {
+  width: 0.8em;
+  height: 0.8em;
+  fill: currentcolor;
+}
+
+.rarity-seal--uncommon {
+  --seal-ink: var(--rarity-uncommon);
+}
+
+/* Rarer: a double ring, like a proper office stamp. */
+.rarity-seal--rare {
+  --seal-ink: var(--rarity-rare);
+
+  border-style: double;
+  border-width: 4px;
+}
+
+/* Epic: double ring with a stitched edge sewn round it. */
+.rarity-seal--epic {
+  --seal-ink: var(--rarity-epic);
+
+  border-style: double;
+  border-width: 4px;
+  outline: 1.5px dashed var(--seal-ink);
+  outline-offset: 2px;
+}
+
+/* Legendary: a pressed wax seal; the word is embossed in the wax. */
+.rarity-seal--legendary {
+  --seal-ink: var(--rarity-legendary);
+
+  color: var(--ink-on-accent);
+  background: var(--rarity-legendary);
+  border: 2px solid var(--jam-700);
+  border-radius: 12px 14px 11px 15px;
+  box-shadow: inset 0 0 0 2px rgb(255 250 240 / 0.35), 0 2px 0 var(--jam-700);
+}
+
+/* Mythic: gold leaf on paper, stitched all round. */
+.rarity-seal--mythic {
+  --seal-ink: var(--rarity-mythic);
+
+  background: var(--foil);
+  border: 2px solid var(--rarity-mythic);
+  outline: 1.5px dashed var(--rarity-mythic);
+  outline-offset: 3px;
+  box-shadow: 0 2px 0 rgb(122 84 16 / 0.45);
+}
+
+@media (forced-colors: active) {
+  .rarity-seal {
+    border-color: CanvasText;
+  }
+}

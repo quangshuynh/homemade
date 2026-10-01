@@ -21,6 +21,11 @@ import type { Recipe } from './types'
  * catalog tests enforce.
  *
  * Never reuse or rename an id once shipped; saves record discoveries by id.
+ *
+ * Rarity is part of the recipe, fixed here: it never changes between bakes.
+ * Keep it mostly grounded. Starter recipes are common; a recipe earns a
+ * higher rarity by being genuinely unusual to find (no flour, two kinds of
+ * chocolate, ingredients that only arrive late).
  */
 
 export const RECIPES: readonly Recipe[] = [
@@ -32,6 +37,7 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['buttery', 'crumbly', 'plain in the best way'],
     look: { dough: 'pale', topping: 'none', shape: 'square' },
     discoveryText: 'The oldest trick in the tin: flour, sugar, butter.',
+    rarity: 'common',
   },
   {
     id: defineId('recipe', 'sugar-cookie'),
@@ -41,6 +47,7 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['soft', 'sweet', 'golden'],
     look: { dough: 'golden', topping: 'sugar', shape: 'round' },
     discoveryText: 'An egg made all the difference. A proper cookie.',
+    rarity: 'common',
   },
   {
     id: defineId('recipe', 'vanilla-kiss'),
@@ -50,6 +57,7 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['tender', 'fragrant', 'delicate'],
     look: { dough: 'pale', topping: 'vanilla-flecks', shape: 'round' },
     discoveryText: 'Just a few drops, and the whole kitchen smells of it.',
+    rarity: 'uncommon',
   },
   {
     id: defineId('recipe', 'chocolate-chip'),
@@ -59,6 +67,7 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['chewy', 'melty', 'classic'],
     look: { dough: 'golden', topping: 'chips', shape: 'round' },
     discoveryText: 'Everyone’s favourite. Worth writing down.',
+    rarity: 'common',
   },
   {
     id: defineId('recipe', 'snickerdoodle'),
@@ -68,6 +77,7 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['crackly', 'warm', 'cinnamony'],
     look: { dough: 'spiced', topping: 'cinnamon-sugar', shape: 'round' },
     discoveryText: 'A silly name for a very serious cookie.',
+    rarity: 'uncommon',
   },
   {
     id: defineId('recipe', 'cocoa-crinkle'),
@@ -77,6 +87,7 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['fudgy', 'cracked', 'deep'],
     look: { dough: 'cocoa', topping: 'crinkle', shape: 'round' },
     discoveryText: 'It split open in the oven, and that’s exactly right.',
+    rarity: 'uncommon',
   },
   {
     id: defineId('recipe', 'double-chocolate'),
@@ -86,6 +97,7 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['rich', 'snappy', 'very chocolatey'],
     look: { dough: 'dark', topping: 'chips', shape: 'square' },
     discoveryText: 'No egg, twice the chocolate. Dangerous.',
+    rarity: 'epic',
   },
   // ---- Interval 3 ----
   {
@@ -96,6 +108,7 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['chewy', 'hearty', 'wholesome'],
     look: { dough: 'golden', topping: 'oats', shape: 'round' },
     discoveryText: 'A handful of oats turned a cookie into breakfast. Almost.',
+    rarity: 'common',
   },
   {
     id: defineId('recipe', 'peanut-butter-cookie'),
@@ -105,6 +118,7 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['nutty', 'sandy', 'fork-pressed'],
     look: { dough: 'nutty', topping: 'fork-marks', shape: 'round' },
     discoveryText: 'Three things and a fork. Who needs flour?',
+    rarity: 'rare',
   },
   {
     id: defineId('recipe', 'peanut-butter-chocolate'),
@@ -114,6 +128,7 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['nutty', 'melty', 'rich'],
     look: { dough: 'nutty', topping: 'chips', shape: 'round' },
     discoveryText: 'Peanut butter and chocolate. Of course they belong together.',
+    rarity: 'epic',
   },
   {
     id: defineId('recipe', 'honey-flapjack'),
@@ -123,6 +138,7 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['sticky', 'golden', 'chewy'],
     look: { dough: 'golden', topping: 'oats', shape: 'square' },
     discoveryText: 'Sticky fingers, and worth it.',
+    rarity: 'legendary',
   },
   {
     id: defineId('recipe', 'coconut-macaroon'),
@@ -132,6 +148,7 @@ export const RECIPES: readonly Recipe[] = [
     descriptors: ['toasty', 'chewy', 'sweet'],
     look: { dough: 'pale', topping: 'coconut', shape: 'round' },
     discoveryText: 'Egg and sugar held the coconut together, just.',
+    rarity: 'rare',
   },
 ]
 

@@ -3,7 +3,7 @@ import { STARTER_PANTRY } from './ingredients'
 import type { GameSave, GameSettings, PlayerProfile } from './types'
 
 /** The save schema version this build writes. */
-export const CURRENT_SAVE_VERSION = 3
+export const CURRENT_SAVE_VERSION = 4
 
 export const NAME_MAX_LENGTH = 32
 
@@ -51,6 +51,9 @@ export function createNewSave(input: NewSaveInput, now: Date = new Date()): Game
     pantryIngredientIds: [...STARTER_PANTRY],
     discoveredRecipes: [],
     bakedCreations: [],
+    progression: { crumbs: 0, xp: 0 },
+    // A brand-new kitchen gets the tutorial; the player can skip it.
+    tutorial: { completed: false, skipped: false },
     settings: { ...DEFAULT_SETTINGS },
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -67,6 +70,22 @@ export function touchSave(save: GameSave, change: (save: GameSave) => GameSave, 
 
 export function updateSettings(save: GameSave, patch: Partial<GameSettings>): GameSave {
   return { ...save, settings: { ...save.settings, ...patch } }
+}
+
+/** True while the first-time tutorial should still open by itself. */
+export function tutorialPending(save: GameSave): boolean {
+  return !save.tutorial.completed && !save.tutorial.skipped
+}
+
+/**
+ * Records how a tutorial run ended. Finishing marks it completed; skipping a
+ * first run marks it skipped. A replay never un-completes anything, and the
+ * tutorial itself never pays a reward, so replaying it can't earn anything.
+ */
+export function endTutorial(save: GameSave, how: 'finished' | 'skipped'): GameSave {
+  const tutorial = how === 'finished' ? { ...save.tutorial, completed: true } : { ...save.tutorial, skipped: true }
+  if (tutorial.completed === save.tutorial.completed && tutorial.skipped === save.tutorial.skipped) return save
+  return { ...save, tutorial }
 }
 
 export type NameChange = { playerName?: string; bakeryName?: string }

@@ -47,7 +47,7 @@ describe('kitchen sounds', () => {
 
     await bakeShortbread(user)
 
-    await waitFor(() => expect(player.played).toEqual(['pick', 'pick', 'pick', 'pick', 'remove', 'mix', 'ding', 'discover']))
+    await waitFor(() => expect(player.played).toEqual(['pick', 'pick', 'pick', 'pick', 'remove', 'mix', 'ding', 'discover-common']))
   })
 
   it('plays nothing at all when sound is off, and the bake is unaffected', async () => {

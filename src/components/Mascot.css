@@ -1,0 +1,189 @@
+.mascot {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* ---- Small, occasional touches. All of them are `.ambient` or one-shot, so reduced motion stops them. ---- */
+
+.mascot__lid {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  transform: scaleY(0);
+  animation: mascot-blink 6s ease-in-out infinite;
+}
+
+.mascot__ear--left {
+  transform-box: fill-box;
+  transform-origin: 70% 100%;
+  animation: mascot-ear-twitch 9s ease-in-out infinite;
+}
+
+.mascot__tail {
+  transform-box: fill-box;
+  transform-origin: 0% 100%;
+  animation: mascot-tail 3.4s ease-in-out infinite alternate;
+}
+
+/* Big moments: the hat wobbles once and she gives a small hop. Never on a loop. */
+.mascot--excited .mascot__hat,
+.mascot--celebrate .mascot__hat {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: mascot-hat-wobble 700ms var(--ease-out) both;
+}
+
+.mascot--excited .mascot__figure,
+.mascot--celebrate .mascot__figure {
+  animation: mascot-hop 520ms var(--ease-settle) both;
+}
+
+@keyframes mascot-blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(0);
+  }
+
+  96% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes mascot-ear-twitch {
+  0%,
+  88%,
+  94%,
+  100% {
+    transform: rotate(0);
+  }
+
+  90% {
+    transform: rotate(-9deg);
+  }
+
+  92% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes mascot-tail {
+  from {
+    transform: rotate(-5deg);
+  }
+
+  to {
+    transform: rotate(6deg);
+  }
+}
+
+@keyframes mascot-hat-wobble {
+  0% {
+    transform: rotate(0);
+  }
+
+  25% {
+    transform: rotate(-8deg);
+  }
+
+  55% {
+    transform: rotate(5deg);
+  }
+
+  80% {
+    transform: rotate(-2deg);
+  }
+}
+
+@keyframes mascot-hop {
+  40% {
+    transform: translateY(-7px);
+  }
+}
+
+/* Motion off: she still changes expression, but nothing moves. */
+:root[data-motion='reduced'] .mascot *,
+:root[data-motion='reduced'] .mascot {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) .mascot *,
+  :root:not([data-motion='full']) .mascot {
+    animation: none !important;
+  }
+}
+
+/* ---- Marmalade saying something: her portrait beside a handwritten speech card. ---- */
+
+.mascot-says {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.mascot-says__portrait {
+  width: 4.5rem;
+}
+
+.mascot-says__card {
+  position: relative;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-card-raised);
+  border: 2px solid var(--ink);
+  border-radius: 14px 16px 15px 4px;
+  box-shadow: var(--shadow-paper);
+}
+
+/* The little tail of the speech card, pointing at her. */
+.mascot-says__card::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  bottom: 10px;
+  width: 14px;
+  height: 14px;
+  background: var(--surface-card-raised);
+  border-left: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  transform: rotate(45deg) skew(10deg, 10deg);
+}
+
+.mascot-says__name {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-sm);
+  line-height: 1.2;
+  color: var(--marmalade-700);
+}
+
+.mascot-says__line {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-md);
+  line-height: var(--leading-hand);
+  color: var(--ink);
+}
+
+.mascot-says__line:focus {
+  outline: none;
+}
+
+.mascot-says__line:focus-visible {
+  outline: var(--focus-width) dashed var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 380px) {
+  .mascot-says {
+    grid-template-columns: 3.25rem minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+
+  .mascot-says__portrait {
+    width: 3.25rem;
+  }
+}

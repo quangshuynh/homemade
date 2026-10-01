@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { bake as bakeBowl, prepareBowl, recordBake, type Bowl, type PreparedBake } from '../domain/baking'
 import { newCreationId } from '../domain/creations'
-import type { RecipeId } from '../domain/ids'
+import type { IngredientId, RecipeId } from '../domain/ids'
+import { unlockIngredient as applyUnlock } from '../domain/progression'
 import { createNewSave, touchSave, type NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
 import type { SaveRepository } from '../persistence/repository'
@@ -111,6 +112,24 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
     [persist],
   )
 
+  const unlockIngredient = useCallback(
+    (id: IngredientId) => {
+      const current = saveRef.current
+      if (!current) throw new Error('Nothing to add to: the save is not loaded')
+      const result = applyUnlock(current, id)
+      if (!result.ok) return result
+      // The ingredient, the Crumbs and the XP change together, in one write.
+      const stamped = { ...result.save, updatedAt: new Date().toISOString() }
+      saveRef.current = stamped
+      setState({ status: 'ready', save: stamped })
+      void persist(stamped).catch(() => {
+        // Surfaced through saveStatus.
+      })
+      return { ...result, save: stamped }
+    },
+    [persist],
+  )
+
   const prepareRecipe = useCallback((recipeId: RecipeId) => {
     const current = saveRef.current
     const bowl = current ? prepareBowl(current, recipeId) : null
@@ -168,6 +187,7 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       startGame,
       updateSave,
       bake,
+      unlockIngredient,
       preparedBowl,
       prepareRecipe,
       clearPreparedBowl,
@@ -183,6 +203,7 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       startGame,
       updateSave,
       bake,
+      unlockIngredient,
       preparedBowl,
       prepareRecipe,
       clearPreparedBowl,

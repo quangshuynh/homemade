@@ -7,6 +7,7 @@ import { RecipeBookScreen } from '../screens/RecipeBookScreen'
 import { BakeScreen } from '../screens/BakeScreen'
 import { IncompatibleSaveScreen, LoadingScreen, StorageUnavailableScreen } from '../screens/SaveTroubleScreen'
 import { SettingsScreen } from '../screens/SettingsScreen'
+import { TutorialProvider } from '../tutorial/TutorialProvider'
 import { AppShell } from './AppShell'
 import { useGame } from './gameContext'
 import { useRoute, type RouteId } from './routes'
@@ -45,9 +46,11 @@ export function App() {
     case 'ready': {
       const Screen = SCREENS[route]
       return (
-        <AppShell route={route} focusOnMount={sawSetup}>
-          <Screen />
-        </AppShell>
+        <TutorialProvider>
+          <AppShell route={route} focusOnMount={sawSetup}>
+            <Screen />
+          </AppShell>
+        </TutorialProvider>
       )
     }
   }

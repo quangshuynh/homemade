@@ -9,7 +9,6 @@ import { MIGRATIONS, type Migration, type RawRecord } from './migrations'
  * `readSave`.
  */
 
-
 export type { Migration }
 
 export type IncompatibleReason =
@@ -38,6 +37,10 @@ function isName(value: unknown): value is string {
 
 function isIsoDate(value: unknown): value is string {
   return typeof value === 'string' && !Number.isNaN(Date.parse(value))
+}
+
+function isCount(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
 }
 
 const MOTION_PREFERENCES: readonly MotionPreference[] = ['system', 'reduced', 'full']
@@ -82,6 +85,16 @@ export function findSaveProblem(value: RawRecord): string | null {
   ) {
     return 'bakedCreations is not a list of bakes'
   }
+
+  const progression = value.progression
+  if (!isRecord(progression)) return 'progression is missing'
+  if (!isCount(progression.crumbs)) return 'progression.crumbs is not a whole number of Crumbs'
+  if (!isCount(progression.xp)) return 'progression.xp is not a whole amount of XP'
+
+  const tutorial = value.tutorial
+  if (!isRecord(tutorial)) return 'tutorial is missing'
+  if (typeof tutorial.completed !== 'boolean') return 'tutorial.completed is not a boolean'
+  if (typeof tutorial.skipped !== 'boolean') return 'tutorial.skipped is not a boolean'
 
   const settings = value.settings
   if (!isRecord(settings)) return 'settings are missing'

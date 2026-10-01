@@ -9,6 +9,8 @@ type ConfirmDialogProps = {
   confirmLabel: string
   cancelLabel: string
   busy?: boolean
+  /** Danger for things that clear or replace; primary for a happy yes (adding an ingredient). */
+  confirmVariant?: 'danger' | 'primary'
   onConfirm: () => void
   onCancel: () => void
   /**
@@ -24,7 +26,18 @@ type ConfirmDialogProps = {
  * The safe choice (cancel) gets initial focus, and focus goes back to where
  * it came from on close.
  */
-export function ConfirmDialog({ open, title, children, confirmLabel, cancelLabel, busy, onConfirm, onCancel, returnFocusRef }: ConfirmDialogProps) {
+export function ConfirmDialog({
+  open,
+  title,
+  children,
+  confirmLabel,
+  cancelLabel,
+  busy,
+  confirmVariant = 'danger',
+  onConfirm,
+  onCancel,
+  returnFocusRef,
+}: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
   const openedFrom = useRef<Element | null>(null)
@@ -71,7 +84,7 @@ export function ConfirmDialog({ open, title, children, confirmLabel, cancelLabel
             <Button ref={cancelRef} onClick={onCancel} disabled={busy}>
               {cancelLabel}
             </Button>
-            <Button variant="danger" onClick={onConfirm} disabled={busy}>
+            <Button variant={confirmVariant} onClick={onConfirm} disabled={busy}>
               {confirmLabel}
             </Button>
           </div>

@@ -3,6 +3,7 @@ import { hrefFor, navigate } from '../app/routes'
 import { Button, LinkButton } from '../components/Button'
 import { Cookie } from '../components/kitchenArt'
 import { HandNote } from '../components/Paper'
+import { RaritySeal } from '../components/RaritySeal'
 import { ScreenTitle } from '../components/ScreenTitle'
 import { getIngredient } from '../domain/ingredients'
 import { RECIPES } from '../domain/recipes'
@@ -33,6 +34,9 @@ export function RecipeBookScreen() {
             : `${found} of ${RECIPES.length} recipes written down.`}
         </HandNote>
       </div>
+      <p className="recipe-book__story">
+        This kitchen’s old recipe box, its cards faded to nothing. Bake a recipe and its card comes back.
+      </p>
 
       <ol className="recipe-book__cards">
         {RECIPES.map((recipe) => {
@@ -51,12 +55,15 @@ export function RecipeBookScreen() {
           }
           const headingId = `book-${recipe.id}`
           return (
-            <li key={recipe.id} className="book-card">
+            <li key={recipe.id} className="book-card" data-rarity={recipe.rarity}>
               <article aria-labelledby={headingId} className="book-card__body">
                 <Cookie look={recipe.look} className="book-card__cookie" />
                 <h2 id={headingId} className="book-card__name">
                   {recipe.name}
                 </h2>
+                <p className="book-card__rarity">
+                  <RaritySeal rarity={recipe.rarity} />
+                </p>
                 <p className="book-card__descriptors">{recipe.descriptors.join(' · ')}</p>
                 <p className="book-card__description">{recipe.description}</p>
                 <h3 className="book-card__subhead">Ingredients</h3>

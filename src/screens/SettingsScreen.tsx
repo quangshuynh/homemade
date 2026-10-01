@@ -9,6 +9,7 @@ import { updateSettings } from '../domain/save'
 import type { MotionPreference } from '../domain/types'
 import { useCanInstall } from '../pwa/hooks'
 import { installer } from '../pwa/install'
+import { useTutorial } from '../tutorial/tutorialContext'
 import { NamesForm } from './settings/NamesForm'
 import { SaveFileControls } from './settings/SaveFileControls'
 import './SettingsScreen.css'
@@ -33,6 +34,7 @@ export function SettingsScreen() {
   const [resetting, setResetting] = useState(false)
   const [resetFailed, setResetFailed] = useState(false)
   const canInstall = useCanInstall()
+  const tutorial = useTutorial()
 
   const openedOn = new Date(save.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
 
@@ -110,6 +112,21 @@ export function SettingsScreen() {
         </p>
       </section>
 
+      <section className="settings__group" aria-labelledby="tutorial-heading">
+        <h2 id="tutorial-heading" className="settings__legend">
+          Tutorial
+        </h2>
+        <p className="settings__hint" id="tutorial-hint">
+          Marmalade walks you through a bake again, from the start. Replaying it never earns extra Crumbs or XP, and keeps
+          everything you’ve found.
+        </p>
+        <div className="settings__buttons">
+          <Button onClick={tutorial.replay} aria-describedby="tutorial-hint" disabled={tutorial.run !== null}>
+            {tutorial.run ? 'Tutorial in progress' : 'Replay the tutorial'}
+          </Button>
+        </div>
+      </section>
+
       <section className="settings__group" aria-labelledby="save-file-heading">
         <h2 id="save-file-heading" className="settings__legend">
           Save file
@@ -141,8 +158,8 @@ export function SettingsScreen() {
           Start over
         </h2>
         <p className="settings__hint">
-          Clears your names, recipes, baking memories and settings from this browser, then starts a new kitchen. There’s
-          no undo, so download your kitchen first if you might want it back.
+          Clears your names, recipes, baking memories, Crumbs, level, pantry and settings from this browser, then starts a
+          new kitchen. There’s no undo, so download your kitchen first if you might want it back.
         </p>
         <Button variant="danger" onClick={() => setConfirming(true)}>
           Start over…

@@ -67,6 +67,19 @@ describe('readSave', () => {
     if (!result.ok) expect(result.detail).toContain('bakedCreations')
   })
 
+  it.each([
+    ['missing progression', { progression: undefined }, 'progression'],
+    ['negative Crumbs', { progression: { crumbs: -5, xp: 0 } }, 'progression.crumbs'],
+    ['fractional Crumbs', { progression: { crumbs: 1.5, xp: 0 } }, 'progression.crumbs'],
+    ['XP as text', { progression: { crumbs: 0, xp: '40' } }, 'progression.xp'],
+    ['missing tutorial', { tutorial: undefined }, 'tutorial'],
+    ['a tutorial flag that is not a boolean', { tutorial: { completed: 'yes', skipped: false } }, 'tutorial.completed'],
+  ])('flags %s', (_, patch, field) => {
+    const result = readSave({ ...makeSave(), ...patch })
+    expect(result).toMatchObject({ ok: false, reason: 'invalid' })
+    if (!result.ok) expect(result.detail).toContain(field)
+  })
+
   it('flags unknown settings values', () => {
     const save = makeSave()
     const raw = { ...save, settings: { ...save.settings, motion: 'wiggly' } }

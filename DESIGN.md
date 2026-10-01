@@ -1,6 +1,6 @@
 # Design
 
-The visual system as built through Interval 4. Tokens live in `src/styles/tokens.css`; this file explains them.
+The visual system as built through Interval 5. Tokens live in `src/styles/tokens.css`; this file explains them.
 
 ## World
 
@@ -20,6 +20,8 @@ Colours are named after the materials they come from.
 | Accents | `--butter-*`, `--enamel-*`, `--kraft` | butter, duck-egg enamelware, kraft labels |
 | Text | `--ink` (cocoa), `--ink-soft` | never pure black |
 | Pen | `--ink-pen` | ballpoint blue: handwriting, ticks, focus ring |
+| Marmalade | `--marmalade-*`, `--chef-white` | ginger fur, tabby stripes, cream muzzle, olive eyes, her toque |
+| Rarity inks | `--rarity-*`, `--foil` | stamp inks (cocoa, enamel, ballpoint, damson, sealing wax, gold leaf); always paired with the word |
 
 All text pairs meet WCAG AA; most meet AAA (`--ink-soft` on paper is 8.5:1, on a rule line 6.7:1). The focus ring (`--ink-pen`) is 3.6:1 against the lightest wood.
 
@@ -67,9 +69,65 @@ Fluid scale from `--text-xs` to `--text-3xl`. Body leading 1.55; handwriting 1.4
 - Cookies on the rack and slips are drawn from the same `look` data as everywhere else.
 - Reached from the rack's "All your baking memories" link rather than a new tab, so the recipe-box tabs stay at five.
 
+## Marmalade
+
+The kitchen cat: an original ginger chef with olive-green eyes, darker tabby stripes, a cream muzzle, a small toque worn at an angle and an apron with a jam heart on the pocket. Drawn once in SVG (`components/Mascot.tsx`); her colours are tokens (`--marmalade-*`).
+
+- **Personality:** warm, curious, clever, a little dramatic, a little mischievous. Encouraging, never sarcastic, never cutesy. One or two short sentences at a time, in her own handwriting (Shantell Sans), with her name written on the card so it's read out as "Marmalade: …".
+- **Expressions:** `idle`, `happy` (closed crescent eyes), `thinking` (glance up, one brow), `surprised` (wide eyes, small "o"), `excited` (sparkly eyes, open mouth), `proud` (half-lidded, smirk: the mischief), `celebrate` (crescents, open mouth, blush). Each is a different face on the same drawing.
+- **Limited animation:** a blink every few seconds, an occasional ear twitch, a slow tail sway, and on big moments (`excited`, `celebrate`) one hat wobble and a small hop. No cinematics, no animation engine, nothing looping that draws the eye.
+- **When she appears:** the tutorial; a first card; the first recipe of a new rarity; a new level; a new ingredient. In the kitchen she sits quietly beside the Baker plaque and says nothing. An ordinary bake gets no Marmalade at all.
+- **Reduced motion:** every animation stops. She still changes expression, because that carries meaning.
+
+## Tutorial
+
+- A recipe card at the top of whichever screen it belongs to, in the page rather than over it, so it never covers the shelf, the bowl or the tab bar. "Card 3 of 9" in pen, a small dashed *Skip the tutorial* beside it, Marmalade and her line, and one primary button when there's something to read ("Hello, Marmalade", "Let's bake", "Where does it go?").
+- **Talking cards** take focus (their line is focusable), so they're read out and Next is one Tab away; Skip is one Shift+Tab away. **Doing cards** (pick, mix, bake) leave focus where the player is and are announced politely.
+- What she points at gets a dashed pen ring (jars, Mix, Bake it, the plaque, the additions shelf). Her card always says the same thing in words.
+- During the pick step Mix waits for exactly flour, sugar and butter, and says so in its description: "Marmalade asked for just flour, sugar and butter."
+- If the player wanders off, the card follows and offers *Back to the Bake* (or wherever it belongs).
+- On phones it tightens: a smaller line, Skip beside the card count, the primary button full width.
+
+## Progress and rarity
+
+- **Baker plaque:** a kraft label with a stitched (dashed) inner edge, under the kitchen sign and at the top of the Pantry. "Baker Level 3", a stitched ribbon filled in butter, "140 / 170 XP" in pen, and Crumbs with their mark (three little crumbs). The ribbon is decoration and never pulses; the words carry it.
+- **Rarity seals** (`components/RaritySeal.tsx`) are rubber stamps, always with the word. Each tier also differs in shape and a count of hand-painted stars, so colour is never the only cue:
+  - Common: plain cocoa-ink stamp, no stars.
+  - Uncommon: enamel-green stamp, one star.
+  - Rare: ballpoint-blue double ring, two stars.
+  - Epic: damson-plum double ring with a stitched edge, three stars.
+  - Legendary: a pressed sealing-wax seal in jam, the word embossed, four stars.
+  - Mythic: gold leaf on paper, stitched all round, five stars.
+- Rare and rarer cards (in the Recipe Book and on the result) get a stitched edge in their stamp's ink; Epic and up a second inner rule. Warm inks and paper, never neon or glow.
+
+## The discovery reveal
+
+- Everything is in the page from the first frame (and read in order); only its appearance is staged, in beats: cookies on the tray → the name (beat 2) → the rarity stamp pressed on (3) → "+15 Crumbs · +20 XP" on a butter slip (4) → any level-up ribbon and the *New recipe!* stamp (5) → Marmalade, if she has something to say (6).
+- A beat is 110ms for Common, rising to 400ms for Mythic (`screens/reveal.ts`), so a common card is done in about a second and a mythic one takes a breath. Rare and up add a few hand-painted stars that twinkle once around the tray.
+- The rarity's chime is timed to the stamp landing; a level-up's ta-da follows it.
+- Screen readers hear the heading ("New recipe discovered: …") and a status line: "Common recipe. Earned 15 Crumbs and 20 XP. Baker Level 2! …".
+- **Level-up:** a butter ribbon with notched ends pinned across the card: "Baker Level 2! Chocolate chips and cinnamon can go in the pantry now.", with a link to the Pantry. Several levels at once are one ribbon naming the new level, never a stack of dialogs.
+
+## Pantry additions
+
+- A second shelf below the owned ones, "Pantry additions", with a dashed edge. Each ingredient is a jar wrapped in kraft paper and tied with jam-red twine, its contents just peeking out, beside a tag with its name, description and what it needs: "Baker Level 2" (with "✓ reached") and "20 Crumbs".
+- *Add to pantry* is a real button when it's possible, and a dashed, flat, still-focusable "not yet" button when it isn't, with the reason written beneath it and attached as its description: "Opens at Baker Level 3. You're Level 2." or "You need 15 more Crumbs. New recipes earn them."
+- Adding asks first, with a primary (not danger) confirm: "It costs 20 Crumbs and stays on your shelf for good. You'll have 30 Crumbs left." Afterwards a butter note with Marmalade takes focus, and the jar is on the shelf.
+- Never a "Shop". Nothing says which recipes an ingredient is for.
+
+## Reduced motion
+
+The same information arrives, just all at once:
+
+- The reveal's beats (`--motion-scale` is 0) and every duration collapse, so name, rarity, reward, level and Marmalade appear together. No sparkles.
+- Marmalade's blink, twitch, tail, hat wobble and hop stop; her expression still changes.
+- Tutorial cards and the "added" note appear without sliding. Nothing scrolls smoothly. The plaque ribbon never animates.
+- Sound is independent: chimes still play if sound is on.
+
 ## Sound
 
-- Sounds are the kitchen's own objects: a glass jar lid (pick), a wooden tock (take out), a whisk (mix), an oven timer bell (result), three rising bell notes (a new recipe). Short, soft, and mixed well under the page.
+- Sounds are the kitchen's own objects: a glass jar lid (pick), a wooden tock (take out), a whisk (mix), an oven timer bell (result), three rising bell notes (a new recipe), a music-box ta-da (a new level), a paper bag and a jar set down (a new ingredient), a paper flick (a tutorial card). Short, soft, and mixed well under the page.
+- **A new recipe's chime grows with its rarity**, from the same three notes: Uncommon adds a fourth, Rare a glassy shimmer, Epic a warm chord underneath, Legendary a second phrase, Mythic both and longer. Longer and fuller, never louder: every file is normalised to the same peak.
 - Every sound answers something the player just did. Nothing plays on load, nothing loops, and there's no music.
 - Screens ask for a meaning (`playSound('mix')`) and never see a file. The sound setting is checked in one place; turning it off also stops anything still ringing.
 - The same sound can't stack on itself, and only a few play at once. A sound that isn't ready is skipped, never late.

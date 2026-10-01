@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react'
 import type { BakeOutcome, Bowl, PreparedBake } from '../domain/baking'
-import type { RecipeId } from '../domain/ids'
+import type { IngredientId, RecipeId } from '../domain/ids'
+import type { UnlockResult } from '../domain/progression'
 import type { NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
 import type { ImportResult } from '../persistence/portable'
@@ -26,6 +27,11 @@ export type GameContextValue = {
    * discovery, and saves all of it in one write. Returns what came out of the oven.
    */
   bake: (bowl: Bowl) => BakeOutcome
+  /**
+   * Adds an ingredient to the pantry for good, paying its Crumbs, in one
+   * write. Refuses, changing nothing, if the level or Crumbs aren't there.
+   */
+  unlockIngredient: (id: IngredientId) => UnlockResult
   /** Ingredients laid out by "Bake again", for the Bake screen to start from. In memory only. */
   preparedBowl: PreparedBake | null
   /**

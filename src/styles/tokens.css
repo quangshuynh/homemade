@@ -64,6 +64,25 @@
   --glass: rgb(233 245 243 / 0.72);
   --rack-wire: #6f7571; /* the cooling rack: dull steel */
 
+  /* ---- Colour: Marmalade, the kitchen cat ---- */
+  --marmalade-300: #f7c38a; /* light ginger fur */
+  --marmalade-500: #e8913f; /* ginger fur */
+  --marmalade-700: #b5601f; /* her stripes */
+  --marmalade-cream: #fff4e2; /* muzzle, chest */
+  --marmalade-eye: #6f8f2e; /* olive-green eyes */
+  --marmalade-pink: #ef9ea3; /* nose, inner ears */
+  --chef-white: #fffdf7;
+
+  /* ---- Colour: rarity inks. Stamps, seals and stitching; always paired with the word. ---- */
+  --rarity-common: #5a4232; /* plain cocoa ink */
+  --rarity-uncommon: #2f6f70; /* enamel green */
+  --rarity-rare: #1d4f91; /* ballpoint blue */
+  --rarity-epic: #6a2f6b; /* damson plum */
+  --rarity-legendary: #a8323c; /* sealing-wax jam */
+  --rarity-mythic: #7a5410; /* gold leaf, dark enough to read */
+  --foil: #f3d27a; /* the paper behind a gold-leaf seal */
+  --crumb: #c98a3f; /* the Crumbs mark */
+
   /* ---- Colour: roles ---- */
   --surface-counter: var(--wood-300);
   --surface-card: var(--paper);
@@ -144,6 +163,8 @@
   --duration-base: 240ms;
   --duration-slow: 520ms;
   --duration-ambient: 7s;
+  /* Multiplies staged delays (the discovery reveal). 0 when motion is reduced, so everything shows at once. */
+  --motion-scale: 1;
 
   /* ---- Device edges: notches, rounded corners, the home indicator ---- */
   --safe-top: env(safe-area-inset-top, 0px);
@@ -185,6 +206,7 @@
   --duration-slow: 0ms;
   --lift-hover: 0px;
   --press-scale: 1;
+  --motion-scale: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -194,5 +216,6 @@
     --duration-slow: 0ms;
     --lift-hover: 0px;
     --press-scale: 1;
+    --motion-scale: 0;
   }
 }

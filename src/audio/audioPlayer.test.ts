@@ -2,13 +2,23 @@ import { describe, expect, it, vi } from 'vitest'
 import { createAudioPlayer, type AudioContextLike } from './audioPlayer'
 import type { SoundId } from './sounds'
 
-const SOUNDS = {
-  pick: { url: '/pick.wav', volume: 0.3 },
-  remove: { url: '/remove.wav', volume: 0.3 },
-  mix: { url: '/mix.wav', volume: 0.3 },
-  ding: { url: '/ding.wav', volume: 0.3 },
-  discover: { url: '/discover.wav', volume: 0.3 },
-} satisfies Record<SoundId, unknown>
+const SOUND_IDS = [
+  'pick',
+  'remove',
+  'mix',
+  'ding',
+  'discover-common',
+  'discover-uncommon',
+  'discover-rare',
+  'discover-epic',
+  'discover-legendary',
+  'discover-mythic',
+  'level-up',
+  'ingredient-unlock',
+  'tutorial-next',
+] as const satisfies readonly SoundId[]
+
+const SOUNDS = Object.fromEntries(SOUND_IDS.map((id) => [id, { url: `/${id}.wav`, volume: 0.3 }])) as Record<SoundId, { url: string; volume: number }>
 
 /** A stand-in AudioContext that records which buffers were started. */
 function fakeContext() {
@@ -54,7 +64,7 @@ describe('audio player', () => {
     player.play('pick')
     await flush()
 
-    expect(loads).toHaveBeenCalledTimes(5)
+    expect(loads).toHaveBeenCalledTimes(SOUND_IDS.length)
     expect(started).toEqual([{ decoded: '/pick.wav' }])
 
     player.play('mix')

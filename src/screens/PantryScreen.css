@@ -114,3 +114,108 @@
     width: 4rem;
   }
 }
+
+/* ---- Progress and pantry additions ---- */
+
+.pantry__plaque {
+  justify-self: start;
+}
+
+/* What just went on the shelf: Marmalade's note, the XP, any new level. */
+.pantry__added {
+  display: grid;
+  gap: var(--space-2);
+  justify-self: start;
+  max-width: 34rem;
+  padding: var(--space-3) var(--space-4);
+  background: var(--butter-300);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-lifted);
+  transform: rotate(-0.5deg);
+  animation: added-in var(--duration-slow) var(--ease-settle) both;
+}
+
+.pantry__added:focus {
+  outline: none;
+}
+
+.pantry__added:focus-visible {
+  outline: var(--focus-width) dashed var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+@keyframes added-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) rotate(-2deg);
+  }
+}
+
+.pantry__added-xp,
+.pantry__added-level {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+}
+
+.pantry__added-level {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-md);
+}
+
+/* Still-wrapped ingredients sit on their own shelf, dressed in kraft paper. */
+.pantry__shelf--additions {
+  background: rgb(110 64 28 / 0.1);
+  outline: 2px dashed rgb(70 38 12 / 0.35);
+  outline-offset: -6px;
+}
+
+.pantry__additions-hint {
+  max-width: var(--measure);
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.addition__tag {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.addition__needs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.addition__needs li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.addition__tick {
+  color: var(--enamel-700);
+}
+
+.addition__crumbs-mark {
+  width: 1.4em;
+  height: auto;
+}
+
+.addition__add {
+  justify-self: start;
+  padding-inline: var(--space-4);
+}
+
+.addition__reason {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
