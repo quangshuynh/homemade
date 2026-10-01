@@ -4,7 +4,7 @@ import { useGame, useSave } from '../../app/gameContext'
 import { navigate } from '../../app/routes'
 import { Button } from '../../components/Button'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
-import { RECIPES } from '../../domain/recipes'
+import { VISIBLE_RECIPES } from '../../domain/recipeBook'
 import { exportSave, MAX_IMPORT_BYTES, readSaveFile, type ImportResult } from '../../persistence/portable'
 
 type Readable = Extract<ImportResult, { ok: true }>
@@ -133,7 +133,8 @@ export function SaveFileControls() {
               <div>
                 <dt>Recipe Book</dt>
                 <dd>
-                  {summary.recipeCount} of {RECIPES.length} recipes
+                  {summary.recipeCount} of {VISIBLE_RECIPES.length} recipes
+                  {summary.secretCount > 0 && `, and ${plural(summary.secretCount, 'secret', 'secrets')}`}
                 </dd>
               </div>
               <div>

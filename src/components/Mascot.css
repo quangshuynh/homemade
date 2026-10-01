@@ -28,14 +28,16 @@
 
 /* Big moments: the hat wobbles once and she gives a small hop. Never on a loop. */
 .mascot--excited .mascot__hat,
-.mascot--celebrate .mascot__hat {
+.mascot--celebrate .mascot__hat,
+.mascot--starstruck .mascot__hat {
   transform-box: fill-box;
   transform-origin: 50% 100%;
   animation: mascot-hat-wobble 700ms var(--ease-out) both;
 }
 
 .mascot--excited .mascot__figure,
-.mascot--celebrate .mascot__figure {
+.mascot--celebrate .mascot__figure,
+.mascot--starstruck .mascot__figure {
   animation: mascot-hop 520ms var(--ease-settle) both;
 }
 

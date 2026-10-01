@@ -136,6 +136,14 @@ Object.assign(sounds, {
   'tutorial-next': lowPass(render(0.16, (t) => noise() * Math.exp(-t / 0.03) * 0.7 + partial(t, 880, 0.03, 0.3)), 0.35),
 })
 
+// Interval 6. After the others, so none of their files change.
+Object.assign(sounds, {
+  // A secret recipe, just before its rarity chime: a hushed minor chord and
+  // three bell notes stepping *down*, the opposite of the discovery phrase.
+  // A layer that says "something unexpected", never a fanfare.
+  'discover-secret': render(1.5, (t) => pad(t, [220, 261.6, 329.6], 1.3) * 0.45 + bells(t - 0.08, [1975.5, 1568, 1318.5], 0.16, 0.8)),
+})
+
 for (const [name, data] of Object.entries(sounds)) {
   writeFileSync(new URL(`${name}.wav`, out), wav(data, name === 'mix' || name === 'tutorial-next' ? 0.45 : 0.6))
 }

@@ -92,3 +92,37 @@ describe('reduced motion contract', () => {
     expect(read('screens/BakeScreen.css')).toMatch(/:root\[data-motion='reduced'\] \.bake-result__sparkles \{\s*display: none/)
   })
 })
+
+describe('Recipe Book families on small screens', () => {
+  const book = rules(readFileSync(join(SRC, 'screens/RecipeBookScreen.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''))
+  const rule = (selector: string) => book.find((entry) => entry.selector === selector)?.body ?? ''
+
+  it('wraps the family dividers onto more rows instead of running off the side of a phone', () => {
+    expect(declaration(rule('.recipe-book__dividers'), 'flex-wrap')).toBe('wrap')
+    expect(rule('.recipe-book__dividers')).not.toMatch(/overflow-x|white-space:\s*nowrap/)
+  })
+
+  it('keeps every divider a full-size touch target', () => {
+    expect(declaration(rule('.book-divider'), 'min-height')).toBe('var(--tap-target)')
+  })
+
+  it('lets long recipe names break rather than push the card wider', () => {
+    expect(declaration(rule('.book-card__name'), 'overflow-wrap')).toBe('anywhere')
+  })
+})
+
+describe('secret and Mythic reveals under reduced motion', () => {
+  const bake = rules(readFileSync(join(SRC, 'screens/BakeScreen.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''))
+
+  it('shifts a secret’s beats only in multiples of the beat, so reduced motion still makes them all zero', () => {
+    const secret = bake.find(({ selector }) => selector === '.bake-result--secret')!.body
+    const beats = [...secret.matchAll(/--reveal-at-\d:\s*([^;]+);/g)].map((match) => match[1]!.trim())
+    expect(beats.length).toBeGreaterThan(0)
+    for (const beat of beats) expect(beat).toMatch(/^calc\(var\(--beat\) \* \d\)$/)
+  })
+
+  it('gives the Mythic paper and gold, never a glow, a shake or anything that flashes', () => {
+    const mythic = bake.filter(({ selector }) => selector.includes('mythic')).map(({ body }) => body).join('\n')
+    expect(mythic).not.toMatch(/animation:[^;]*infinite|shake|blink|filter:|text-shadow/)
+  })
+})

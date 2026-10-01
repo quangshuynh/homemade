@@ -13,6 +13,7 @@ const SOUND_IDS = [
   'discover-epic',
   'discover-legendary',
   'discover-mythic',
+  'discover-secret',
   'level-up',
   'ingredient-unlock',
   'tutorial-next',

@@ -10,6 +10,7 @@ import { BakingBowl, Cookie, IngredientJar, Oven } from '../components/kitchenAr
 import { MascotSays } from '../components/Mascot'
 import { HandNote, RecipeCard } from '../components/Paper'
 import { RaritySeal } from '../components/RaritySeal'
+import { SecretSeal } from '../components/SecretSeal'
 import { ScreenTitle, SCREEN_TITLE_ID } from '../components/ScreenTitle'
 import {
   addToBowl,
@@ -25,23 +26,33 @@ import {
 import type { IngredientId } from '../domain/ids'
 import { findIngredient, getIngredient, listIngredientNames } from '../domain/ingredients'
 import { lockedIngredients, RARITY_LABELS } from '../domain/progression'
+import { familyName } from '../domain/recipeBook'
 import { findRecipeById } from '../domain/recipes'
 import type { CookieRarity, Ingredient } from '../domain/types'
 import { describeLevelUp, discoveryReaction } from '../mascot/reactions'
 import { isTutorialBowl, TUTORIAL_BOWL } from '../tutorial/tutorial'
 import { useTutorial } from '../tutorial/tutorialContext'
-import { discoverySoundDelay, REVEAL_BEAT_MS } from './reveal'
+import { discoverySoundDelay, REVEAL_BEAT_MS, secretSoundDelay } from './reveal'
 import './BakeScreen.css'
 
 /** Long enough to see the oven, short enough never to feel like waiting. */
 export const OVEN_TIME_MS = 900
 
-/** "Common recipe. Earned 15 Crumbs and 20 XP." and any new level, for the status line. */
+/**
+ * "Common recipe. Earned 15 Crumbs and 20 XP." and any new level, for the
+ * status line, in the order the reveal shows them. A secret says so first.
+ */
 function describeReward(outcome: BakeOutcome): string {
   if (!outcome.reward) return ''
   const { rarity, crumbs, xp } = outcome.reward
+  const secret = isSecretFind(outcome) ? 'Something unexpected: a secret recipe! ' : ''
   const level = outcome.levelUp ? ` ${describeLevelUp(outcome.levelUp)}` : ''
-  return `${RARITY_LABELS[rarity]} recipe. Earned ${crumbs} Crumbs and ${xp} XP.${level}`
+  return `${secret}${RARITY_LABELS[rarity]} recipe. Earned ${crumbs} Crumbs and ${xp} XP.${level}`
+}
+
+/** A secret recipe baked for the first time. */
+function isSecretFind(outcome: BakeOutcome): boolean {
+  return outcome.newDiscovery && outcome.result.kind === 'recipe' && outcome.result.recipe.isSecret
 }
 
 type Phase = { kind: 'choosing' } | { kind: 'mixed' } | { kind: 'baking'; outcome: BakeOutcome } | { kind: 'done'; outcome: BakeOutcome }
@@ -53,6 +64,9 @@ const DOUGH_WORDS = {
   nutty: 'nutty brown',
   cocoa: 'chocolate-brown',
   dark: 'very dark',
+  caramel: 'toffee-brown',
+  lemon: 'pale yellow',
+  snow: 'snowy white',
 } as const
 
 function describeChange(change: BowlChange, ingredient: Ingredient): string {
@@ -147,8 +161,11 @@ export function BakeScreen() {
     // During the tutorial Marmalade reads the reward out herself; otherwise the status line does.
     if (!tutorialOn) setMessage(describeReward(doneOutcome))
     const { rarity } = doneOutcome.reward
-    const chime = discoverySoundDelay(rarity, still)
+    const secret = isSecretFind(doneOutcome)
+    const chime = discoverySoundDelay(rarity, still, secret)
     const timers = [window.setTimeout(() => latest.current.playSound(discoverySound(rarity)), chime)]
+    // A secret gets a hush first, with "Something unexpected…", then its rarity's chime as usual.
+    if (secret) timers.push(window.setTimeout(() => latest.current.playSound('discover-secret'), secretSoundDelay(rarity, still)))
     if (doneOutcome.levelUp) timers.push(window.setTimeout(() => latest.current.playSound('level-up'), chime + 1100))
     return () => timers.forEach((timer) => window.clearTimeout(timer))
   }, [doneOutcome, report])
@@ -408,8 +425,10 @@ type BakeResultProps = {
 /**
  * Out of the oven. A first discovery is revealed in beats: the cookies, the
  * name, the rarity stamp, what it earned, any new level, the "New recipe!"
- * stamp and, now and then, Marmalade. Every part is in the page from the
- * start (and read out in order); only its appearance is staged.
+ * stamp and, now and then, Marmalade. A secret gets one beat more up front
+ * ("Something unexpected…") and its own seal; a Mythic gets gold-leaf paper
+ * and a line of its own. Every part is in the page from the start (and read
+ * out in order); only its appearance is staged.
  */
 function BakeResult({ outcome, headingRef, headingId, onBakeAgain, quietMascot = false }: BakeResultProps) {
   const save = useSave()
@@ -417,14 +436,18 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain, quietMascot =
   const look = result.kind === 'recipe' ? result.recipe.look : result.look
   const name = result.kind === 'recipe' ? result.recipe.name : result.name
   const rarity = result.kind === 'recipe' ? result.recipe.rarity : null
+  const secret = result.kind === 'recipe' && result.recipe.isSecret
+  const secretFind = newDiscovery && secret
+  const mythicFind = newDiscovery && rarity === 'mythic'
   const reaction = quietMascot ? null : discoveryReaction(outcome, save.discoveredRecipes.length)
   const style = rarity && newDiscovery ? ({ '--reveal-beat': `${REVEAL_BEAT_MS[rarity]}ms` } as CSSProperties) : undefined
 
   return (
     <section
-      className={['bake-result', newDiscovery && 'bake-result--new'].filter(Boolean).join(' ')}
+      className={['bake-result', newDiscovery && 'bake-result--new', secretFind && 'bake-result--secret'].filter(Boolean).join(' ')}
       aria-labelledby={headingId}
       data-rarity={rarity ?? undefined}
+      data-secret={secret ? '' : undefined}
       style={style}
     >
       <div className="bake-result__tray" aria-hidden="true">
@@ -437,13 +460,14 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain, quietMascot =
       <RecipeCard className="bake-result__card">
         {newDiscovery && (
           <span className="bake-result__stamp" aria-hidden="true">
-            New recipe!
+            {secretFind ? 'Secret recipe!' : mythicFind ? 'Mythic find!' : 'New recipe!'}
           </span>
         )}
+        {secretFind && <p className="bake-result__unexpected">Something unexpected…</p>}
         <h2 id={headingId} ref={headingRef} tabIndex={-1} className="bake-result__name">
           {newDiscovery && (
             <>
-              <span className="visually-hidden">New recipe discovered:</span>{' '}
+              <span className="visually-hidden">{secretFind ? 'Secret recipe discovered:' : 'New recipe discovered:'}</span>{' '}
             </>
           )}
           {name}
@@ -453,6 +477,12 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain, quietMascot =
           <>
             <p className="bake-result__rarity">
               <RaritySeal rarity={result.recipe.rarity} className="bake-result__seal" />
+              {secret && (
+                <>
+                  {' '}
+                  <SecretSeal className="bake-result__secret-seal" />
+                </>
+              )}
             </p>
             {reward && (
               <p className="bake-result__reward">
@@ -468,12 +498,17 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain, quietMascot =
                 {levelUp.newlyAvailable.length > 0 && <a href={hrefFor('pantry')}>See what’s new in the Pantry</a>}
               </div>
             )}
+            {mythicFind && (
+              <p className="bake-result__mythic-note">
+                <span aria-hidden="true">✦ </span>A Mythic recipe. Hardly any kitchen ever writes one down.<span aria-hidden="true"> ✦</span>
+              </p>
+            )}
             {newDiscovery && <HandNote>{result.recipe.discoveryText}</HandNote>}
             <p>{result.recipe.description}</p>
             <p className="bake-result__descriptors">{result.recipe.descriptors.join(' · ')}</p>
             <p className="bake-result__made">Made with {listIngredientNames(result.ingredientIds)}.</p>
             <p className="bake-result__book">
-              {newDiscovery ? 'Copied into your Recipe Book.' : 'Already in your Recipe Book.'}
+              {`${newDiscovery ? 'Copied into' : 'Already in'} your Recipe Book, under ${familyName(result.recipe.family)}.`}
             </p>
           </>
         ) : (

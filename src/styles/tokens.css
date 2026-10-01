@@ -52,6 +52,13 @@
   --swatch-oat: #dcc393;
   --swatch-peanut: #b9803f;
   --swatch-honey: #d9951c;
+  --swatch-brown-sugar: #9a6236;
+  --swatch-lemon: #f2d34b;
+  --swatch-jam: #b8283a;
+  --swatch-salt: #e4e2dc;
+  --swatch-white-chocolate: #f3e6c4;
+  --swatch-maple: #a2531c;
+  --swatch-pistachio: #93ad5a;
 
   --dough-pale: #f0d8a4;
   --dough-golden: #daa55a;
@@ -59,6 +66,9 @@
   --dough-nutty: #b98145;
   --dough-cocoa: #7a4a2e;
   --dough-dark: #4e2c1b;
+  --dough-caramel: #b0703a;
+  --dough-lemon: #f0dc8a;
+  --dough-snow: #faf4ea;
 
   --oven-glow: #f39a3d;
   --glass: rgb(233 245 243 / 0.72);
@@ -81,6 +91,8 @@
   --rarity-legendary: #a8323c; /* sealing-wax jam */
   --rarity-mythic: #7a5410; /* gold leaf, dark enough to read */
   --foil: #f3d27a; /* the paper behind a gold-leaf seal */
+  --mythic-paper: #fcf1d2; /* a Mythic card: parchment with a little gold in it */
+  --secret-ink: #2c3a5e; /* midnight ink: a secret's wax seal and its marks. Never a rarity. */
   --crumb: #c98a3f; /* the Crumbs mark */
 
   /* ---- Colour: roles ---- */

@@ -97,12 +97,12 @@ describe('baking', () => {
 
     const heading = await screen.findByRole('heading', { level: 2, name: 'New recipe discovered: Chocolate Chip Cookie' })
     await waitFor(() => expect(heading).toHaveFocus())
-    expect(screen.getByText('Copied into your Recipe Book.')).toBeInTheDocument()
+    expect(screen.getByText('Copied into your Recipe Book, under Chocolate.')).toBeInTheDocument()
     expect((state.stored as GameSave).discoveredRecipes.map((entry) => entry.recipeId)).toEqual(['recipe_chocolate-chip'])
 
     await user.click(screen.getByRole('link', { name: 'Open the Recipe Book' }))
-    expect(await screen.findByRole('heading', { level: 2, name: 'Chocolate Chip Cookie' })).toBeInTheDocument()
-    expect(screen.getByText('1 of 12 recipes written down.')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 3, name: 'Chocolate Chip Cookie' })).toBeInTheDocument()
+    expect(screen.getByText('1 of 24 recipes written down.')).toBeInTheDocument()
   })
 
   it('does not rediscover a recipe baked a second time', async () => {
@@ -120,7 +120,7 @@ describe('baking', () => {
 
     const heading = await screen.findByRole('heading', { level: 2, name: 'Chocolate Chip Cookie' })
     expect(heading).not.toHaveTextContent(/New recipe/)
-    expect(screen.getByText('Already in your Recipe Book.')).toBeInTheDocument()
+    expect(screen.getByText('Already in your Recipe Book, under Chocolate.')).toBeInTheDocument()
     expect((state.stored as GameSave).discoveredRecipes).toEqual([{ recipeId: 'recipe_chocolate-chip', discoveredAt: firstDate }])
   })
 
@@ -192,7 +192,8 @@ describe('recipe book', () => {
     startAt('#/recipe-book', stillSave())
     await screen.findByRole('heading', { level: 1, name: 'Recipe Book' })
 
-    expect(screen.getAllByText('Not discovered yet')).toHaveLength(12)
+    // Every recipe that isn't a secret has a blank card; secrets have nothing at all.
+    expect(screen.getAllByText('Not discovered yet')).toHaveLength(24)
     expect(screen.queryByText(/Shortbread|Snickerdoodle|Chocolate Chip/)).not.toBeInTheDocument()
     expect(screen.queryByText('Ingredients')).not.toBeInTheDocument()
   })
@@ -202,9 +203,9 @@ describe('recipe book', () => {
       '#/recipe-book',
       makeSave({ discoveredRecipes: [{ recipeId: 'recipe_snickerdoodle' as never, discoveredAt: '2026-04-01T12:00:00.000Z' }] }),
     )
-    const card = (await screen.findByRole('heading', { level: 2, name: 'Snickerdoodle' })).closest('article')!
+    const card = (await screen.findByRole('heading', { level: 3, name: 'Snickerdoodle' })).closest('article')!
     expect(within(card).getByRole('list')).toHaveTextContent('FlourSugarButterEggCinnamon')
-    expect(screen.getAllByText('Not discovered yet')).toHaveLength(11)
+    expect(screen.getAllByText('Not discovered yet')).toHaveLength(23)
   })
 })
 
@@ -214,7 +215,7 @@ describe('pantry', () => {
     await screen.findByRole('heading', { level: 1, name: 'Pantry' })
 
     expect(screen.getByRole('heading', { level: 2, name: 'Baking basics' })).toBeInTheDocument()
-    expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(12)
+    expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(19)
     expect(screen.getByText('Plain white flour. Holds everything else together.')).toBeInTheDocument()
   })
 })
