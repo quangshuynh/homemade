@@ -44,35 +44,40 @@ export function TutorialGuide({ route }: { route: RouteId }) {
 
   return (
     <aside className="guide" aria-label="Tutorial">
-      <p className="guide__count">
-        Card {stepNumber(run.step)} of {TUTORIAL_STEPS.length}
-      </p>
-      <MascotSays expression={definition.expression} lineRef={talking && here ? lineRef : undefined}>
-        {line}
-      </MascotSays>
-      <div className="guide__actions">
-        {!here ? (
-          <Button variant="primary" onClick={() => navigate(definition.route)}>
-            Back to the {ROUTES[definition.route].title}
-          </Button>
-        ) : (
-          talking && (
-            <Button variant="primary" onClick={next}>
-              {NEXT_LABELS[run.step] ?? 'Next'}
-            </Button>
-          )
-        )}
+      <div className="guide__top">
+        <p className="guide__count">
+          Card {stepNumber(run.step)} of {TUTORIAL_STEPS.length}
+        </p>
         <Button
           className="guide__skip"
           onClick={() => {
             skip()
-            // The card is about to go: land on the screen's heading, not on nothing.
-            requestAnimationFrame(() => document.getElementById(SCREEN_TITLE_ID)?.focus())
+            // The card is about to go: land on the screen's heading, not on nothing. A timeout
+            // rather than a frame, so it still happens in a tab that isn't painting.
+            window.setTimeout(() => document.getElementById(SCREEN_TITLE_ID)?.focus(), 0)
           }}
         >
           Skip the tutorial
         </Button>
       </div>
+      <MascotSays expression={definition.expression} lineRef={talking && here ? lineRef : undefined}>
+        {line}
+      </MascotSays>
+      {!here ? (
+        <div className="guide__actions">
+          <Button variant="primary" onClick={() => navigate(definition.route)}>
+            Back to the {ROUTES[definition.route].title}
+          </Button>
+        </div>
+      ) : (
+        talking && (
+          <div className="guide__actions">
+            <Button variant="primary" onClick={next}>
+              {NEXT_LABELS[run.step] ?? 'Next'}
+            </Button>
+          </div>
+        )
+      )}
       {/* Cards that wait for the player are read out without moving focus. */}
       <p className="visually-hidden" role="status" aria-live="polite">
         {here && !talking ? `Marmalade: ${line}` : ''}

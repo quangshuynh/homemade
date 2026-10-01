@@ -20,7 +20,7 @@ A cozy baking game about discovering recipes by experimenting with ingredients, 
 
 ## Positioning
 
-Not an idle or clicker game: nothing accumulates while you're away, and there are no numbers to grind. Progress is what you've discovered and made. The interface is the kitchen itself (counter, recipe box, jars, index cards), not a dashboard around a game.
+Not an idle or clicker game: nothing accumulates while you're away, and there are no numbers to grind. Progress is what you've discovered and made; Crumbs, XP and levels exist only to give discoveries a little weight and open up new ingredients to experiment with. The interface is the kitchen itself (counter, recipe box, jars, index cards), not a dashboard around a game.
 
 ## Constraints
 
@@ -41,7 +41,6 @@ These are decisions later work builds on. Change them on purpose, not by acciden
 - **Discovery happens once.** The first bake of a recipe records `{ recipeId, discoveredAt }`, and rebakes change nothing in the save.
 - **Undiscovered recipes stay secret.** The Recipe Book shows a blank card for each, with no name, ingredients or hints. The total count is shown.
 - **Catalogs are static; saves store ids.** Ingredient and recipe ids are permanent once shipped. Saves never copy catalog data. A save that references an id the catalog no longer has stays loadable.
-- **No economy.** No currency, prices, scores, XP, timers or rarity. The pantry starts full.
 - **Every completed bake is remembered.** Each bake, whether a new recipe, a rebake or an experiment, becomes exactly one creation `{ id, ingredientIds, recipeId | null, bakedAt }`. Baking the same thing twice makes two creations. Creations store ids and a time only.
 - **Memory is bounded.** The kitchen keeps the last 50 bakes (`MAX_BAKED_CREATIONS`). Past that, the oldest are let go. This is a keepsake, not an archive.
 - **Memories never affect discovery.** Discoveries and creations are separate lists; trimming history never touches discoveries, and a creation is never how a recipe counts as found.
@@ -49,7 +48,7 @@ These are decisions later work builds on. Change them on purpose, not by acciden
 - **Bake again prepares, it never bakes.** It lays a discovered recipe's ingredients in the bowl, unmixed. The player can change them, and must still mix and bake. Undiscovered recipes never offer it.
 - **The bowl isn't saved.** A prepared or half-filled bowl lives only in the open tab; a refresh starts with an empty bowl.
 - **Undiscovered recipes give one hint: how many ingredients they need.** Never a name, ingredient, flavour or look. The count narrows the search without spoiling it.
-- **New ingredients reach existing kitchens.** Because every pantry holds the whole catalog, a save upgrade adds newly shipped ingredients to the shelf, keeping everything already there.
+- **Ingredients are owned, never lost.** Through Interval 4 every pantry held the whole catalog. From Interval 5 a new kitchen starts with five (flour, sugar, butter, egg, vanilla) and adds the rest from the Pantry. Anything a kitchen already owns stays owned forever: no upgrade, rebalance or reset of progression ever takes an ingredient away.
 
 ## Portability, installs and sound (Interval 4)
 
@@ -61,7 +60,23 @@ These are decisions later work builds on. Change them on purpose, not by acciden
 - **Installing is optional and never nagged.** Where the browser offers it, Settings has a quiet *Install Homemade*. Nowhere else, and never a fake button where installing isn't possible.
 - **Offline play continues from the local save.** Once loaded, the game opens and bakes without a network. Nothing needs a connection.
 - **Updates wait for the player.** A new version downloads in the background and a small note offers *Refresh* or *Later*. The game never reloads by itself, and an update never touches the save.
-- **Audio is optional and player-controlled.** A handful of short, quiet effects tied to actions (jar, take out, whisk, oven timer, new recipe). No music, nothing on page load, and the sound setting governs all of it. Sound and motion are separate choices.
+- **Audio is optional and player-controlled.** A handful of short, quiet effects tied to actions (jar, take out, whisk, oven timer, a new recipe's chime by rarity, a new level, a new ingredient, a tutorial card). No music, nothing on page load, and the sound setting governs all of it. Sound and motion are separate choices.
+
+## Progression (Interval 5)
+
+The loop is *experiment → discover → see its rarity → earn Crumbs and XP → add an ingredient → discover more*. Progression serves discovery; it never replaces it.
+
+- **Rarity is fixed.** Every recipe has one authored rarity (common, uncommon, rare, epic, legendary, mythic). It's part of the recipe, the same every bake, and never rolled. High rarities are genuinely scarce.
+- **First discoveries earn; nothing else does.** A recipe's first bake pays Crumbs and Baker XP by its rarity, exactly once. Rebakes and Kitchen Experiments earn nothing, so there is nothing to farm. Reward values live in domain code (`RARITY_REWARDS`); screens only show them.
+- **One currency: Crumbs.** Earned, kept and spent only by the player. Never bought, never expiring, never regenerating, never needed to bake. There is no energy, no timer, no waiting.
+- **Levels open up access, not power.** Baker Levels 1–10 come from total XP (derived, never stored). A level makes ingredients available to add; it never makes baking faster, luckier, better or rarer. No stats.
+- **Adding an ingredient is clear and permanent.** Each locked ingredient shows its level and Crumb cost up front, and why it can't be added yet. The player confirms; the Crumbs, the ingredient and its small XP thank-you change in one save write.
+- **Nothing can get stuck.** Costs are balanced so that whatever order ingredients are added in, the next one is always reachable from discoveries the pantry allows. A test checks every reachable pantry.
+- **Undiscovered recipes still give nothing away.** Locked ingredients never say which recipes they're for, and a blank Recipe Book card never shows rarity or ingredients.
+- **Existing kitchens keep everything.** Upgrading an Interval 4 save keeps every owned ingredient, discovery, date, memory, name and setting. Crumbs start at 0 (an existing kitchen already owns everything Crumbs could buy). XP is the sum of each recipe already in the book, counted once, so the level matches the book; those recipes stay discovered and can't pay again. The tutorial is marked done.
+- **The tutorial is short, skippable and replayable.** A brand-new kitchen opens on Marmalade's nine-card tutorial, which guides one real bake (shortbread, from the starter pantry). Skip is always one control away and takes nothing away. *Replay the tutorial* in Settings teaches it again; it pays no reward of its own and a replayed discovery is already found, so replaying can't earn anything.
+- **Marmalade is company, not a nag.** She speaks during the tutorial, for a first card, the first recipe of a new rarity, a new level and a new ingredient. An ordinary bake gets no reaction.
+- **Story stays light.** The kitchen's old recipe box has faded cards; baking a recipe writes its card back in. Chapters come later.
 
 ## Voice
 
@@ -69,7 +84,8 @@ Warm, plain, a little playful, never cutesy. Short sentences, written like a not
 
 ## Open decisions
 
-- Whether and how ingredients are ever gained (currently everyone has all of them).
+- How the level curve extends when new recipes arrive (finishing today's catalog lands exactly on Level 10).
+- Whether a mythic recipe ships (the tier exists, with rewards, sound and seal, but no recipe uses it yet).
 - Whether memories should ever be kept beyond the cap.
 - Whether to offer background music (deliberately not yet).
 - Whether archived saves should ever be visible to the player (today they're kept, but only reachable through browser devtools).

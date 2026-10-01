@@ -272,10 +272,14 @@
 /* The Baker plaque pinned under the sign, with Marmalade sitting beside it. */
 .kitchen__progress {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-end;
-  gap: var(--space-2) var(--space-4);
+  gap: var(--space-3);
   margin-top: var(--space-4);
+}
+
+.kitchen__progress .plaque {
+  flex: 0 1 22rem;
+  min-width: 0;
 }
 
 .kitchen__cat {
@@ -283,8 +287,8 @@
   flex: none;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 480px) {
   .kitchen__cat {
-    width: 3.75rem;
+    width: 3.5rem;
   }
 }

@@ -16,21 +16,23 @@ export function BakerPlaque({ progression, className }: { progression: Progressi
       <div className="plaque__ribbon" aria-hidden="true">
         <span className="plaque__ribbon-fill" style={{ inlineSize: `${Math.round(fraction * 100)}%` }} />
       </div>
-      <p className="plaque__xp">
-        {atTop ? (
-          <>
-            {xp} XP <span className="plaque__aside">· top level for now (of {MAX_LEVEL})</span>
-          </>
-        ) : (
-          <>
-            {xp} / {nextLevelXp} XP <span className="visually-hidden">towards Baker Level {level + 1}</span>
-          </>
-        )}
-      </p>
-      <p className="plaque__crumbs">
-        <CrumbsMark className="plaque__crumbs-mark" />
-        {progression.crumbs} {progression.crumbs === 1 ? 'Crumb' : 'Crumbs'}
-      </p>
+      <div className="plaque__row">
+        <p className="plaque__xp">
+          {atTop ? (
+            <>
+              {xp} XP <span className="plaque__aside">· top level for now (of {MAX_LEVEL})</span>
+            </>
+          ) : (
+            <>
+              {xp} / {nextLevelXp} XP <span className="visually-hidden">towards Baker Level {level + 1}</span>
+            </>
+          )}
+        </p>
+        <p className="plaque__crumbs">
+          <CrumbsMark className="plaque__crumbs-mark" />
+          {progression.crumbs} {progression.crumbs === 1 ? 'Crumb' : 'Crumbs'}
+        </p>
+      </div>
     </div>
   )
 }

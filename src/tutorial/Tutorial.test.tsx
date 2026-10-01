@@ -125,8 +125,8 @@ describe('first-time tutorial', () => {
     const { saved } = startAt(stillKitchen())
     await screen.findByText(/I’m Marmalade/)
 
-    await user.tab()
-    await user.tab()
+    // Skip sits just before Marmalade's line, so it's one Shift+Tab away.
+    await user.tab({ shift: true })
     expect(within(guide()).getByRole('button', { name: 'Skip the tutorial' })).toHaveFocus()
     await user.keyboard('{Enter}')
 

@@ -553,6 +553,10 @@
 }
 
 .bake-result__level a {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: var(--tap-target);
   font-weight: var(--weight-bold);
   color: var(--ink);
 }

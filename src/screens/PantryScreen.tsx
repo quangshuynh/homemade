@@ -168,7 +168,7 @@ export function PantryScreen() {
                         if (!reason) setConfirming(ingredientId)
                       }}
                     >
-                      Add for {crumbs} Crumbs
+                      Add to pantry
                     </Button>
                     {reason && (
                       <p id={reasonId} className="addition__reason">
