@@ -1,11 +1,15 @@
-import { useEffect, useId, useRef, useState, type RefObject } from 'react'
+import { useEffect, useId, useRef, useState, type CSSProperties, type RefObject } from 'react'
 import { useGame, useSave } from '../app/gameContext'
 import { hrefFor } from '../app/routes'
 import { useReducedMotion } from '../app/useReducedMotion'
 import { useSound } from '../audio/soundContext'
+import { discoverySound } from '../audio/sounds'
+import { CrumbsMark } from '../components/BakerPlaque'
 import { Button, LinkButton } from '../components/Button'
 import { BakingBowl, Cookie, IngredientJar, Oven } from '../components/kitchenArt'
+import { MascotSays } from '../components/Mascot'
 import { HandNote, RecipeCard } from '../components/Paper'
+import { RaritySeal } from '../components/RaritySeal'
 import { ScreenTitle, SCREEN_TITLE_ID } from '../components/ScreenTitle'
 import {
   addToBowl,
@@ -20,12 +24,25 @@ import {
 } from '../domain/baking'
 import type { IngredientId } from '../domain/ids'
 import { findIngredient, getIngredient, listIngredientNames } from '../domain/ingredients'
+import { lockedIngredients, RARITY_LABELS } from '../domain/progression'
 import { findRecipeById } from '../domain/recipes'
-import type { Ingredient } from '../domain/types'
+import type { CookieRarity, Ingredient } from '../domain/types'
+import { describeLevelUp, discoveryReaction } from '../mascot/reactions'
+import { isTutorialBowl, TUTORIAL_BOWL } from '../tutorial/tutorial'
+import { useTutorial } from '../tutorial/tutorialContext'
+import { discoverySoundDelay, REVEAL_BEAT_MS } from './reveal'
 import './BakeScreen.css'
 
 /** Long enough to see the oven, short enough never to feel like waiting. */
 export const OVEN_TIME_MS = 900
+
+/** "Common recipe. Earned 15 Crumbs and 20 XP." and any new level, for the status line. */
+function describeReward(outcome: BakeOutcome): string {
+  if (!outcome.reward) return ''
+  const { rarity, crumbs, xp } = outcome.reward
+  const level = outcome.levelUp ? ` ${describeLevelUp(outcome.levelUp)}` : ''
+  return `${RARITY_LABELS[rarity]} recipe. Earned ${crumbs} Crumbs and ${xp} XP.${level}`
+}
 
 type Phase = { kind: 'choosing' } | { kind: 'mixed' } | { kind: 'baking'; outcome: BakeOutcome } | { kind: 'done'; outcome: BakeOutcome }
 
@@ -72,11 +89,22 @@ export function BakeScreen() {
   const station = useRef<HTMLElement>(null)
   const ids = { shelf: useId(), bowl: useId(), result: useId(), mixHint: useId() }
   const playSound = useSound()
+  const tutorial = useTutorial()
+  const tutorialStep = tutorial.run?.step
+  // While Marmalade is guiding a bake, she points at the shortbread jars and Mix waits for them.
+  const guiding = tutorialStep === 'pick' || tutorialStep === 'mix' || tutorialStep === 'bake'
+  const mixHeldForTutorial = guiding && !isTutorialBowl(bowl)
   // For effects that should run once per event, not again when these change underneath them.
-  const latest = useRef({ reducedMotion, playSound })
+  const latest = useRef({ reducedMotion, playSound, tutorialOn: tutorial.run !== null })
   useEffect(() => {
-    latest.current = { reducedMotion, playSound }
+    latest.current = { reducedMotion, playSound, tutorialOn: tutorial.run !== null }
   })
+
+  // Tell the tutorial what's in the bowl, and whether it's mixed.
+  const { report } = tutorial
+  useEffect(() => {
+    if (phase.kind === 'choosing' || phase.kind === 'mixed') report({ type: 'bowl', bowl, mixed: phase.kind === 'mixed' })
+  }, [bowl, phase.kind, report])
 
   const pantry = save.pantryIngredientIds.map(findIngredient).filter((item): item is Ingredient => item !== undefined)
   const inBowl = bowl.map(getIngredient)
@@ -107,16 +135,23 @@ export function BakeScreen() {
     if (phase.kind === 'done') resultHeading.current?.focus()
   }, [phase.kind])
 
-  // Out of the oven: the timer dings, and a first discovery gets a little chime as the stamp lands.
+  // Out of the oven: the timer dings, a first discovery gets its rarity's chime as
+  // the stamp lands, and a new level gets a little ta-da once that has rung.
   const doneOutcome = phase.kind === 'done' ? phase.outcome : null
   useEffect(() => {
     if (!doneOutcome) return
-    const { playSound: play, reducedMotion: still } = latest.current
+    const { playSound: play, reducedMotion: still, tutorialOn } = latest.current
     play('ding')
-    if (!doneOutcome.newDiscovery) return
-    const timer = window.setTimeout(() => latest.current.playSound('discover'), still ? 350 : 650)
-    return () => window.clearTimeout(timer)
-  }, [doneOutcome])
+    report({ type: 'baked', outcome: doneOutcome })
+    if (!doneOutcome.reward) return
+    // During the tutorial Marmalade reads the reward out herself; otherwise the status line does.
+    if (!tutorialOn) setMessage(describeReward(doneOutcome))
+    const { rarity } = doneOutcome.reward
+    const chime = discoverySoundDelay(rarity, still)
+    const timers = [window.setTimeout(() => latest.current.playSound(discoverySound(rarity)), chime)]
+    if (doneOutcome.levelUp) timers.push(window.setTimeout(() => latest.current.playSound('level-up'), chime + 1100))
+    return () => timers.forEach((timer) => window.clearTimeout(timer))
+  }, [doneOutcome, report])
 
   function change(next: BowlChange, ingredient: Ingredient) {
     if (next.outcome === 'added') playSound('pick')
@@ -137,7 +172,7 @@ export function BakeScreen() {
   }
 
   function mix() {
-    if (!canMix(bowl)) return
+    if (!canMix(bowl) || mixHeldForTutorial) return
     setPhase({ kind: 'mixed' })
     setMessage(`Mixed. It’s a ${DOUGH_WORDS[mixedDoughTone(bowl)]} dough.`)
     playSound('mix')
@@ -183,13 +218,22 @@ export function BakeScreen() {
     return (
       <div className="bake">
         <ScreenTitle className="bake__title">Bake</ScreenTitle>
-        <BakeResult outcome={phase.outcome} headingRef={resultHeading} headingId={ids.result} onBakeAgain={bakeAgain} />
+        <BakeResult
+          outcome={phase.outcome}
+          headingRef={resultHeading}
+          headingId={ids.result}
+          onBakeAgain={bakeAgain}
+          // Marmalade is already talking on the tutorial card.
+          quietMascot={tutorial.run !== null}
+        />
         {status}
       </div>
     )
   }
 
   const room = BOWL_CAPACITY - bowl.length
+  const lockedCount = lockedIngredients(save).length
+  const mixReady = canMix(bowl) && !mixHeldForTutorial
 
   return (
     <div className="bake">
@@ -201,16 +245,23 @@ export function BakeScreen() {
         </h2>
         <p className="bake__hint">
           Pick up to {BOWL_CAPACITY} things for the bowl. Pick one again to put it back.
+          {lockedCount > 0 && (
+            <>
+              {' '}
+              More ingredients can be added in the <a href={hrefFor('pantry')}>Pantry</a>.
+            </>
+          )}
         </p>
         <ul className="bake__jars">
           {pantry.map((ingredient) => {
             const selected = bowl.includes(ingredient.id)
             const descriptionId = `${ids.shelf}-${ingredient.id}`
+            const pointedAt = guiding && !selected && TUTORIAL_BOWL.some((id) => id === ingredient.id)
             return (
               <li key={ingredient.id}>
                 <button
                   type="button"
-                  className="jar-button"
+                  className={['jar-button', pointedAt && 'tutorial-target'].filter(Boolean).join(' ')}
                   aria-pressed={selected}
                   aria-describedby={descriptionId}
                   onClick={() => toggle(ingredient)}
@@ -283,24 +334,30 @@ export function BakeScreen() {
               : `${bowl.length} in the bowl, add ${MIN_TO_MIX - bowl.length} more to mix`}
         </p>
         {mixed ? (
-          <Button variant="primary" className="bake__go" onClick={bake}>
+          <Button variant="primary" className={['bake__go', tutorialStep === 'bake' && 'tutorial-target'].filter(Boolean).join(' ')} onClick={bake}>
             Bake it
           </Button>
         ) : (
           <Button
             variant="primary"
-            className="bake__go"
+            className={['bake__go', tutorialStep === 'mix' && 'tutorial-target'].filter(Boolean).join(' ')}
             onClick={mix}
-            disabled={!canMix(bowl)}
-            aria-describedby={canMix(bowl) ? undefined : ids.mixHint}
+            disabled={!mixReady}
+            aria-describedby={mixReady ? undefined : ids.mixHint}
           >
             Mix
           </Button>
         )}
-        {!canMix(bowl) && (
+        {!canMix(bowl) ? (
           <p id={ids.mixHint} className="bake__hint">
             Add at least {MIN_TO_MIX} things to mix.
           </p>
+        ) : (
+          mixHeldForTutorial && (
+            <p id={ids.mixHint} className="bake__hint">
+              Marmalade asked for just flour, sugar and butter.
+            </p>
+          )
         )}
         {bowl.length > 0 && (
           <Button
@@ -344,22 +401,37 @@ type BakeResultProps = {
   headingRef: RefObject<HTMLHeadingElement | null>
   headingId: string
   onBakeAgain: () => void
+  /** Keep Marmalade's reaction off the card (the tutorial card is already speaking). */
+  quietMascot?: boolean
 }
 
-function BakeResult({ outcome, headingRef, headingId, onBakeAgain }: BakeResultProps) {
-  const { result, newDiscovery } = outcome
+/**
+ * Out of the oven. A first discovery is revealed in beats: the cookies, the
+ * name, the rarity stamp, what it earned, any new level, the "New recipe!"
+ * stamp and, now and then, Marmalade. Every part is in the page from the
+ * start (and read out in order); only its appearance is staged.
+ */
+function BakeResult({ outcome, headingRef, headingId, onBakeAgain, quietMascot = false }: BakeResultProps) {
+  const save = useSave()
+  const { result, newDiscovery, reward, levelUp } = outcome
   const look = result.kind === 'recipe' ? result.recipe.look : result.look
   const name = result.kind === 'recipe' ? result.recipe.name : result.name
+  const rarity = result.kind === 'recipe' ? result.recipe.rarity : null
+  const reaction = quietMascot ? null : discoveryReaction(outcome, save.discoveredRecipes.length)
+  const style = rarity && newDiscovery ? ({ '--reveal-beat': `${REVEAL_BEAT_MS[rarity]}ms` } as CSSProperties) : undefined
 
   return (
     <section
       className={['bake-result', newDiscovery && 'bake-result--new'].filter(Boolean).join(' ')}
       aria-labelledby={headingId}
+      data-rarity={rarity ?? undefined}
+      style={style}
     >
       <div className="bake-result__tray" aria-hidden="true">
         {[0, 1, 2].map((index) => (
           <Cookie key={index} look={look} className="bake-result__cookie" />
         ))}
+        {newDiscovery && rarity && <Sparkles rarity={rarity} />}
       </div>
 
       <RecipeCard className="bake-result__card">
@@ -379,6 +451,23 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain }: BakeResultP
 
         {result.kind === 'recipe' ? (
           <>
+            <p className="bake-result__rarity">
+              <RaritySeal rarity={result.recipe.rarity} className="bake-result__seal" />
+            </p>
+            {reward && (
+              <p className="bake-result__reward">
+                <CrumbsMark className="bake-result__crumbs-mark" />
+                <span>
+                  +{reward.crumbs} Crumbs <span aria-hidden="true">·</span> +{reward.xp} XP
+                </span>
+              </p>
+            )}
+            {levelUp && (
+              <div className="bake-result__level">
+                <p className="bake-result__level-text">{describeLevelUp(levelUp)}</p>
+                {levelUp.newlyAvailable.length > 0 && <a href={hrefFor('pantry')}>See what’s new in the Pantry</a>}
+              </div>
+            )}
             {newDiscovery && <HandNote>{result.recipe.discoveryText}</HandNote>}
             <p>{result.recipe.description}</p>
             <p className="bake-result__descriptors">{result.recipe.descriptors.join(' · ')}</p>
@@ -395,6 +484,12 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain }: BakeResultP
           </>
         )}
 
+        {reaction && (
+          <MascotSays expression={reaction.expression} className="bake-result__mascot">
+            {reaction.line}
+          </MascotSays>
+        )}
+
         <p className="bake-result__rack">Left to cool on the rack in your kitchen.</p>
 
         <div className="bake-result__actions">
@@ -405,5 +500,22 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain }: BakeResultP
         </div>
       </RecipeCard>
     </section>
+  )
+}
+
+/** Rarer first discoveries get a few hand-painted stars around the tray. None under reduced motion. */
+const SPARKLE_COUNT: Record<CookieRarity, number> = { common: 0, uncommon: 0, rare: 3, epic: 4, legendary: 5, mythic: 7 }
+
+function Sparkles({ rarity }: { rarity: CookieRarity }) {
+  const count = SPARKLE_COUNT[rarity]
+  if (count === 0) return null
+  return (
+    <span className="bake-result__sparkles">
+      {Array.from({ length: count }, (_, index) => (
+        <svg key={index} className="bake-result__sparkle" viewBox="0 0 20 20" style={{ '--sparkle': index } as CSSProperties}>
+          <path d="M10 1 L11.8 8.2 L19 10 L11.8 11.8 L10 19 L8.2 11.8 L1 10 L8.2 8.2 Z" />
+        </svg>
+      ))}
+    </span>
   )
 }

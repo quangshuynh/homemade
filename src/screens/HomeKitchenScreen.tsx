@@ -1,11 +1,14 @@
 import { useSave } from '../app/gameContext'
 import { hrefFor } from '../app/routes'
+import { BakerPlaque } from '../components/BakerPlaque'
 import { CoolingRack } from '../components/CoolingRack'
 import { MixingBowl, PantryJar, RecipeBox } from '../components/illustrations'
+import { Mascot } from '../components/Mascot'
 import { HandNote } from '../components/Paper'
 import { ScreenTitle } from '../components/ScreenTitle'
 import { viewCreation } from '../domain/baking'
 import { recentCreations } from '../domain/creations'
+import { useTutorial } from '../tutorial/tutorialContext'
 import { greetingFor } from './greeting'
 import './HomeKitchenScreen.css'
 
@@ -17,6 +20,7 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
   const recipeCount = save.discoveredRecipes.length
   const ingredientCount = save.pantryIngredientIds.length
   const onRack = recentCreations(save, RACK_SIZE).map(viewCreation)
+  const tutorialOn = useTutorial().run !== null
 
   return (
     <div className="kitchen">
@@ -28,6 +32,12 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
           </p>
           <p>The counter’s wiped down and ready.</p>
         </HandNote>
+      </div>
+
+      <div className="kitchen__progress">
+        <BakerPlaque progression={save.progression} />
+        {/* Marmalade, keeping an eye on things from the end of the counter. Just company: she says nothing here. */}
+        {!tutorialOn && <Mascot expression="idle" className="kitchen__cat" />}
       </div>
 
       <ul className="kitchen__counter" aria-label="On the counter">

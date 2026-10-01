@@ -186,3 +186,41 @@
     font-size: var(--text-2xl);
   }
 }
+
+/* Story framing: one quiet line, never a banner. */
+.recipe-book__story {
+  max-width: var(--measure);
+  margin-top: calc(-1 * var(--space-2));
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  color: var(--ink);
+}
+
+.book-card__rarity {
+  line-height: 1;
+}
+
+/* Rarer cards get a stitched edge in their stamp's ink; the stamp's word is what says which. */
+.book-card[data-rarity='rare'],
+.book-card[data-rarity='epic'],
+.book-card[data-rarity='legendary'],
+.book-card[data-rarity='mythic'] {
+  outline: 2px dashed var(--book-stitch);
+  outline-offset: -7px;
+}
+
+.book-card[data-rarity='rare'] {
+  --book-stitch: var(--rarity-rare);
+}
+
+.book-card[data-rarity='epic'] {
+  --book-stitch: var(--rarity-epic);
+}
+
+.book-card[data-rarity='legendary'] {
+  --book-stitch: var(--rarity-legendary);
+}
+
+.book-card[data-rarity='mythic'] {
+  --book-stitch: var(--rarity-mythic);
+}

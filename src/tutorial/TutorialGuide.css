@@ -1,0 +1,67 @@
+/* A recipe card propped against the top of the screen, with Marmalade beside it. */
+.guide {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 40rem;
+  margin: 0 0 var(--space-5);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  background: var(--paper);
+  background-image: linear-gradient(to bottom, transparent calc(1.75rem - 1px), rgb(169 201 220 / 0.45) calc(1.75rem - 1px));
+  background-size: 100% 1.75rem;
+  border-top: 3px solid var(--paper-margin);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-lifted);
+  transform: rotate(-0.4deg);
+  animation: guide-in var(--duration-slow) var(--ease-settle) both;
+}
+
+@keyframes guide-in {
+  from {
+    opacity: 0.4;
+    transform: translateY(-10px) rotate(-1.5deg);
+  }
+}
+
+.guide__count {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+  color: var(--ink-pen);
+}
+
+.guide__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.guide__skip {
+  margin-left: auto;
+}
+
+@media (max-width: 480px) {
+  .guide {
+    padding-inline: var(--space-3);
+  }
+
+  .guide__actions > * {
+    flex: 1 1 auto;
+  }
+
+  .guide__skip {
+    margin-left: 0;
+  }
+}
+
+/* What Marmalade is pointing at: a pen-drawn dashed ring, with words beside it in the guide. */
+.tutorial-target {
+  outline: 3px dashed var(--ink-pen);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
+/* Jars sit close together on the shelf: keep their rings inside the jar's own space. */
+.jar-button.tutorial-target {
+  outline-offset: -2px;
+}

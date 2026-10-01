@@ -42,6 +42,20 @@
   box-shadow: none;
 }
 
+/*
+ * Not yet: still focusable, so its reason (aria-describedby) can be reached and
+ * read. Dashed and flat rather than faded, so the label stays fully legible.
+ */
+.button[aria-disabled='true'] {
+  --button-bg: var(--paper-shade);
+  --button-fg: var(--ink);
+
+  cursor: not-allowed;
+  border-style: dashed;
+  box-shadow: none;
+  transform: none;
+}
+
 .button--primary {
   --button-bg: var(--action-primary);
   --button-fg: var(--ink-on-accent);

@@ -31,8 +31,10 @@ describe('first launch', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'A new kitchen' })).toBeInTheDocument()
     await fillOnboarding(user, '  Robin ', 'The Crumb Corner')
 
-    const heading = await screen.findByRole('heading', { level: 1, name: 'The Crumb Corner' })
-    await waitFor(() => expect(heading).toHaveFocus())
+    expect(await screen.findByRole('heading', { level: 1, name: 'The Crumb Corner' })).toBeInTheDocument()
+    // A brand-new kitchen opens on the tutorial's first card, read out straight away.
+    const tutorial = screen.getByRole('complementary', { name: 'Tutorial' })
+    await waitFor(() => expect(within(tutorial).getByText(/I’m Marmalade/)).toHaveFocus())
     expect(screen.getByText(/Robin\./)).toBeInTheDocument()
     expect(state.stored).toMatchObject({
       version: CURRENT_SAVE_VERSION,

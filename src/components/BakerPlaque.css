@@ -1,0 +1,74 @@
+/* A kraft-paper label with a stitched border, pinned to the counter. */
+.plaque {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'level crumbs'
+    'ribbon ribbon'
+    'xp xp';
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  width: min(100%, 22rem);
+  padding: var(--space-3) var(--space-4);
+  color: var(--ink);
+  background: var(--kraft);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  outline: 1.5px dashed rgb(43 29 20 / 0.55);
+  outline-offset: -6px;
+  transform: rotate(-0.6deg);
+}
+
+.plaque__level {
+  grid-area: level;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.plaque__crumbs {
+  grid-area: crumbs;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: var(--weight-bold);
+  white-space: nowrap;
+}
+
+.plaque__crumbs-mark {
+  width: 1.4em;
+  height: auto;
+}
+
+/* A stitched ribbon, filled in pen-stroke butter. Not a progress bar: it never pulses. */
+.plaque__ribbon {
+  grid-area: ribbon;
+  height: 0.75rem;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: 2px 4px 3px 2px;
+  overflow: hidden;
+}
+
+.plaque__ribbon-fill {
+  display: block;
+  block-size: 100%;
+  background: var(--butter-500);
+  background-image: repeating-linear-gradient(135deg, transparent 0 5px, rgb(43 29 20 / 0.14) 5px 7px);
+  border-right: 1.5px solid var(--ink);
+  transition: inline-size var(--duration-slow) var(--ease-out);
+}
+
+.plaque__xp {
+  grid-area: xp;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.plaque__aside {
+  /* Plain ink: --ink-soft is too faint on kraft. */
+  font-weight: var(--weight-regular);
+}

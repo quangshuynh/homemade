@@ -136,6 +136,34 @@ export function IngredientJar({ ingredient, className }: { ingredient: Ingredien
   )
 }
 
+/**
+ * A jar that hasn't been added yet: wrapped in kraft paper and tied with
+ * twine, with just a peek of what's inside at the top. Still clearly a jar
+ * on the same shelf, so it reads as "coming", not "missing".
+ */
+export function WrappedJar({ ingredient, className }: { ingredient: Ingredient; className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 100 120" aria-hidden="true" focusable="false">
+      <ellipse cx="50" cy="114" rx="38" ry="5" fill="rgb(70 38 12 / 0.25)" />
+      {/* The paper, gathered at the neck. */}
+      <path
+        d="M14 50 Q12 40 22 36 L34 30 Q50 24 66 30 L78 36 Q88 40 86 50 L88 104 Q88 112 80 112 H20 Q12 112 12 104 Z"
+        fill="var(--kraft)"
+        stroke={INK}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      <path d="M34 30 L28 14 L42 24 L50 10 L58 24 L72 14 L66 30" fill="var(--kraft)" stroke={INK} strokeWidth="2.5" strokeLinejoin="round" />
+      <ellipse cx="50" cy="31" rx="12" ry="4" fill={swatchColour(ingredient)} stroke={INK} strokeWidth="1.5" />
+      <path d="M24 60 Q30 74 26 92 M74 58 Q70 80 76 96" stroke="rgb(70 38 12 / 0.25)" strokeWidth="2" fill="none" strokeLinecap="round" />
+      {/* Twine round the neck and down the front, with a bow. */}
+      <path d="M30 34 Q50 42 70 34" stroke="var(--jam-600)" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <path d="M50 38 V110" stroke="var(--jam-600)" strokeWidth="3" strokeLinecap="round" />
+      <path d="M50 40 Q38 32 40 46 Q46 46 50 40 Q62 32 60 46 Q54 46 50 40" fill="none" stroke="var(--jam-600)" strokeWidth="2.5" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 // ---------------------------------------------------------------- cookies
 
 const SHAPES: Record<CookieLook['shape'], string> = {
