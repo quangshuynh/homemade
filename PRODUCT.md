@@ -76,7 +76,7 @@ The loop is *experiment → discover → see its rarity → earn Crumbs and XP �
 - **Existing kitchens keep everything.** Upgrading an Interval 4 save keeps every owned ingredient, discovery, date, memory, name and setting. Crumbs start at 0 (an existing kitchen already owns everything Crumbs could buy). XP is the sum of each recipe already in the book, counted once, so the level matches the book; those recipes stay discovered and can't pay again. The tutorial is marked done.
 - **The tutorial is short, skippable and replayable.** A brand-new kitchen opens on Marmalade's nine-card tutorial, which guides one real bake (shortbread, from the starter pantry). Skip is always one control away and takes nothing away. *Replay the tutorial* in Settings teaches it again; it pays no reward of its own and a replayed discovery is already found, so replaying can't earn anything.
 - **Marmalade is company, not a nag.** She speaks during the tutorial, for a first card, the first recipe of a new rarity, a new level and a new ingredient. An ordinary bake gets no reaction.
-- **Story stays light.** The kitchen's old recipe box has faded cards; baking a recipe writes its card back in. Chapters come later.
+- **Story stays light.** The kitchen's old recipe box has faded cards; baking a recipe writes its card back in. Since Interval 7 it has chapters (see below).
 
 ## Families, secrets and clues (Interval 6)
 
@@ -95,6 +95,23 @@ Interval 6 adds seven ingredients and fifteen recipes (19 and 27 in all), and gi
 - **Nothing is copied into the save.** Families, secrecy, clues and milestones are worked out from the catalog and the list of discoveries. The save version stays 4; older saves keep every name, setting, ingredient, discovery and date, and the new ingredients start locked.
 - **Marmalade has a few new firsts:** the first secret, the first Mythic (with a starstruck face of its own), the first finished family and a kitchen's first pantry addition. Each is said once, because each happens once.
 
+## Story chapters (Interval 7)
+
+The kitchen has a history. The old recipe box's cards were wiped blank; as the player bakes, notes in another hand turn up (labels, scraps, pencil in the margins), and Marmalade reads them with the player. The first arc is five short chapters: *The Faded Recipe Box*, *Notes in the Margins*, *The Second Shelf*, *Recipes Someone Hid* and *The Last Card*. It ends on an open thread (a card addressed to "M." and a key that fits nothing yet), not an answer.
+
+- **Deterministic.** Scenes are read in one fixed order. A scene opens once every scene before it has been seen and its own requirement is met. Requirements are things already done in the kitchen: the tutorial behind them (finished *or* skipped), 4 recipes found, a first Warm & Spiced card, 3 ingredients added beyond the starter five, a first secret *or* 12 recipes found, and the first Mythic. No chance, no timers, no number of bakes, logins or Crumbs spent.
+- **Never dependent on a secret.** Chapter 4 opens with a first secret or with 12 recipes, so a player who never finds one still reads the whole arc (a test reads it with every non-secret recipe and no secrets). No requirement asks for a whole family.
+- **Optional-light.** A waiting scene is never opened for the player. It's mentioned once where they are (under a bake or a pantry addition that opened it) and in words in the kitchen and on the Recipe Book's bookmark, then it waits. Scenes are a handful of beats, a line or two each. Baking never needs the story.
+- **Skippable, and skipping costs nothing.** Skip marks the scene seen: its notes, clues and any reward still arrive, and it can be replayed.
+- **Replay is reward-idempotent.** Any seen scene can be replayed from Recipe Box Notes. A replay writes nothing: no Crumbs, no XP, no change to what's seen or complete.
+- **Small, one-time rewards.** Completing chapters 2–5 tucks 10, 15, 20 and 25 Crumbs between the cards (70 in all), paid as a chapter's last scene is first seen. No XP. Progression is balanced without them; the anti-deadlock test ignores them.
+- **A chapter completes only when its last scene is seen,** never just because its requirements are met.
+- **Secret clues come from the story, and only from it.** Each of the three secrets gets one note (in chapters 2, 3 and 4) that hints at what it was for and what it was like, never an ingredient's name (a content check enforces this). Clues are never bought. Reading one doesn't find anything: a secret is still found only by baking its exact ingredients, and until then it stays out of the Recipe Book. Once baked, Marmalade pencils "Found it." beside its clue.
+- **Story doesn't replace discovery.** It follows discoveries and never gates a recipe, an ingredient or a level. No new recipes or levels were added for it.
+- **Saved as ids only.** The save holds `story.seenSceneIds`; chapters, completion, notes and clues are derived from it and the static content. Save version 5.
+- **Existing kitchens catch up.** A version 4 save upgrades with no scenes seen (nothing is marked seen on the player's behalf) and every other field exactly as it was, tutorial state included, so nobody is sent through the tutorial again. Its first chapter is ready straight away, and whatever its progress has already earned follows one scene at a time, as fast as the player cares to read.
+- **Marmalade** reads each scene with the player. She knows the kitchen but not the whole story: she's surprised by notes, remembers small things after a discovery, and never explains the mystery.
+
 ## Voice
 
 Warm, plain, a little playful, never cutesy. Short sentences, written like a note left on the counter. Controls say what they do ("Open the kitchen", "Keep my kitchen"). Errors say what happened and what's safe.
@@ -102,7 +119,7 @@ Warm, plain, a little playful, never cutesy. Short sentences, written like a not
 ## Open decisions
 
 - Whether finishing a family should ever earn something (deliberately not, for now).
-- Whether secrets should ever get a clue (a margin note, a rare Marmalade line, or the story), or stay purely found by curiosity.
+- Who E., R. and M. are, and what the key opens (deliberately unanswered after the first arc).
 - Whether memories should ever be kept beyond the cap.
 - Whether to offer background music (deliberately not yet).
 - Whether archived saves should ever be visible to the player (today they're kept, but only reachable through browser devtools).

@@ -138,8 +138,29 @@ export function migrateV3ToV4(raw: RawRecord): RawRecord {
   }
 }
 
+/**
+ * v4 → v5 (Interval 7, story chapters):
+ * - adds `story`, with no scenes seen. Nothing is marked seen on the
+ *   player's behalf: an existing kitchen starts the recipe box's story at
+ *   the beginning, and since chapters only ever wait on progress already
+ *   made (never on time), the first chapter is ready straight away and the
+ *   rest follow, one at a time, as fast as the player cares to read them.
+ * - leaves everything else exactly as it was, including `tutorial`, so a
+ *   returning player is never sent back through the tutorial.
+ */
+export function migrateV4ToV5(raw: RawRecord): RawRecord {
+  if (typeof raw.tutorial !== 'object' || raw.tutorial === null) {
+    throw new Error('version 4 save has no tutorial state')
+  }
+  if (!Array.isArray(raw.discoveredRecipes)) {
+    throw new Error('version 4 save has no discoveredRecipes list')
+  }
+  return { ...raw, version: 5, story: { seenSceneIds: [] } }
+}
+
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   1: migrateV1ToV2,
   2: migrateV2ToV3,
   3: migrateV3ToV4,
+  4: migrateV4ToV5,
 }

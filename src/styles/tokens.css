@@ -39,6 +39,7 @@
   --ink-soft: #5a4232; /* secondary text; 7:1+ on paper */
   --ink-on-accent: #fffaf0;
   --ink-pen: #1d4f91; /* ballpoint blue: focus and handwritten marks */
+  --pencil: #45434a; /* graphite: the recipe box's other hand (story notes). Never Marmalade's. */
 
   /* ---- Colour: ingredients (jar contents) and baked dough ---- */
   --swatch-white: #f8f3ea;

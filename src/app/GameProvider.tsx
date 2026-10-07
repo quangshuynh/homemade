@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { bake as bakeBowl, prepareBowl, recordBake, type Bowl, type PreparedBake } from '../domain/baking'
 import { newCreationId } from '../domain/creations'
-import type { IngredientId, RecipeId } from '../domain/ids'
+import type { IngredientId, RecipeId, StorySceneId } from '../domain/ids'
 import { unlockIngredient as applyUnlock } from '../domain/progression'
 import { createNewSave, touchSave, type NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
 import type { SaveRepository } from '../persistence/repository'
-import { GameContext, type GameState, type ImportedSave, type SaveStatus } from './gameContext'
+import { evaluateStoryProgress, seeScene } from '../story/progress'
+import { GameContext, type GameState, type ImportedSave, type KitchenBake, type KitchenUnlock, type SaveStatus } from './gameContext'
 
 function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
@@ -95,7 +96,7 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
   )
 
   const bake = useCallback(
-    (bowl: Bowl) => {
+    (bowl: Bowl): KitchenBake => {
       const current = saveRef.current
       if (!current) throw new Error('Nothing to bake into: the save is not loaded')
       const now = new Date()
@@ -107,18 +108,36 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       void persist(stamped).catch(() => {
         // Surfaced through saveStatus.
       })
-      return outcome
+      return { ...outcome, story: evaluateStoryProgress(current, stamped) }
     },
     [persist],
   )
 
   const unlockIngredient = useCallback(
-    (id: IngredientId) => {
+    (id: IngredientId): KitchenUnlock => {
       const current = saveRef.current
       if (!current) throw new Error('Nothing to add to: the save is not loaded')
       const result = applyUnlock(current, id)
       if (!result.ok) return result
       // The ingredient, the Crumbs and the XP change together, in one write.
+      const stamped = { ...result.save, updatedAt: new Date().toISOString() }
+      saveRef.current = stamped
+      setState({ status: 'ready', save: stamped })
+      void persist(stamped).catch(() => {
+        // Surfaced through saveStatus.
+      })
+      return { ...result, save: stamped, story: evaluateStoryProgress(current, stamped) }
+    },
+    [persist],
+  )
+
+  const seeStoryScene = useCallback(
+    (id: StorySceneId) => {
+      const current = saveRef.current
+      if (!current) throw new Error('No story to follow: the save is not loaded')
+      const result = seeScene(current, id)
+      // A replay (or a refusal) hands back the same save: nothing to write.
+      if (!result.ok || result.save === current) return result
       const stamped = { ...result.save, updatedAt: new Date().toISOString() }
       saveRef.current = stamped
       setState({ status: 'ready', save: stamped })
@@ -188,6 +207,7 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       updateSave,
       bake,
       unlockIngredient,
+      seeStoryScene,
       preparedBowl,
       prepareRecipe,
       clearPreparedBowl,
@@ -204,6 +224,7 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       updateSave,
       bake,
       unlockIngredient,
+      seeStoryScene,
       preparedBowl,
       prepareRecipe,
       clearPreparedBowl,

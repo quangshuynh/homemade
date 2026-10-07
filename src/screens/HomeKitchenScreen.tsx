@@ -8,6 +8,7 @@ import { HandNote } from '../components/Paper'
 import { ScreenTitle } from '../components/ScreenTitle'
 import { viewCreation } from '../domain/baking'
 import { recentCreations } from '../domain/creations'
+import { availableScene } from '../story/progress'
 import { useTutorial } from '../tutorial/tutorialContext'
 import { greetingFor } from './greeting'
 import './HomeKitchenScreen.css'
@@ -21,6 +22,8 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
   const ingredientCount = save.pantryIngredientIds.length
   const onRack = recentCreations(save, RACK_SIZE).map(viewCreation)
   const tutorialOn = useTutorial().run !== null
+  // Something new at the back of the recipe box. Said on the box's tag, in words; Marmalade just looks keen.
+  const newNote = !tutorialOn && availableScene(save) !== null
 
   return (
     <div className="kitchen">
@@ -37,7 +40,16 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
       <div className="kitchen__progress">
         <BakerPlaque progression={save.progression} />
         {/* Marmalade, keeping an eye on things from the end of the counter. Just company: she says nothing here. */}
-        {!tutorialOn && <Mascot expression="idle" className="kitchen__cat" />}
+        {!tutorialOn && (
+          <span className="kitchen__cat-spot">
+            <Mascot expression={newNote ? 'thinking' : 'idle'} className="kitchen__cat" />
+            {newNote && (
+              <span className="kitchen__cat-mark" aria-hidden="true">
+                …
+              </span>
+            )}
+          </span>
+        )}
       </div>
 
       <ul className="kitchen__counter" aria-label="On the counter">
@@ -49,6 +61,7 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
               <span className="counter-object__detail">
                 {recipeCount === 0 ? 'No recipes yet' : `${recipeCount} ${recipeCount === 1 ? 'recipe' : 'recipes'}`}
               </span>
+              {newNote && <span className="counter-object__note">A new note inside</span>}
             </span>
           </a>
         </li>

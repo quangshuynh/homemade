@@ -13,6 +13,8 @@ export const ROUTES = {
   settings: { path: '/settings', title: 'Settings' },
   /** Reached from the cooling rack in the kitchen rather than a tab. */
   memories: { path: '/memories', title: 'Baking Memories' },
+  /** The story's home: reached from the Recipe Book (and the kitchen's recipe box) rather than a tab. */
+  notes: { path: '/recipe-book/notes', title: 'Recipe Box Notes' },
 } as const
 
 export type RouteId = keyof typeof ROUTES

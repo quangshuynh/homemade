@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { CURRENT_SAVE_VERSION } from '../domain/save'
 import { INGREDIENT_UNLOCKS, unlockStatus } from '../domain/progression'
 import { bookCounts } from '../domain/recipeBook'
-import { makeSave, makeV1Save, makeV2Save, makeV3Save } from '../test/fixtures'
-import { migrateV1ToV2, migrateV2ToV3, migrateV3ToV4 } from './migrations'
+import { availableScene, readyScenes } from '../story/progress'
+import { makeSave, makeV1Save, makeV2Save, makeV3Save, makeV4Save } from '../test/fixtures'
+import { migrateV1ToV2, migrateV2ToV3, migrateV3ToV4, migrateV4ToV5 } from './migrations'
 import { readSave } from './schema'
 
 /** Every ingredient the catalog had through Interval 4. Later ingredients are earned, never handed out by an upgrade. */
@@ -26,8 +27,8 @@ describe('save version 1 → 2', () => {
   it('loads an Interval 1 save as the current version', () => {
     const result = readSave(makeV1Save())
 
-    expect(CURRENT_SAVE_VERSION).toBe(4)
-    expect(result).toMatchObject({ ok: true, migratedFrom: 1, save: { version: 4, bakedCreations: [] } })
+    expect(CURRENT_SAVE_VERSION).toBe(5)
+    expect(result).toMatchObject({ ok: true, migratedFrom: 1, save: { version: 5, bakedCreations: [] } })
   })
 
   it('keeps the profile, kitchen name, settings and timestamps', () => {
@@ -87,7 +88,7 @@ describe('save version 1 → 2', () => {
 describe('save version 2 → 3', () => {
   it('loads an Interval 2 save as version 3 with empty baking memories', () => {
     const result = readSave(makeV2Save())
-    expect(result).toMatchObject({ ok: true, migratedFrom: 2, save: { version: 4, bakedCreations: [] } })
+    expect(result).toMatchObject({ ok: true, migratedFrom: 2, save: { version: 5, bakedCreations: [] } })
     expect(migrateV2ToV3(makeV2Save())).toMatchObject({ version: 3, bakedCreations: [] })
   })
 
@@ -149,9 +150,10 @@ describe('save version 2 → 3', () => {
 })
 
 describe('save version 3 → 4', () => {
-  it('loads an Interval 4 save as version 4', () => {
+  it('loads an Interval 4 save as the current version', () => {
     const result = readSave(makeV3Save())
-    expect(result).toMatchObject({ ok: true, migratedFrom: 3, save: { version: 4 } })
+    expect(result).toMatchObject({ ok: true, migratedFrom: 3, save: { version: 5 } })
+    expect(migrateV3ToV4(makeV3Save())).toMatchObject({ version: 4 })
   })
 
   it('keeps names, settings, discoveries and their dates, memories and timestamps exactly', () => {
@@ -222,7 +224,7 @@ describe('Interval 6 content on older saves', () => {
     if (!result.ok) throw new Error(result.detail)
     const { save } = result
 
-    expect(save.version).toBe(4)
+    expect(save.version).toBe(CURRENT_SAVE_VERSION)
     expect(save.pantryIngredientIds).toEqual(v3.pantryIngredientIds)
     expect(save.discoveredRecipes).toEqual(v3.discoveredRecipes)
     expect(save.bakedCreations).toEqual(v3.bakedCreations)
@@ -235,14 +237,91 @@ describe('Interval 6 content on older saves', () => {
     }
     // Families and secrecy come from the catalog: nothing new was written into the save.
     expect(Object.keys(save).sort()).toEqual(
-      ['bakedCreations', 'createdAt', 'discoveredRecipes', 'pantryIngredientIds', 'profile', 'progression', 'settings', 'tutorial', 'updatedAt', 'version'],
+      ['bakedCreations', 'createdAt', 'discoveredRecipes', 'pantryIngredientIds', 'profile', 'progression', 'settings', 'story', 'tutorial', 'updatedAt', 'version'],
     )
     expect(bookCounts(save)).toEqual({ found: 3, total: 24, secretsFound: 0 })
   })
 
-  it('reads an Interval 5 save exactly as it was written: no new save version', () => {
+  it('reads a current save exactly as it was written', () => {
     const interval5 = makeSave({ progression: { crumbs: 37, xp: 412 }, discoveredRecipes: [{ recipeId: 'recipe_shortbread' as never, discoveredAt: '2026-08-01T10:00:00.000Z' }] })
     const result = readSave(JSON.parse(JSON.stringify(interval5)))
     expect(result).toEqual({ ok: true, save: interval5, migratedFrom: null })
+  })
+})
+
+describe('save version 4 → 5', () => {
+  it('loads an Interval 6 save as the current version, with no story seen', () => {
+    const result = readSave(makeV4Save())
+    expect(result).toMatchObject({ ok: true, migratedFrom: 4, save: { version: 5, story: { seenSceneIds: [] } } })
+    expect(migrateV4ToV5(makeV4Save())).toMatchObject({ version: 5, story: { seenSceneIds: [] } })
+  })
+
+  it('keeps every earlier field exactly: names, settings, pantry, Crumbs, XP, discoveries and dates, memories, tutorial, timestamps', () => {
+    const v4 = makeV4Save()
+    const result = readSave(v4)
+    if (!result.ok) throw new Error(result.detail)
+    const { story, ...rest } = result.save
+    expect(rest).toEqual({ ...v4, version: 5 })
+    expect(story).toEqual({ seenSceneIds: [] })
+  })
+
+  it('never sends a returning player back through the tutorial, whether they finished or skipped it', () => {
+    for (const tutorial of [
+      { completed: false, skipped: true },
+      { completed: true, skipped: false },
+    ]) {
+      const result = readSave(makeV4Save({ tutorial }))
+      if (!result.ok) throw new Error(result.detail)
+      expect(result.save.tutorial).toEqual(tutorial)
+    }
+  })
+
+  it('lets an existing kitchen catch up from the first chapter, one scene at a time', () => {
+    const result = readSave(makeV4Save())
+    if (!result.ok) throw new Error(result.detail)
+    // Nothing is marked seen on their behalf; everything their progress has earned is ready, in order.
+    expect(availableScene(result.save)?.scene.id).toBe('scene_faded-box')
+    expect(readyScenes(result.save).map((placed) => placed.scene.id)).toEqual([
+      'scene_faded-box',
+      'scene_margins',
+      'scene_margins-spice',
+      'scene_second-shelf',
+    ])
+  })
+
+  it('upgrades the oldest saves all the way through', () => {
+    for (const old of [makeV1Save(), makeV2Save(), makeV3Save()]) {
+      const result = readSave(old)
+      if (!result.ok) throw new Error(result.detail)
+      expect(result.save.story).toEqual({ seenSceneIds: [] })
+      expect(result.save.version).toBe(5)
+    }
+  })
+
+  it('is deterministic and leaves the stored data untouched', () => {
+    const v4 = makeV4Save()
+    const snapshot = structuredClone(v4)
+    expect(migrateV4ToV5(makeV4Save())).toEqual(migrateV4ToV5(makeV4Save()))
+    readSave(v4)
+    expect(v4).toEqual(snapshot)
+  })
+
+  it('reports a version 4 save it cannot upgrade instead of guessing, and leaves it as it was', () => {
+    const broken = makeV4Save({ tutorial: null })
+    const snapshot = structuredClone(broken)
+    expect(readSave(broken)).toMatchObject({ ok: false, reason: 'migration-failed', version: 4 })
+    expect(readSave(makeV4Save({ discoveredRecipes: 'none' }))).toMatchObject({ ok: false, reason: 'migration-failed', version: 4 })
+    expect(broken).toEqual(snapshot)
+  })
+
+  it('rejects a current save whose story is damaged', () => {
+    const save = makeSave()
+    expect(readSave({ ...save, story: undefined })).toMatchObject({ ok: false, reason: 'invalid' })
+    expect(readSave({ ...save, story: { seenSceneIds: ['chapter one'] } })).toMatchObject({ ok: false, reason: 'invalid' })
+  })
+
+  it('keeps seen scenes it doesn’t recognise, so a rewritten scene never makes a save unreadable', () => {
+    const save = makeSave({ story: { seenSceneIds: ['scene_faded-box', 'scene_retired'] as never } })
+    expect(readSave(JSON.parse(JSON.stringify(save)))).toEqual({ ok: true, save, migratedFrom: null })
   })
 })

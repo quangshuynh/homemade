@@ -126,3 +126,30 @@ describe('secret and Mythic reveals under reduced motion', () => {
     expect(mythic).not.toMatch(/animation:[^;]*infinite|shake|blink|filter:|text-shadow/)
   })
 })
+
+describe('the story under reduced motion', () => {
+  const read = (file: string) => readFileSync(join(SRC, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+  const story = ['story/Story.css', 'screens/NotesScreen.css']
+
+  it('moves only through duration tokens, which reduced motion zeroes: no slide, flutter or bounce of its own', () => {
+    for (const file of story) {
+      for (const { selector, body } of rules(read(file))) {
+        for (const property of ['animation', 'animation-duration', 'transition', 'transition-duration']) {
+          const value = declaration(body, property)
+          if (value && value !== 'none') expect(value, `${file} ${selector}`).toMatch(/var\(--duration-(quick|base|slow)\)/)
+        }
+        expect(body, `${file} ${selector}`).not.toMatch(/animation-delay|infinite/)
+      }
+    }
+  })
+
+  it('plays scenes on the tutorial’s card, whose only motion is a duration token', () => {
+    const guide = rules(read('tutorial/TutorialGuide.css')).find(({ selector }) => selector === '.guide')!
+    expect(declaration(guide.body, 'animation')).toMatch(/var\(--duration-slow\)/)
+  })
+
+  it('keeps the Recipe Box Notes links full-size touch targets', () => {
+    expect(declaration(rules(read('screens/NotesScreen.css')).find(({ selector }) => selector === '.notes__back')!.body, 'min-height')).toBe('var(--tap-target)')
+    expect(declaration(rules(read('screens/RecipeBookScreen.css')).find(({ selector }) => selector === '.recipe-book__notes')!.body, 'min-height')).toBe('var(--tap-target)')
+  })
+})

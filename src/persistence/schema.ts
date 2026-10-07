@@ -96,6 +96,14 @@ export function findSaveProblem(value: RawRecord): string | null {
   if (typeof tutorial.completed !== 'boolean') return 'tutorial.completed is not a boolean'
   if (typeof tutorial.skipped !== 'boolean') return 'tutorial.skipped is not a boolean'
 
+  // Scene ids are checked for shape, not against the story: a scene rewritten
+  // in a later build must not make an otherwise good save unreadable.
+  const story = value.story
+  if (!isRecord(story)) return 'story is missing'
+  if (!Array.isArray(story.seenSceneIds) || !story.seenSceneIds.every((id) => isIdOf('scene', id))) {
+    return 'story.seenSceneIds is not a list of scene ids'
+  }
+
   const settings = value.settings
   if (!isRecord(settings)) return 'settings are missing'
   if (typeof settings.soundEnabled !== 'boolean') return 'settings.soundEnabled is not a boolean'

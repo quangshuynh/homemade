@@ -1,0 +1,146 @@
+/* The back of the recipe box: everything in it that isn't a recipe. */
+.notes {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.notes__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+}
+
+.notes__title {
+  font-size: var(--text-2xl);
+}
+
+/* A plain link, but a full-size tap target. */
+.notes__back {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-target);
+}
+
+.notes__intro {
+  max-width: var(--measure);
+  margin-top: calc(-1 * var(--space-2));
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+}
+
+/* The next scene: a slip sticking up out of the box, with a kraft bookmark. */
+.notes__waiting {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  max-width: 34rem;
+  padding: var(--space-4) var(--space-5);
+  background: var(--paper);
+  border-top: 3px solid var(--paper-margin);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-lifted);
+  transform: rotate(-0.6deg);
+}
+
+.notes__waiting-title {
+  font-size: var(--text-lg);
+}
+
+.notes__waiting-text {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+}
+
+/* "Put back in the box": a butter note that takes focus, so it's read out. */
+.notes__ended {
+  display: grid;
+  gap: var(--space-1);
+  max-width: 34rem;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  background: var(--butter-300);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.notes__crumbs {
+  font-weight: var(--weight-bold);
+}
+
+/* ---- A chapter: a kraft divider card, then its notes. */
+.notes-chapter {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.notes-chapter__divider {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: last baseline;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: var(--kraft);
+  border-top: 2px solid var(--ink);
+  border-radius: var(--radius-tab);
+  box-shadow: 0 2px 0 rgb(80 45 15 / 0.25);
+}
+
+.notes-chapter__name {
+  font-size: var(--text-xl);
+  line-height: var(--leading-tight);
+}
+
+.notes-chapter__number {
+  display: block;
+  font-family: var(--font-hand);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--ink-soft);
+}
+
+.notes-chapter__state {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+}
+
+.notes-chapter__notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: var(--space-5) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notes-chapter__replays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+.notes__faded,
+.notes__empty {
+  max-width: var(--measure);
+}
+
+.notes__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+@media (max-width: 480px) {
+  .notes__waiting {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .notes__waiting > .button,
+  .notes-chapter__replays > * {
+    flex: 1 1 auto;
+  }
+}

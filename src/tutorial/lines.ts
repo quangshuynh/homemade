@@ -1,6 +1,8 @@
 import { findIngredient } from '../domain/ingredients'
 import { nextUnlock, RARITY_LABELS } from '../domain/progression'
 import type { GameSave } from '../domain/types'
+import { STORY_SCENES } from '../story/chapters'
+import { hasSeenScene } from '../story/progress'
 import type { TutorialRun } from './tutorial'
 
 /** What Marmalade says on each card. Short: one or two sentences, never a wall. */
@@ -35,6 +37,9 @@ export function tutorialLine(run: TutorialRun, save: GameSave): string {
       return `${basics} First up: ${name}, at Baker Level ${upcoming.level} for ${upcoming.crumbs} Crumbs.`
     }
     case 'finish':
-      return 'That’s enough from me. Try whatever looks good. I’ll be around.'
+      // The first chapter of the story opens once the tutorial is behind them: point at it, once.
+      return hasSeenScene(save, STORY_SCENES[0]!.scene.id)
+        ? 'That’s enough from me. Try whatever looks good. I’ll be around.'
+        : 'That’s enough from me. Try whatever looks good. And when you have a minute, look in the recipe box: there’s something I want to show you.'
   }
 }
