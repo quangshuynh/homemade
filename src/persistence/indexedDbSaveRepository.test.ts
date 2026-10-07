@@ -4,7 +4,7 @@ import { CURRENT_SAVE_VERSION, touchSave, updateSettings } from '../domain/save'
 import { bake, recordBake } from '../domain/baking'
 import { BUTTER, FLOUR, SUGAR } from '../domain/ingredients'
 import type { CreationId } from '../domain/ids'
-import { makeSave, makeV1Save, makeV2Save, makeV3Save } from '../test/fixtures'
+import { makeSave, makeV1Save, makeV2Save, makeV3Save, makeV4Save } from '../test/fixtures'
 import { createIndexedDbSaveRepository, readArchive, type IndexedDbSaveRepositoryOptions } from './indexedDbSaveRepository'
 import { findSaveProblem } from './schema'
 
@@ -199,7 +199,7 @@ describe('IndexedDB save repository', () => {
     expect(result).toMatchObject({
       kind: 'loaded',
       migratedFrom: 2,
-      save: { version: 4, profile: v2.profile, discoveredRecipes: v2.discoveredRecipes, bakedCreations: [] },
+      save: { version: CURRENT_SAVE_VERSION, profile: v2.profile, discoveredRecipes: v2.discoveredRecipes, bakedCreations: [] },
     })
     const archive = await readArchive(options)
     expect(archive).toHaveLength(1)
@@ -228,7 +228,7 @@ describe('IndexedDB save repository', () => {
       kind: 'loaded',
       migratedFrom: 3,
       save: {
-        version: 4,
+        version: CURRENT_SAVE_VERSION,
         profile: v3.profile,
         pantryIngredientIds: v3.pantryIngredientIds,
         discoveredRecipes: v3.discoveredRecipes,
@@ -249,6 +249,29 @@ describe('IndexedDB save repository', () => {
     const result = await createIndexedDbSaveRepository(options).load()
 
     expect(result).toMatchObject({ kind: 'incompatible', reason: 'migration-failed', version: 3, raw: broken })
+    await expect(readArchive(options)).resolves.toEqual([])
+    await expect(createIndexedDbSaveRepository(options).load()).resolves.toMatchObject({ raw: broken })
+  })
+
+  it('upgrades an Interval 6 save on load, archiving the original and starting the story from the beginning', async () => {
+    const v4 = makeV4Save()
+    await putRaw(v4)
+
+    const result = await createIndexedDbSaveRepository(options).load()
+
+    expect(result).toEqual({ kind: 'loaded', migratedFrom: 4, save: { ...v4, version: CURRENT_SAVE_VERSION, story: { seenSceneIds: [] } } })
+    const archive = await readArchive(options)
+    expect(archive).toHaveLength(1)
+    expect(archive[0]).toMatchObject({ note: 'Upgraded from save version 4', data: v4 })
+  })
+
+  it('leaves a version 4 save it cannot upgrade exactly where it was, with nothing archived', async () => {
+    const broken = makeV4Save({ tutorial: 'done' })
+    await putRaw(broken)
+
+    const result = await createIndexedDbSaveRepository(options).load()
+
+    expect(result).toMatchObject({ kind: 'incompatible', version: 4, raw: broken })
     await expect(readArchive(options)).resolves.toEqual([])
     await expect(createIndexedDbSaveRepository(options).load()).resolves.toMatchObject({ raw: broken })
   })

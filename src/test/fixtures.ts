@@ -104,3 +104,49 @@ export function makeV3Save(overrides: Record<string, unknown> = {}): Record<stri
     ...overrides,
   }
 }
+
+/** A save exactly as Intervals 5 and 6 (save version 4) wrote it. Written out literally on purpose. */
+export function makeV4Save(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    version: 4,
+    profile: { id: 'player_0f8fad5b-d9cb-469f-a165-70867728950e', name: 'Robin', bakeryName: 'Crumb & Co.' },
+    pantryIngredientIds: [
+      'ingredient_flour',
+      'ingredient_sugar',
+      'ingredient_butter',
+      'ingredient_egg',
+      'ingredient_vanilla',
+      'ingredient_chocolate-chips',
+      'ingredient_cinnamon',
+      'ingredient_strawberry-jam',
+      'ingredient_oats',
+    ],
+    discoveredRecipes: [
+      { recipeId: 'recipe_shortbread', discoveredAt: '2026-08-10T10:00:00.000Z' },
+      { recipeId: 'recipe_meringue-kiss', discoveredAt: '2026-08-10T10:05:00.000Z' },
+      { recipeId: 'recipe_chocolate-chip', discoveredAt: '2026-08-11T16:30:00.000Z' },
+      { recipeId: 'recipe_snickerdoodle', discoveredAt: '2026-08-12T08:15:00.000Z' },
+      { recipeId: 'recipe_jam-thumbprint', discoveredAt: '2026-08-13T09:00:00.000Z' },
+    ],
+    bakedCreations: [
+      {
+        id: 'creation_6c1b3a52-6f9c-4f0e-9e57-2f4f6c1f1d10',
+        ingredientIds: ['ingredient_butter', 'ingredient_flour', 'ingredient_sugar'],
+        recipeId: 'recipe_shortbread',
+        bakedAt: '2026-08-10T10:00:00.000Z',
+      },
+      {
+        id: 'creation_0b7d5a1e-1b8b-4bd4-8a7e-6d5f7d2e9c33',
+        ingredientIds: ['ingredient_egg', 'ingredient_vanilla'],
+        recipeId: null,
+        bakedAt: '2026-08-12T08:00:00.000Z',
+      },
+    ],
+    progression: { crumbs: 42, xp: 215 },
+    tutorial: { completed: false, skipped: true },
+    settings: { soundEnabled: false, motion: 'reduced' },
+    createdAt: '2026-08-10T09:55:00.000Z',
+    updatedAt: '2026-08-13T09:00:00.000Z',
+    ...overrides,
+  }
+}

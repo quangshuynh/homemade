@@ -13,8 +13,11 @@ export type PlayerId = Id<'player'>
 export type RecipeId = Id<'recipe'>
 export type IngredientId = Id<'ingredient'>
 export type CreationId = Id<'creation'>
+export type StoryChapterId = Id<'chapter'>
+export type StorySceneId = Id<'scene'>
+export type StoryNoteId = Id<'note'>
 
-type IdKind = 'player' | 'recipe' | 'ingredient' | 'creation'
+type IdKind = 'player' | 'recipe' | 'ingredient' | 'creation' | 'chapter' | 'scene' | 'note'
 
 function randomPart(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -29,7 +32,7 @@ export function createId<Kind extends IdKind>(kind: Kind): Id<Kind> {
 }
 
 /**
- * For hand-authored content (recipes, ingredients) whose IDs are fixed in
+ * For hand-authored content (recipes, ingredients, story) whose IDs are fixed in
  * source so saves can reference them across versions, e.g. `defineId('recipe', 'butter-cookie')`.
  */
 export function defineId<Kind extends IdKind>(kind: Kind, slug: string): Id<Kind> {

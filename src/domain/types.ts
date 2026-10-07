@@ -1,4 +1,4 @@
-import type { CreationId, IngredientId, PlayerId, RecipeId } from './ids'
+import type { CreationId, IngredientId, PlayerId, RecipeId, StorySceneId } from './ids'
 
 /**
  * Core domain models. These are intentionally small: they name the concepts
@@ -166,6 +166,16 @@ export type TutorialState = {
   skipped: boolean
 }
 
+/**
+ * How far the player is through the recipe box's story. Only the scenes
+ * they've seen (read to the end or skipped), in the order they saw them.
+ * Chapters, notes, clues and what's available next are all worked out from
+ * this and the static story content (see story/), so nothing can disagree.
+ */
+export type StoryState = {
+  seenSceneIds: StorySceneId[]
+}
+
 export type GameSave = {
   /** Save schema version. Bump it and add a migration when the shape changes. */
   version: number
@@ -184,6 +194,7 @@ export type GameSave = {
   bakedCreations: CookieCreation[]
   progression: Progression
   tutorial: TutorialState
+  story: StoryState
   settings: GameSettings
   /** ISO-8601 timestamps. */
   createdAt: string

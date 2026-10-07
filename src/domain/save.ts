@@ -3,7 +3,7 @@ import { STARTER_PANTRY } from './ingredients'
 import type { GameSave, GameSettings, PlayerProfile } from './types'
 
 /** The save schema version this build writes. */
-export const CURRENT_SAVE_VERSION = 4
+export const CURRENT_SAVE_VERSION = 5
 
 export const NAME_MAX_LENGTH = 32
 
@@ -54,6 +54,8 @@ export function createNewSave(input: NewSaveInput, now: Date = new Date()): Game
     progression: { crumbs: 0, xp: 0 },
     // A brand-new kitchen gets the tutorial; the player can skip it.
     tutorial: { completed: false, skipped: false },
+    // The first chapter waits for the tutorial to be behind them.
+    story: { seenSceneIds: [] },
     settings: { ...DEFAULT_SETTINGS },
     createdAt: timestamp,
     updatedAt: timestamp,
