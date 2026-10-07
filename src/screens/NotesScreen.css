@@ -80,7 +80,7 @@
 .notes-chapter__divider {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: last baseline;
   gap: var(--space-1) var(--space-4);
   padding: var(--space-2) var(--space-4);
   background: var(--kraft);

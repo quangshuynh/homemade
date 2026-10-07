@@ -133,6 +133,9 @@
 }
 
 .story-nudge a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-target);
   font-family: var(--font-body);
   font-size: var(--text-sm);
 }
