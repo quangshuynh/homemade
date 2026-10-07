@@ -12,6 +12,7 @@ import levelUp from '../assets/sounds/level-up.wav'
 import mix from '../assets/sounds/mix.wav'
 import pick from '../assets/sounds/pick.wav'
 import remove from '../assets/sounds/remove.wav'
+import storyNote from '../assets/sounds/story-note.wav'
 import tutorialNext from '../assets/sounds/tutorial-next.wav'
 
 /**
@@ -29,6 +30,7 @@ export type SoundId =
   | 'level-up'
   | 'ingredient-unlock'
   | 'tutorial-next'
+  | 'story-note'
 
 export type SoundDefinition = {
   url: string
@@ -53,6 +55,8 @@ export const SOUNDS: Record<SoundId, SoundDefinition> = {
   'level-up': { url: levelUp, volume: 0.35 },
   'ingredient-unlock': { url: ingredientUnlock, volume: 0.4 },
   'tutorial-next': { url: tutorialNext, volume: 0.3 },
+  // A story scene read (or skipped) for the first time. Never on a replay.
+  'story-note': { url: storyNote, volume: 0.3 },
 }
 
 export function discoverySound(rarity: CookieRarity): SoundId {

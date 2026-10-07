@@ -10,6 +10,7 @@ import { SecretSeal } from '../components/SecretSeal'
 import { getIngredient } from '../domain/ingredients'
 import { bookCounts, bookSections, type BookEntry, type FamilySection } from '../domain/recipeBook'
 import type { RecipeFamily } from '../domain/types'
+import { availableScene } from '../story/progress'
 import './RecipeBookScreen.css'
 
 function formatDate(iso: string): string {
@@ -39,6 +40,7 @@ export function RecipeBookScreen() {
   const sections = bookSections(save)
   const { found, total, secretsFound } = bookCounts(save)
   const shown = filter === 'all' ? sections : sections.filter((section) => section.family.id === filter)
+  const newNote = availableScene(save) !== null
 
   function choose(next: Filter) {
     setFilter(next)
@@ -58,6 +60,16 @@ export function RecipeBookScreen() {
       <p className="recipe-book__story">
         This kitchen’s old recipe box, its cards faded to nothing. Bake a recipe and its card comes back.
       </p>
+      {/* The story lives at the back of the box. A new note is said in words, never just a dot. */}
+      <a className="recipe-book__notes" href={hrefFor('notes')}>
+        <span className="recipe-book__notes-flag" aria-hidden="true" />
+        Recipe Box Notes
+        {newNote && (
+          <>
+            <span className="visually-hidden">:</span> <span className="recipe-book__notes-new">New note</span>
+          </>
+        )}
+      </a>
 
       <div className="recipe-book__dividers" role="group" aria-label="Show recipes from">
         <button type="button" className="book-divider" aria-pressed={filter === 'all'} onClick={() => choose('all')}>

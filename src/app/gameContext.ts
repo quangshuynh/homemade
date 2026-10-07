@@ -1,11 +1,12 @@
 import { createContext, useContext } from 'react'
 import type { BakeOutcome, Bowl, PreparedBake } from '../domain/baking'
-import type { IngredientId, RecipeId } from '../domain/ids'
+import type { IngredientId, RecipeId, StorySceneId } from '../domain/ids'
 import type { UnlockResult } from '../domain/progression'
 import type { NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
 import type { ImportResult } from '../persistence/portable'
 import type { LoadResult } from '../persistence/repository'
+import type { SeeSceneResult, StoryNews } from '../story/progress'
 
 export type GameState =
   | { status: 'loading' }
@@ -15,6 +16,12 @@ export type GameState =
   | { status: 'unavailable'; message: string }
 
 export type SaveStatus = 'saved' | 'saving' | 'failed'
+
+/** What came out of the oven, and whether it opened up the next bit of the story. */
+export type KitchenBake = BakeOutcome & { story: StoryNews | null }
+
+/** A pantry addition, and whether it opened up the next bit of the story. */
+export type KitchenUnlock = (Extract<UnlockResult, { ok: true }> & { story: StoryNews | null }) | Extract<UnlockResult, { ok: false }>
 
 export type GameContextValue = {
   state: GameState
@@ -26,12 +33,18 @@ export type GameContextValue = {
    * Bakes what's in the bowl, remembers the batch, records any first-time
    * discovery, and saves all of it in one write. Returns what came out of the oven.
    */
-  bake: (bowl: Bowl) => BakeOutcome
+  bake: (bowl: Bowl) => KitchenBake
   /**
    * Adds an ingredient to the pantry for good, paying its Crumbs, in one
    * write. Refuses, changing nothing, if the level or Crumbs aren't there.
    */
-  unlockIngredient: (id: IngredientId) => UnlockResult
+  unlockIngredient: (id: IngredientId) => KitchenUnlock
+  /**
+   * Records that a story scene was seen (read to the end, or skipped), and
+   * pays its chapter's small reward the first time, in one write. A scene
+   * already seen changes nothing, so a replay can never pay twice.
+   */
+  seeStoryScene: (id: StorySceneId) => SeeSceneResult
   /** Ingredients laid out by "Bake again", for the Bake screen to start from. In memory only. */
   preparedBowl: PreparedBake | null
   /**

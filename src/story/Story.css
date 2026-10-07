@@ -1,0 +1,150 @@
+/*
+ * The story's paper. Notes are in the recipe box's *other* hand: graphite
+ * pencil, slightly slanted, never Marmalade's ballpoint blue. That contrast
+ * is how a glance tells a note from Marmalade.
+ */
+
+/* ---- A scene: the tutorial's propped-up card, with a chapter title in the corner. */
+.story-scene__title {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+}
+
+/* ---- A note, in whatever it was written on. */
+.story-note {
+  position: relative;
+  display: grid;
+  gap: var(--space-1);
+  max-width: 34rem;
+  padding: var(--space-3) var(--space-4);
+  color: var(--pencil);
+  background: var(--paper);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.story-note__where {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-snug);
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+
+.story-note__text {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-md);
+  font-style: oblique 8deg;
+  line-height: var(--leading-hand);
+  color: var(--pencil);
+  overflow-wrap: anywhere;
+}
+
+/* Inside a scene the place it was found leads the line, so it reads out as one sentence. */
+.story-note__text .story-note__where {
+  margin-bottom: var(--space-1);
+  font-style: normal;
+}
+
+/* Pencil beside a recipe: the card's red margin rule, the note written past it. */
+.story-note[data-kind='margin'] {
+  padding-left: calc(var(--space-4) + 1.25rem);
+  background-image: linear-gradient(to right, transparent 1.25rem, var(--paper-margin) 1.25rem, var(--paper-margin) calc(1.25rem + 2px), transparent calc(1.25rem + 2px));
+}
+
+/* A whole index card: blue rules and a red header line. */
+.story-note[data-kind='card'] {
+  border-top: 3px solid var(--paper-margin);
+  background-image: linear-gradient(to bottom, transparent calc(1.75rem - 1px), rgb(169 201 220 / 0.5) calc(1.75rem - 1px));
+  background-size: 100% 1.75rem;
+}
+
+/* A torn scrap: a little darker, tilted, with a ragged bottom edge. */
+.story-note[data-kind='scrap'] {
+  padding-bottom: var(--space-5);
+  background: var(--paper-shade);
+  clip-path: polygon(0 0, 100% 0, 100% 88%, 92% 96%, 81% 90%, 68% 98%, 55% 91%, 41% 97%, 28% 90%, 15% 97%, 0 91%);
+  transform: rotate(-0.8deg);
+}
+
+/* A label: kraft paper with a stitched edge, like the pantry's tags. */
+.story-note[data-kind='label'] {
+  background: var(--kraft);
+  outline: 1.5px dashed rgb(43 29 20 / 0.45);
+  outline-offset: -6px;
+}
+
+.story-note[data-kind='label'] .story-note__where,
+.story-note[data-kind='label'] .story-note__text {
+  color: var(--ink);
+}
+
+/* After a secret is baked, Marmalade's blue pen beside the clue. */
+.story-note__found {
+  justify-self: start;
+  margin-top: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+  color: var(--ink-pen);
+  background: var(--butter-300);
+  border-radius: var(--radius-paper);
+  transform: rotate(-1deg);
+}
+
+.story-note__found-by {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: var(--ink-soft);
+}
+
+/* Inside a scene a note sits where Marmalade would, a little in from the edge. */
+.story-scene .story-note {
+  margin-inline: var(--space-2);
+}
+
+/* ---- "New note": a paper bookmark, with the words written on it. Never a red badge. */
+.story-nudge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  max-width: 34rem;
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-5);
+  position: relative;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  color: var(--ink);
+  background: var(--paper);
+  border-left: 3px solid var(--paper-margin);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.story-nudge__label {
+  font-weight: var(--weight-bold);
+}
+
+.story-nudge a {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+
+/* A little kraft bookmark poking up above the slip. */
+.story-nudge__flag,
+.notes__waiting-flag {
+  position: absolute;
+  top: -8px;
+  left: var(--space-4);
+  width: 14px;
+  height: 22px;
+  background: var(--kraft);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+}

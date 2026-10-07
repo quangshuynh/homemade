@@ -144,6 +144,18 @@ Object.assign(sounds, {
   'discover-secret': render(1.5, (t) => pad(t, [220, 261.6, 329.6], 1.3) * 0.45 + bells(t - 0.08, [1975.5, 1568, 1318.5], 0.16, 0.8)),
 })
 
+// Interval 7. After the others, so none of their files change.
+Object.assign(sounds, {
+  // A story scene put back in the recipe box: a card slid into place, then
+  // one low, warm bell. Quieter and shorter than any discovery.
+  'story-note': render(0.9, (t) => {
+    const slide = t < 0.18 ? noise() * 0.22 * Math.sin((Math.PI * t) / 0.18) : 0
+    const local = t - 0.16
+    const bell = local < 0 ? 0 : partial(local, 659.3, 0.3) + partial(local, 1318.5, 0.12, 0.25) + partial(local, 987.8, 0.22, 0.35)
+    return slide + bell
+  }),
+})
+
 for (const [name, data] of Object.entries(sounds)) {
   writeFileSync(new URL(`${name}.wav`, out), wav(data, name === 'mix' || name === 'tutorial-next' ? 0.45 : 0.6))
 }

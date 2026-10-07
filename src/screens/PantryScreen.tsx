@@ -13,6 +13,8 @@ import { findIngredient, getIngredient, STARTER_PANTRY } from '../domain/ingredi
 import { lockedIngredients, unlockStatus, type LevelUp, type UnlockStatus } from '../domain/progression'
 import type { Ingredient, IngredientCategory } from '../domain/types'
 import { describeLevelUp, unlockReaction } from '../mascot/reactions'
+import type { StoryNews } from '../story/progress'
+import { StoryNudge } from '../story/StoryNudge'
 import { useTutorial } from '../tutorial/tutorialContext'
 import './PantryScreen.css'
 
@@ -21,7 +23,7 @@ const SHELVES: { category: IngredientCategory; title: string }[] = [
   { category: 'flavouring', title: 'Flavourings' },
 ]
 
-type Added = { ingredientId: IngredientId; xp: number; levelUp: LevelUp | null; firstAddition: boolean }
+type Added = { ingredientId: IngredientId; xp: number; levelUp: LevelUp | null; firstAddition: boolean; story: StoryNews | null }
 
 /** Why an addition can't be made yet, in words. Null when it can. */
 function notYet(status: UnlockStatus): string | null {
@@ -70,7 +72,7 @@ export function PantryScreen() {
     setConfirming(null)
     if (!result.ok) return
     playSound('ingredient-unlock')
-    setAdded({ ingredientId: result.ingredientId, xp: result.xp, levelUp: result.levelUp, firstAddition })
+    setAdded({ ingredientId: result.ingredientId, xp: result.xp, levelUp: result.levelUp, firstAddition, story: result.story })
   }
 
   const pending = confirming ? { ingredient: getIngredient(confirming), status: unlockStatus(save, confirming) } : null
@@ -97,6 +99,7 @@ export function PantryScreen() {
           <MascotSays expression={reaction.expression}>{reaction.line}</MascotSays>
           <p className="pantry__added-xp">+{added.xp} XP for filling the shelf</p>
           {added.levelUp && <p className="pantry__added-level">{describeLevelUp(added.levelUp)}</p>}
+          {added.story && <StoryNudge news={added.story} />}
         </div>
       )}
 

@@ -292,3 +292,34 @@
     width: 3.5rem;
   }
 }
+
+/* Marmalade with something to show you: a tiny pen speech mark by her ear. Decoration; the box's tag says it in words. */
+.kitchen__cat-spot {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+
+.kitchen__cat-mark {
+  position: absolute;
+  top: -0.35rem;
+  right: -0.6rem;
+  padding: 0 0.4rem 0.2rem;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  color: var(--ink-pen);
+  background: var(--paper);
+  border: 1.5px solid var(--ink-pen);
+  border-radius: 999px 999px 999px 4px;
+}
+
+.counter-object__note {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  padding: 0 var(--space-2);
+  background: var(--butter-300);
+  border-radius: var(--radius-paper);
+}

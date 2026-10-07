@@ -17,6 +17,7 @@ const SOUND_IDS = [
   'level-up',
   'ingredient-unlock',
   'tutorial-next',
+  'story-note',
 ] as const satisfies readonly SoundId[]
 
 const SOUNDS = Object.fromEntries(SOUND_IDS.map((id) => [id, { url: `/${id}.wav`, volume: 0.3 }])) as Record<SoundId, { url: string; volume: number }>

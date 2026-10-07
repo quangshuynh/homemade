@@ -369,3 +369,50 @@
 .book-card[data-rarity='mythic'] {
   --book-stitch: var(--rarity-mythic);
 }
+
+/* The way to the story: a kraft bookmark sticking up out of the box. */
+.recipe-book__notes {
+  position: relative;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-self: start;
+  gap: var(--space-1) var(--space-3);
+  min-height: var(--tap-target);
+  padding: var(--space-2) var(--space-4) var(--space-2) calc(var(--space-4) + 18px);
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  color: var(--ink);
+  text-decoration: none;
+  background: var(--paper);
+  border-top: 3px solid var(--paper-margin);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.recipe-book__notes:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.recipe-book__notes-flag {
+  position: absolute;
+  top: -8px;
+  left: var(--space-3);
+  width: 14px;
+  height: 24px;
+  background: var(--kraft);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+}
+
+/* Written on a butter slip, never a red dot: the words carry it. */
+.recipe-book__notes-new {
+  padding: 0 var(--space-2);
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  background: var(--butter-300);
+  border-radius: var(--radius-paper);
+  transform: rotate(-2deg);
+}

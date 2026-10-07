@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type RefObject } from 'react'
-import { useGame, useSave } from '../app/gameContext'
+import { useGame, useSave, type KitchenBake } from '../app/gameContext'
 import { hrefFor } from '../app/routes'
 import { useReducedMotion } from '../app/useReducedMotion'
 import { useSound } from '../audio/soundContext'
@@ -30,6 +30,7 @@ import { familyName } from '../domain/recipeBook'
 import { findRecipeById } from '../domain/recipes'
 import type { CookieRarity, Ingredient } from '../domain/types'
 import { describeLevelUp, discoveryReaction } from '../mascot/reactions'
+import { StoryNudge } from '../story/StoryNudge'
 import { isTutorialBowl, TUTORIAL_BOWL } from '../tutorial/tutorial'
 import { useTutorial } from '../tutorial/tutorialContext'
 import { discoverySoundDelay, REVEAL_BEAT_MS, secretSoundDelay } from './reveal'
@@ -55,7 +56,7 @@ function isSecretFind(outcome: BakeOutcome): boolean {
   return outcome.newDiscovery && outcome.result.kind === 'recipe' && outcome.result.recipe.isSecret
 }
 
-type Phase = { kind: 'choosing' } | { kind: 'mixed' } | { kind: 'baking'; outcome: BakeOutcome } | { kind: 'done'; outcome: BakeOutcome }
+type Phase = { kind: 'choosing' } | { kind: 'mixed' } | { kind: 'baking'; outcome: KitchenBake } | { kind: 'done'; outcome: KitchenBake }
 
 const DOUGH_WORDS = {
   pale: 'pale',
@@ -414,7 +415,7 @@ function revealIfHidden(element: HTMLElement | null, reducedMotion: boolean) {
 }
 
 type BakeResultProps = {
-  outcome: BakeOutcome
+  outcome: KitchenBake
   headingRef: RefObject<HTMLHeadingElement | null>
   headingId: string
   onBakeAgain: () => void
@@ -526,6 +527,9 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain, quietMascot =
         )}
 
         <p className="bake-result__rack">Left to cool on the rack in your kitchen.</p>
+
+        {/* A new bit of the story waits in the recipe box. Mentioned, never opened for them. */}
+        {outcome.story && <StoryNudge news={outcome.story} className="bake-result__story" />}
 
         <div className="bake-result__actions">
           <Button variant="primary" onClick={onBakeAgain}>
