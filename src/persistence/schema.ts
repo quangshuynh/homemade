@@ -1,3 +1,4 @@
+import { isDecorationSlot } from '../decorating/slots'
 import { isIdOf } from '../domain/ids'
 import { CURRENT_SAVE_VERSION, NAME_MAX_LENGTH } from '../domain/save'
 import type { GameSave, MotionPreference } from '../domain/types'
@@ -102,6 +103,28 @@ export function findSaveProblem(value: RawRecord): string | null {
   if (!isRecord(story)) return 'story is missing'
   if (!Array.isArray(story.seenSceneIds) || !story.seenSceneIds.every((id) => isIdOf('scene', id))) {
     return 'story.seenSceneIds is not a list of scene ids'
+  }
+
+  // Decoration ids are checked for shape, not against the catalog, like
+  // recipes: one retired in a later build stays in the save and is simply
+  // not shown. Spots are a fixed list, and what's out must be something owned.
+  const decorating = value.decorating
+  if (!isRecord(decorating)) return 'decorating is missing'
+  const owned = decorating.ownedDecorationIds
+  if (!Array.isArray(owned) || !owned.every((id) => isIdOf('decoration', id))) {
+    return 'decorating.ownedDecorationIds is not a list of decoration ids'
+  }
+  if (new Set(owned).size !== owned.length) return 'decorating.ownedDecorationIds lists a decoration twice'
+  const equipped = decorating.equippedBySlot
+  if (!isRecord(equipped)) return 'decorating.equippedBySlot is missing'
+  for (const [slot, id] of Object.entries(equipped)) {
+    if (!isDecorationSlot(slot)) return `decorating.equippedBySlot has an unknown spot "${slot}"`
+    if (!isIdOf('decoration', id)) return `decorating.equippedBySlot.${slot} is not a decoration id`
+    if (!owned.includes(id)) return `decorating.equippedBySlot.${slot} is something the kitchen doesn't own`
+  }
+  const noticed = decorating.noticedMomentIds
+  if (!Array.isArray(noticed) || !noticed.every((id) => typeof id === 'string' && id.length > 0)) {
+    return 'decorating.noticedMomentIds is not a list of names'
   }
 
   const settings = value.settings

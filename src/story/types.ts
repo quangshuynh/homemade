@@ -27,6 +27,8 @@ export type StoryRequirement =
   | { type: 'recipe-discovered'; recipeId: RecipeId }
   /** Any one of these: lets a chapter about secrets open without depending on one. */
   | { type: 'any'; of: readonly StoryRequirement[] }
+  /** Nothing beyond the scene before it: ready the moment that one is seen. For a short epilogue. */
+  | { type: 'straight-after' }
 
 /**
  * How a note looks in the box: a pencilled line beside a recipe (`margin`),

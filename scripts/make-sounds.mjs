@@ -156,6 +156,28 @@ Object.assign(sounds, {
   }),
 })
 
+// Interval 8. After the others, so none of their files change.
+Object.assign(sounds, {
+  // The old cupboard, opened for the first time: two small clicks of a brass
+  // key turning, then a soft wooden door easing open.
+  'decor-open': render(0.95, (t) => {
+    const click = (at) => {
+      const local = t - at
+      return local < 0 ? 0 : partial(local, 2350, 0.012) + partial(local, 3720, 0.008, 0.5) + (local < 0.003 ? noise() * 0.5 : 0)
+    }
+    const local = t - 0.3
+    const creak = local < 0 || local > 0.55 ? 0 : Math.sin(2 * Math.PI * (210 + 60 * local) * t) * 0.18 * Math.sin((Math.PI * local) / 0.55) * (0.7 + 0.3 * noise())
+    return click(0) + click(0.13) * 0.8 + creak
+  }),
+  // Something set down in its spot: a small wooden knock and a light tick, quieter than a jar.
+  'decor-equip': render(0.3, (t) => partial(t, 420 - 500 * t, 0.04) + partial(t, 1660, 0.03, 0.35) + (t < 0.004 ? noise() * 0.25 : 0)),
+  // A new decoration for the cupboard: tissue paper unwrapped, then two warm bell notes (E5, A5).
+  'decor-unlock': render(0.9, (t) => {
+    const rustle = t < 0.2 ? noise() * 0.25 * Math.sin((Math.PI * t) / 0.2) * (0.6 + 0.4 * Math.sin(2 * Math.PI * 31 * t)) : 0
+    return rustle + bells(t - 0.2, [659.3, 880], 0.14, 0.7)
+  }),
+})
+
 for (const [name, data] of Object.entries(sounds)) {
   writeFileSync(new URL(`${name}.wav`, out), wav(data, name === 'mix' || name === 'tutorial-next' ? 0.45 : 0.6))
 }

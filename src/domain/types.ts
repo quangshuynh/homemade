@@ -1,4 +1,5 @@
-import type { CreationId, IngredientId, PlayerId, RecipeId, StorySceneId } from './ids'
+import type { DecorationSlot } from '../decorating/slots'
+import type { CreationId, DecorationId, IngredientId, PlayerId, RecipeId, StorySceneId } from './ids'
 
 /**
  * Core domain models. These are intentionally small: they name the concepts
@@ -176,6 +177,24 @@ export type StoryState = {
   seenSceneIds: StorySceneId[]
 }
 
+/**
+ * The player's kitchen decorations (Interval 8). Ids only: names, looks and
+ * where something can go are read from the decoration catalog (decorating/).
+ * Purely cosmetic: nothing here is ever read by a baking, reward or level rule.
+ */
+export type DecoratingState = {
+  /**
+   * Every decoration the player has, earned or bought, in the order they
+   * arrived. Owned for good: nothing ever takes one away, even if the
+   * milestone that earned it would no longer count.
+   */
+  ownedDecorationIds: DecorationId[]
+  /** What's out in each spot: at most one thing per spot, always one that's owned. A missing spot is empty. */
+  equippedBySlot: Partial<Record<DecorationSlot, DecorationId>>
+  /** Marmalade's one-time decorating remarks already made (see decorating/moments), so none is said twice. */
+  noticedMomentIds: string[]
+}
+
 export type GameSave = {
   /** Save schema version. Bump it and add a migration when the shape changes. */
   version: number
@@ -195,6 +214,7 @@ export type GameSave = {
   progression: Progression
   tutorial: TutorialState
   story: StoryState
+  decorating: DecoratingState
   settings: GameSettings
   /** ISO-8601 timestamps. */
   createdAt: string

@@ -4,7 +4,7 @@ import { CURRENT_SAVE_VERSION, touchSave, updateSettings } from '../domain/save'
 import { bake, recordBake } from '../domain/baking'
 import { BUTTER, FLOUR, SUGAR } from '../domain/ingredients'
 import type { CreationId } from '../domain/ids'
-import { makeSave, makeV1Save, makeV2Save, makeV3Save, makeV4Save } from '../test/fixtures'
+import { makeSave, makeV1Save, makeV2Save, makeV3Save, makeV4Save, makeV5Save } from '../test/fixtures'
 import { createIndexedDbSaveRepository, readArchive, type IndexedDbSaveRepositoryOptions } from './indexedDbSaveRepository'
 import { findSaveProblem } from './schema'
 
@@ -259,7 +259,13 @@ describe('IndexedDB save repository', () => {
 
     const result = await createIndexedDbSaveRepository(options).load()
 
-    expect(result).toEqual({ kind: 'loaded', migratedFrom: 4, save: { ...v4, version: CURRENT_SAVE_VERSION, story: { seenSceneIds: [] } } })
+    expect(result).toEqual({ kind: 'loaded', migratedFrom: 4, save: {
+        ...v4,
+        version: CURRENT_SAVE_VERSION,
+        story: { seenSceneIds: [] },
+        decorating: { ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] },
+      },
+    })
     const archive = await readArchive(options)
     expect(archive).toHaveLength(1)
     expect(archive[0]).toMatchObject({ note: 'Upgraded from save version 4', data: v4 })
@@ -274,6 +280,34 @@ describe('IndexedDB save repository', () => {
     expect(result).toMatchObject({ kind: 'incompatible', version: 4, raw: broken })
     await expect(readArchive(options)).resolves.toEqual([])
     await expect(createIndexedDbSaveRepository(options).load()).resolves.toMatchObject({ raw: broken })
+  })
+
+  it('upgrades an Interval 7 save on load, with an empty cupboard, archiving the original once', async () => {
+    const v5 = makeV5Save()
+    await putRaw(v5)
+
+    const result = await createIndexedDbSaveRepository(options).load()
+
+    expect(result).toMatchObject({ kind: 'loaded', migratedFrom: 5, save: { version: 6, story: v5.story } })
+    await expect(readArchive(options)).resolves.toHaveLength(1)
+  })
+
+  it('archives an upgrade once, even when two loads overlap (React StrictMode runs the load effect twice in development)', async () => {
+    const v5 = makeV5Save()
+    await putRaw(v5)
+    const repo = createIndexedDbSaveRepository(options)
+
+    // Both start before either has written anything back.
+    const [first, second] = await Promise.all([repo.load(), repo.load()])
+
+    expect(first).toEqual(second)
+    expect(first).toMatchObject({ kind: 'loaded', migratedFrom: 5 })
+    const archive = await readArchive(options)
+    expect(archive).toHaveLength(1)
+    expect(archive[0]).toMatchObject({ note: 'Upgraded from save version 5', data: v5 })
+    // A later load is a fresh read of what's stored now: the upgraded save, nothing more to archive.
+    await expect(repo.load()).resolves.toMatchObject({ kind: 'loaded', migratedFrom: null })
+    await expect(readArchive(options)).resolves.toHaveLength(1)
   })
 
   it('fails loudly when the browser has no IndexedDB', async () => {

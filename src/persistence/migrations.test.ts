@@ -3,8 +3,10 @@ import { CURRENT_SAVE_VERSION } from '../domain/save'
 import { INGREDIENT_UNLOCKS, unlockStatus } from '../domain/progression'
 import { bookCounts } from '../domain/recipeBook'
 import { availableScene, readyScenes } from '../story/progress'
-import { makeSave, makeV1Save, makeV2Save, makeV3Save, makeV4Save } from '../test/fixtures'
-import { migrateV1ToV2, migrateV2ToV3, migrateV3ToV4, migrateV4ToV5 } from './migrations'
+import { DECORATIONS } from '../decorating/catalog'
+import { decoratingOpen, grantEarnedDecorations } from '../decorating/rules'
+import { makeSave, makeV1Save, makeV2Save, makeV3Save, makeV4Save, makeV5Save } from '../test/fixtures'
+import { migrateV1ToV2, migrateV2ToV3, migrateV3ToV4, migrateV4ToV5, migrateV5ToV6 } from './migrations'
 import { readSave } from './schema'
 
 /** Every ingredient the catalog had through Interval 4. Later ingredients are earned, never handed out by an upgrade. */
@@ -27,8 +29,8 @@ describe('save version 1 → 2', () => {
   it('loads an Interval 1 save as the current version', () => {
     const result = readSave(makeV1Save())
 
-    expect(CURRENT_SAVE_VERSION).toBe(5)
-    expect(result).toMatchObject({ ok: true, migratedFrom: 1, save: { version: 5, bakedCreations: [] } })
+    expect(CURRENT_SAVE_VERSION).toBe(6)
+    expect(result).toMatchObject({ ok: true, migratedFrom: 1, save: { version: 6, bakedCreations: [] } })
   })
 
   it('keeps the profile, kitchen name, settings and timestamps', () => {
@@ -88,7 +90,7 @@ describe('save version 1 → 2', () => {
 describe('save version 2 → 3', () => {
   it('loads an Interval 2 save as version 3 with empty baking memories', () => {
     const result = readSave(makeV2Save())
-    expect(result).toMatchObject({ ok: true, migratedFrom: 2, save: { version: 5, bakedCreations: [] } })
+    expect(result).toMatchObject({ ok: true, migratedFrom: 2, save: { version: 6, bakedCreations: [] } })
     expect(migrateV2ToV3(makeV2Save())).toMatchObject({ version: 3, bakedCreations: [] })
   })
 
@@ -152,7 +154,7 @@ describe('save version 2 → 3', () => {
 describe('save version 3 → 4', () => {
   it('loads an Interval 4 save as the current version', () => {
     const result = readSave(makeV3Save())
-    expect(result).toMatchObject({ ok: true, migratedFrom: 3, save: { version: 5 } })
+    expect(result).toMatchObject({ ok: true, migratedFrom: 3, save: { version: 6 } })
     expect(migrateV3ToV4(makeV3Save())).toMatchObject({ version: 4 })
   })
 
@@ -237,7 +239,20 @@ describe('Interval 6 content on older saves', () => {
     }
     // Families and secrecy come from the catalog: nothing new was written into the save.
     expect(Object.keys(save).sort()).toEqual(
-      ['bakedCreations', 'createdAt', 'discoveredRecipes', 'pantryIngredientIds', 'profile', 'progression', 'settings', 'story', 'tutorial', 'updatedAt', 'version'],
+      [
+        'bakedCreations',
+        'createdAt',
+        'decorating',
+        'discoveredRecipes',
+        'pantryIngredientIds',
+        'profile',
+        'progression',
+        'settings',
+        'story',
+        'tutorial',
+        'updatedAt',
+        'version',
+      ],
     )
     expect(bookCounts(save)).toEqual({ found: 3, total: 31, secretsFound: 0 })
   })
@@ -252,7 +267,7 @@ describe('Interval 6 content on older saves', () => {
 describe('save version 4 → 5', () => {
   it('loads an Interval 6 save as the current version, with no story seen', () => {
     const result = readSave(makeV4Save())
-    expect(result).toMatchObject({ ok: true, migratedFrom: 4, save: { version: 5, story: { seenSceneIds: [] } } })
+    expect(result).toMatchObject({ ok: true, migratedFrom: 4, save: { version: 6, story: { seenSceneIds: [] } } })
     expect(migrateV4ToV5(makeV4Save())).toMatchObject({ version: 5, story: { seenSceneIds: [] } })
   })
 
@@ -260,8 +275,9 @@ describe('save version 4 → 5', () => {
     const v4 = makeV4Save()
     const result = readSave(v4)
     if (!result.ok) throw new Error(result.detail)
-    const { story, ...rest } = result.save
-    expect(rest).toEqual({ ...v4, version: 5 })
+    const { story, decorating, ...rest } = result.save
+    expect(rest).toEqual({ ...v4, version: 6 })
+    expect(decorating).toEqual({ ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] })
     expect(story).toEqual({ seenSceneIds: [] })
   })
 
@@ -294,7 +310,7 @@ describe('save version 4 → 5', () => {
       const result = readSave(old)
       if (!result.ok) throw new Error(result.detail)
       expect(result.save.story).toEqual({ seenSceneIds: [] })
-      expect(result.save.version).toBe(5)
+      expect(result.save.version).toBe(6)
     }
   })
 
@@ -323,5 +339,114 @@ describe('save version 4 → 5', () => {
   it('keeps seen scenes it doesn’t recognise, so a rewritten scene never makes a save unreadable', () => {
     const save = makeSave({ story: { seenSceneIds: ['scene_faded-box', 'scene_retired'] as never } })
     expect(readSave(JSON.parse(JSON.stringify(save)))).toEqual({ ok: true, save, migratedFrom: null })
+  })
+})
+
+describe('save version 5 → 6', () => {
+  /** A version 5 kitchen that had read all five chapters: the first Mythic is in its book. Literal, like the fixtures. */
+  const finishedArc = () =>
+    makeV5Save({
+      discoveredRecipes: [
+        { recipeId: 'recipe_shortbread', discoveredAt: '2026-09-01T10:00:00.000Z' },
+        { recipeId: 'recipe_honey-flapjack', discoveredAt: '2026-09-02T10:00:00.000Z' },
+        { recipeId: 'recipe_millionaires-shortbread', discoveredAt: '2026-09-03T10:00:00.000Z' },
+      ],
+      story: {
+        seenSceneIds: ['scene_faded-box', 'scene_margins', 'scene_margins-spice', 'scene_second-shelf', 'scene_hidden-recipes', 'scene_last-card'],
+      },
+    })
+
+  it('loads an Interval 7 save as the current version, with an empty cupboard and nothing out', () => {
+    const result = readSave(makeV5Save())
+    expect(result).toMatchObject({
+      ok: true,
+      migratedFrom: 5,
+      save: { version: 6, decorating: { ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] } },
+    })
+  })
+
+  it('keeps every earlier field exactly, story and timestamps included', () => {
+    const v5 = makeV5Save()
+    const result = readSave(v5)
+    if (!result.ok) throw new Error(result.detail)
+    const { decorating, ...rest } = result.save
+    expect(rest).toEqual({ ...v5, version: 6 })
+    expect(decorating).toEqual({ ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] })
+  })
+
+  it('finds the cupboard already open for a kitchen that had finished Chapter 5, and hands over what it earned', () => {
+    const result = readSave(finishedArc())
+    if (!result.ok) throw new Error(result.detail)
+    expect(decoratingOpen(result.save)).toBe(true)
+    // The first evaluation after loading, exactly as the game runs it.
+    const { save, granted } = grantEarnedDecorations(result.save)
+    expect(granted.map((entry) => entry.id)).toEqual([
+      ...DECORATIONS.filter((entry) => entry.unlock.type === 'chapter-complete').map((entry) => entry.id),
+      'decoration_gold-seal-frame',
+      'decoration_little-lemon-tree',
+    ])
+    // Nothing is replayed or invented: the story, the book and the Crumbs are as they were, and nothing is put out.
+    expect(save.story).toEqual(result.save.story)
+    expect(save.discoveredRecipes).toEqual(result.save.discoveredRecipes)
+    expect(save.progression).toEqual(result.save.progression)
+    expect(save.decorating.equippedBySlot).toEqual({})
+    // And it's the same every time.
+    expect(grantEarnedDecorations(result.save)).toEqual({ save, granted })
+    expect(grantEarnedDecorations(save).granted).toEqual([])
+  })
+
+  it('keeps the cupboard shut for a kitchen still partway through the story', () => {
+    const result = readSave(makeV5Save())
+    if (!result.ok) throw new Error(result.detail)
+    expect(grantEarnedDecorations(result.save).granted).toEqual([])
+  })
+
+  it('upgrades the oldest saves all the way through', () => {
+    for (const old of [makeV1Save(), makeV2Save(), makeV3Save(), makeV4Save()]) {
+      const result = readSave(old)
+      if (!result.ok) throw new Error(result.detail)
+      expect(result.save.decorating).toEqual({ ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] })
+    }
+  })
+
+  it('is deterministic, leaves the stored data untouched, and refuses a save it can’t upgrade', () => {
+    const v5 = makeV5Save()
+    const snapshot = structuredClone(v5)
+    expect(migrateV5ToV6(makeV5Save())).toEqual(migrateV5ToV6(makeV5Save()))
+    readSave(v5)
+    expect(v5).toEqual(snapshot)
+    expect(readSave(makeV5Save({ story: null }))).toMatchObject({ ok: false, reason: 'migration-failed', version: 5 })
+  })
+})
+
+describe('the decorating part of a current save', () => {
+  const withDecorating = (decorating: unknown) => ({ ...makeSave(), decorating })
+  const good = { ownedDecorationIds: ['decoration_gingham-towel'], equippedBySlot: { textile: 'decoration_gingham-towel' }, noticedMomentIds: ['first-equip'] }
+
+  it('reads back exactly as written', () => {
+    const save = withDecorating(good)
+    expect(readSave(JSON.parse(JSON.stringify(save)))).toEqual({ ok: true, save, migratedFrom: null })
+  })
+
+  it('keeps decorations the catalog doesn’t know, so a retired one never makes a save unreadable', () => {
+    const save = withDecorating({ ...good, ownedDecorationIds: ['decoration_gingham-towel', 'decoration_retired-vase'], equippedBySlot: { shelf: 'decoration_retired-vase' } })
+    expect(readSave(save)).toMatchObject({ ok: true })
+  })
+
+  it('refuses one that’s missing, misshapen, out somewhere that isn’t a spot, or out without being owned', () => {
+    for (const [decorating, problem] of [
+      [undefined, 'decorating is missing'],
+      [{ ...good, ownedDecorationIds: 'all of it' }, 'not a list of decoration ids'],
+      [{ ...good, ownedDecorationIds: ['recipe_shortbread'] }, 'not a list of decoration ids'],
+      [{ ...good, ownedDecorationIds: ['decoration_gingham-towel', 'decoration_gingham-towel'] }, 'lists a decoration twice'],
+      [{ ...good, equippedBySlot: { ceiling: 'decoration_gingham-towel' } }, 'unknown spot "ceiling"'],
+      [{ ...good, equippedBySlot: { textile: 'decoration_fruit-print-towel' } }, 'doesn’t own'.replace('’', "'")],
+      [{ ...good, equippedBySlot: { textile: 42 } }, 'not a decoration id'],
+      [{ ...good, noticedMomentIds: [''] }, 'noticedMomentIds'],
+    ] as const) {
+      const result = readSave(withDecorating(decorating))
+      expect(result, problem).toMatchObject({ ok: false, reason: 'invalid' })
+      if (!result.ok) expect(result.detail, problem).toContain(problem)
+    }
   })
 })

@@ -158,9 +158,35 @@ export function migrateV4ToV5(raw: RawRecord): RawRecord {
   return { ...raw, version: 5, story: { seenSceneIds: [] } }
 }
 
+/**
+ * v5 → v6 (Interval 8, kitchen decorating):
+ * - adds `decorating`, with nothing owned, nothing out and no remarks made.
+ *   Nothing is put out on the player's behalf: the kitchen looks exactly as
+ *   it did until they choose otherwise.
+ * - leaves everything else exactly as it was, story included, so a kitchen
+ *   that had already finished Chapter 5 is never asked to read it again.
+ *
+ * What the kitchen has already earned (the cupboard's starter set, and any
+ * keepsake whose milestone it has reached) isn't written here: a migration
+ * mustn't read the live catalogs. It's handed over by the same pure rule
+ * the game uses after every bake and scene (`grantEarnedDecorations`), the
+ * first time the upgraded save is loaded. That rule is idempotent, so the
+ * result is the same however often it runs.
+ */
+export function migrateV5ToV6(raw: RawRecord): RawRecord {
+  if (typeof raw.story !== 'object' || raw.story === null) {
+    throw new Error('version 5 save has no story state')
+  }
+  if (typeof raw.progression !== 'object' || raw.progression === null) {
+    throw new Error('version 5 save has no progression')
+  }
+  return { ...raw, version: 6, decorating: { ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] } }
+}
+
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   1: migrateV1ToV2,
   2: migrateV2ToV3,
   3: migrateV3ToV4,
   4: migrateV4ToV5,
+  5: migrateV5ToV6,
 }

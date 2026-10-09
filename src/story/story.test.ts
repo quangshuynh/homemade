@@ -47,14 +47,17 @@ const everythingButSecrets = () =>
   makeSave({ discoveredRecipes: found(...visibleIds), progression: { crumbs: 0, xp: 5000 } })
 
 describe('chapter eligibility', () => {
-  it('has a first arc of five chapters, in order', () => {
+  it('has a first arc of five chapters, in order, and a short epilogue', () => {
     expect(STORY_CHAPTERS.map((chapter) => [chapter.number, chapter.title])).toEqual([
       [1, 'The Faded Recipe Box'],
       [2, 'Notes in the Margins'],
       [3, 'The Second Shelf'],
       [4, 'Recipes Someone Hid'],
       [5, 'The Last Card'],
+      [6, 'The Old Cupboard'],
     ])
+    // The epilogue is one scene with no reward: the cupboard is the reward.
+    expect(STORY_CHAPTERS[5]).toMatchObject({ reward: null, scenes: [{ requirement: { type: 'straight-after' } }] })
   })
 
   it('opens nothing while the first-time tutorial is still to come', () => {
@@ -133,6 +136,7 @@ describe('ordering and the queue', () => {
       scene('second-shelf'),
       scene('hidden-recipes'),
       scene('last-card'),
+      scene('old-cupboard'),
     ])
   })
 

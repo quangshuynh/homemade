@@ -150,3 +150,13 @@ export function makeV4Save(overrides: Record<string, unknown> = {}): Record<stri
     ...overrides,
   }
 }
+
+/** A save exactly as Interval 7 (save version 5) wrote it. Written out literally on purpose. */
+export function makeV5Save(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    ...makeV4Save(),
+    version: 5,
+    story: { seenSceneIds: ['scene_faded-box'] },
+    ...overrides,
+  }
+}

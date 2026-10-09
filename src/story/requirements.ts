@@ -30,5 +30,7 @@ export function meetsRequirement(save: GameSave, requirement: StoryRequirement):
       return isDiscovered(save, requirement.recipeId)
     case 'any':
       return requirement.of.some((inner) => meetsRequirement(save, inner))
+    case 'straight-after':
+      return true
   }
 }
