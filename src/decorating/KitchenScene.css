@@ -63,7 +63,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  padding-bottom: 12%;
+  padding-bottom: 8%;
 }
 
 .scene-spot[data-slot='counter-left'] {
@@ -110,7 +110,7 @@
 .scene-spot__art--on-shelf {
   position: relative;
   z-index: var(--layer-scene-fixture-decor);
-  height: 55%;
+  height: 68%;
   margin-bottom: -3px;
 }
 
@@ -320,7 +320,6 @@
   background: var(--paper);
   border: 1.5px solid var(--ink-pen);
   border-radius: var(--radius-paper);
-  overflow-wrap: anywhere;
 }
 
 /* The chosen spot's tag is filled in, and says so in words beside the outline (see the chooser). */
@@ -401,9 +400,10 @@
     font-size: var(--text-sm);
   }
 
-  /* Narrow spots: a long tag wraps rather than running off the edge. */
+  /* Narrow spots: a long tag wraps between words rather than running off the edge (never mid-word). */
   .scene-spot__label {
     white-space: normal;
+    overflow-wrap: normal;
   }
 }
 
