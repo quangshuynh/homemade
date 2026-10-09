@@ -6,11 +6,17 @@ import { MixingBowl, PantryJar, RecipeBox } from '../components/illustrations'
 import { Mascot } from '../components/Mascot'
 import { HandNote } from '../components/Paper'
 import { ScreenTitle } from '../components/ScreenTitle'
+import { KitchenCupboard, KitchenWall, type ScenePieces } from '../decorating/KitchenScene'
+import { decoratingOpen, equippedIn } from '../decorating/rules'
+import { DECORATION_SLOTS } from '../decorating/slots'
 import { viewCreation } from '../domain/baking'
 import { recentCreations } from '../domain/creations'
 import { availableScene } from '../story/progress'
 import { useTutorial } from '../tutorial/tutorialContext'
 import { greetingFor } from './greeting'
+
+/** The epilogue the cupboard opens on. Until it's read, the cupboard's tag says the key fits. */
+const OLD_CUPBOARD_CHAPTER = 'chapter_old-cupboard'
 import './HomeKitchenScreen.css'
 
 /** How many recent bakes sit on the rack in the kitchen. */
@@ -23,7 +29,13 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
   const onRack = recentCreations(save, RACK_SIZE).map(viewCreation)
   const tutorialOn = useTutorial().run !== null
   // Something new at the back of the recipe box. Said on the box's tag, in words; Marmalade just looks keen.
-  const newNote = !tutorialOn && availableScene(save) !== null
+  const waiting = availableScene(save)
+  const newNote = !tutorialOn && waiting !== null
+  // What the player has put out around the kitchen. Scenery: the same names are read out in one line below.
+  const pieces: ScenePieces = Object.fromEntries(DECORATION_SLOTS.flatMap((slot) => equippedIn(save, slot) ?? []).map((piece) => [piece.slot, piece]))
+  const out = Object.values(pieces)
+  const cupboardOpen = decoratingOpen(save)
+  const cupboardUnread = waiting?.chapter.id === OLD_CUPBOARD_CHAPTER
 
   return (
     <div className="kitchen">
@@ -52,40 +64,49 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
         )}
       </div>
 
-      <ul className="kitchen__counter" aria-label="On the counter">
-        <li className="kitchen__spot kitchen__spot--book">
-          <a className="counter-object" href={hrefFor('recipe-book')}>
-            <RecipeBox className="counter-object__art" />
-            <span className="counter-object__tag">
-              <span className="counter-object__name">Recipe Book</span>
-              <span className="counter-object__detail">
-                {recipeCount === 0 ? 'No recipes yet' : `${recipeCount} ${recipeCount === 1 ? 'recipe' : 'recipes'}`}
+      <div className="kitchen__scene">
+        <KitchenWall pieces={pieces} />
+        {out.length > 0 && <p className="visually-hidden">Out in your kitchen: {out.map((piece) => piece.name).join(', ')}.</p>}
+        <ul className="kitchen__counter" aria-label="On the counter">
+          <li className="kitchen__spot kitchen__spot--book">
+            <a className="counter-object" href={hrefFor('recipe-book')}>
+              <RecipeBox className="counter-object__art" />
+              <span className="counter-object__tag">
+                <span className="counter-object__name">Recipe Book</span>
+                <span className="counter-object__detail">
+                  {recipeCount === 0 ? 'No recipes yet' : `${recipeCount} ${recipeCount === 1 ? 'recipe' : 'recipes'}`}
+                </span>
+                {newNote && <span className="counter-object__note">A new note inside</span>}
               </span>
-              {newNote && <span className="counter-object__note">A new note inside</span>}
-            </span>
-          </a>
-        </li>
-        <li className="kitchen__spot kitchen__spot--bake">
-          <a className="counter-object counter-object--primary" href={hrefFor('bake')}>
-            <MixingBowl className="counter-object__art" />
-            <span className="counter-object__tag">
-              <span className="counter-object__name">Bake</span>
-              <span className="counter-object__detail">Mix something up</span>
-            </span>
-          </a>
-        </li>
-        <li className="kitchen__spot kitchen__spot--pantry">
-          <a className="counter-object" href={hrefFor('pantry')}>
-            <PantryJar className="counter-object__art" />
-            <span className="counter-object__tag">
-              <span className="counter-object__name">Pantry</span>
-              <span className="counter-object__detail">
-                {ingredientCount === 0 ? 'Empty shelves' : `${ingredientCount} ${ingredientCount === 1 ? 'ingredient' : 'ingredients'}`}
+            </a>
+          </li>
+          <li className="kitchen__spot kitchen__spot--bake">
+            <a className="counter-object counter-object--primary" href={hrefFor('bake')}>
+              <MixingBowl className="counter-object__art" />
+              <span className="counter-object__tag">
+                <span className="counter-object__name">Bake</span>
+                <span className="counter-object__detail">Mix something up</span>
               </span>
-            </span>
-          </a>
-        </li>
-      </ul>
+            </a>
+          </li>
+          <li className="kitchen__spot kitchen__spot--pantry">
+            <a className="counter-object" href={hrefFor('pantry')}>
+              <PantryJar className="counter-object__art" />
+              <span className="counter-object__tag">
+                <span className="counter-object__name">Pantry</span>
+                <span className="counter-object__detail">
+                  {ingredientCount === 0 ? 'Empty shelves' : `${ingredientCount} ${ingredientCount === 1 ? 'ingredient' : 'ingredients'}`}
+                </span>
+              </span>
+            </a>
+          </li>
+        </ul>
+        <KitchenCupboard
+          pieces={pieces}
+          state={cupboardOpen ? 'open' : 'locked'}
+          tagDetail={cupboardUnread ? 'The brass key fits' : 'Make it yours'}
+        />
+      </div>
 
       <section className="kitchen__rack" aria-labelledby="kitchen-rack">
         <div className="kitchen__rack-top">

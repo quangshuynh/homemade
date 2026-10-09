@@ -32,7 +32,7 @@ export const SLOT_INFO: Record<DecorationSlot, SlotInfo> = {
   'counter-left': { id: 'counter-left', name: 'Counter, left', hint: 'Something to stand at the back of the counter, by the recipe box.' },
   plant: { id: 'plant', name: 'Plant', hint: 'Something growing, under the window.' },
   'counter-right': { id: 'counter-right', name: 'Counter, right', hint: 'Something to stand at the back of the counter, by the pantry jar.' },
-  textile: { id: 'textile', name: 'Tea towel', hint: 'A towel for the cupboard door handle.' },
+  textile: { id: 'textile', name: 'Towel', hint: 'A tea towel for the cupboard door handle.' },
 }
 
 export function isDecorationSlot(value: unknown): value is DecorationSlot {

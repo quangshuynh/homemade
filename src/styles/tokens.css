@@ -96,6 +96,24 @@
   --secret-ink: #2c3a5e; /* midnight ink: a secret's wax seal and its marks. Never a rarity. */
   --crumb: #c98a3f; /* the Crumbs mark */
 
+  /* ---- Colour: the kitchen's own things (decorating, Interval 8) ---- */
+  --wall-tile: #f4ead6; /* cream glazed tiles behind the counter */
+  /* one offset course of subway tiles, 48×24, in the grout colour */
+  --wall-tiles: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24'%3E%3Cpath d='M0 .5H48M0 12.5H48M.5 0V12M24.5 12V24' stroke='%23967855' stroke-opacity='.3'/%3E%3C/svg%3E");
+  --sky: #cfe6ee; /* through the window: a pale morning */
+  --leaf-500: #6f9a4a;
+  --leaf-700: #46682c;
+  --terracotta: #c4693f;
+  --stoneware: #d9cbb3;
+  --glaze-cream: #f3e7cc;
+  --glaze-green: #3f7a5a;
+  --copper-400: #d18a52;
+  --copper-600: #9c5530;
+  --gilt: #c79a34;
+  --brass: #c9a03f;
+  --cupboard: #b98450; /* painted cupboard doors under the counter */
+  --cupboard-shade: #9c6b3d;
+
   /* ---- Colour: roles ---- */
   --surface-counter: var(--wood-300);
   --surface-card: var(--paper);
@@ -192,7 +210,20 @@
   --nav-height: 0px; /* on top, not fixed, above phone widths */
   --nav-clearance: calc(var(--nav-height) + var(--safe-bottom));
 
-  /* ---- Layering ---- */
+  /* ---- Layering ----
+   * The kitchen picture, back to front, then the page's own overlays. Every
+   * z-index in the app comes from this list; nothing invents its own.
+   */
+  --layer-scene-wall: 0; /* the tiled wall behind the counter */
+  --layer-scene-wall-decor: 1; /* frames and signs on the wall */
+  --layer-scene-fixtures: 2; /* the window and the shelf */
+  --layer-scene-fixture-decor: 3; /* curtains, herbs, what stands on the shelf */
+  --layer-scene-counter-back: 4; /* the back edge of the counter */
+  --layer-scene-counter-decor: 5; /* jars, crocks and the plant at the back of the counter */
+  --layer-scene-objects: 6; /* the recipe box, bowl and jar the player uses */
+  --layer-scene-front: 7; /* the cupboard doors and the towel on the handle */
+  --layer-scene-edit: 8; /* edit mode's spot outlines and buttons */
+  --layer-dock: 9; /* the Bake screen's bowl actions, docked above the page they scroll over */
   --layer-nav: 10;
   --layer-dialog: 100;
 

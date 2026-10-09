@@ -30,6 +30,7 @@ import { familyName } from '../domain/recipeBook'
 import { findRecipeById } from '../domain/recipes'
 import type { CookieRarity, Ingredient } from '../domain/types'
 import { describeLevelUp, discoveryReaction } from '../mascot/reactions'
+import { DecorNews } from '../decorating/DecorNews'
 import { StoryNudge } from '../story/StoryNudge'
 import { isTutorialBowl, TUTORIAL_BOWL } from '../tutorial/tutorial'
 import { useTutorial } from '../tutorial/tutorialContext'
@@ -168,6 +169,10 @@ export function BakeScreen() {
     // A secret gets a hush first, with "Something unexpected…", then its rarity's chime as usual.
     if (secret) timers.push(window.setTimeout(() => latest.current.playSound('discover-secret'), secretSoundDelay(rarity, still)))
     if (doneOutcome.levelUp) timers.push(window.setTimeout(() => latest.current.playSound('level-up'), chime + 1100))
+    // Something for the cupboard: the last thing to ring, after any level.
+    if (doneOutcome.decor.length > 0) {
+      timers.push(window.setTimeout(() => latest.current.playSound('decor-unlock'), chime + (doneOutcome.levelUp ? 2200 : 1100)))
+    }
     return () => timers.forEach((timer) => window.clearTimeout(timer))
   }, [doneOutcome, report])
 
@@ -530,6 +535,8 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain, quietMascot =
 
         {/* A new bit of the story waits in the recipe box. Mentioned, never opened for them. */}
         {outcome.story && <StoryNudge news={outcome.story} className="bake-result__story" />}
+        {/* Something this find earned for the kitchen. Mentioned, never put out for them. */}
+        <DecorNews pieces={outcome.decor} className="bake-result__story" />
 
         <div className="bake-result__actions">
           <Button variant="primary" onClick={onBakeAgain}>

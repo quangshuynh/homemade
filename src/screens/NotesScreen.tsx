@@ -15,7 +15,10 @@ import './NotesScreen.css'
 type Playing = { sceneId: StorySceneId; mode: 'first' | 'replay' }
 
 /** What just happened, said once after a scene closes. */
-type Ended = { how: SceneEnding; chapterTitle: string | null; crumbs: number | null }
+type Ended = { how: SceneEnding; chapterTitle: string | null; crumbs: number | null; cupboard: boolean }
+
+/** The epilogue whose scene is what's inside the old cupboard. Reading it here points the way back to the kitchen. */
+const CUPBOARD_CHAPTER = 'chapter_old-cupboard'
 
 const chapterHeadingId = (chapter: ChapterView['chapter']) => `chapter-${chapter.id}`
 
@@ -64,7 +67,12 @@ export function NotesScreen() {
     setPlaying(null)
     if (!result.ok) return
     if (result.firstTime) playSound('story-note')
-    setEnded({ how, chapterTitle: result.completedChapter?.title ?? null, crumbs: result.reward?.crumbs ?? null })
+    setEnded({
+      how,
+      chapterTitle: result.completedChapter?.title ?? null,
+      crumbs: result.reward?.crumbs ?? null,
+      cupboard: placed.chapter.id === CUPBOARD_CHAPTER,
+    })
   }
 
   return (
@@ -88,6 +96,11 @@ export function NotesScreen() {
                 {ended.chapterTitle && ` That’s the end of ${ended.chapterTitle}.`}
               </p>
               {ended.crumbs !== null && <p className="notes__crumbs">Tucked between the cards: {ended.crumbs} Crumbs.</p>}
+              {ended.cupboard && (
+                <p>
+                  The old cupboard in your kitchen is open now. <a href={hrefFor('decorate')}>Make it yours</a>
+                </p>
+              )}
             </div>
           )}
           {waiting && <WaitingSlip placed={waiting} again={ended !== null} onRead={() => start(waiting.scene.id, 'first')} />}

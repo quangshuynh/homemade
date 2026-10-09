@@ -1,0 +1,416 @@
+/*
+ * The kitchen around the counter (Interval 8). Back to front: the tiled
+ * wall, what hangs on it, the window and the shelf, what stands on them,
+ * the back edge of the counter, what stands at the back of the counter,
+ * then (in the page) the counter objects and the cupboard doors at the
+ * front. Every z-index is a --layer-scene-* token; none are invented here.
+ */
+
+/* ---- The wall: three spots above, three along the back of the counter ---- */
+
+.kitchen-wall {
+  --wall-row: 10rem;
+  --back-row: 6rem;
+
+  position: relative;
+  z-index: var(--layer-scene-wall);
+  display: grid;
+  grid-template-columns: 1fr 1.35fr 1fr;
+  grid-template-rows: var(--wall-row) var(--back-row);
+  grid-template-areas:
+    'wall window shelf'
+    'counter-left plant counter-right';
+  column-gap: var(--space-4);
+  padding: var(--space-3) var(--space-5) 0;
+  background-color: var(--wall-tile);
+  /* glazed subway tiles, and a little light from the window */
+  background-image:
+    radial-gradient(ellipse 60% 70% at 50% 0%, rgb(255 255 255 / 0.45), transparent 70%),
+    var(--wall-tiles);
+  background-size:
+    auto,
+    48px 24px;
+  border: var(--border-ink);
+  /* the back edge of the counter: everything in the bottom row stands on it */
+  border-bottom: 10px solid var(--wood-500);
+  border-radius: var(--radius-paper) var(--radius-paper) 0 0;
+  box-shadow: var(--shadow-paper);
+}
+
+.scene-spot {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+}
+
+.scene-spot[data-slot='wall'] {
+  grid-area: wall;
+  z-index: var(--layer-scene-wall-decor);
+  align-items: center;
+}
+
+.scene-spot[data-slot='window'] {
+  grid-area: window;
+  z-index: var(--layer-scene-fixtures);
+}
+
+.scene-spot[data-slot='shelf'] {
+  grid-area: shelf;
+  z-index: var(--layer-scene-fixtures);
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 12%;
+}
+
+.scene-spot[data-slot='counter-left'] {
+  grid-area: counter-left;
+}
+
+.scene-spot[data-slot='plant'] {
+  grid-area: plant;
+}
+
+.scene-spot[data-slot='counter-right'] {
+  grid-area: counter-right;
+}
+
+.scene-spot[data-slot='counter-left'],
+.scene-spot[data-slot='plant'],
+.scene-spot[data-slot='counter-right'] {
+  z-index: var(--layer-scene-counter-decor);
+}
+
+/* What's out in a spot. Sized by its zone, never wider than it. */
+.scene-spot__art {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+}
+
+.scene-spot__art--hung {
+  height: 92%;
+}
+
+/* The window and its dressing share one box, so curtains always line up with the glass. */
+.scene-spot__fixture {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.scene-spot__fixture--dressing {
+  z-index: var(--layer-scene-fixture-decor);
+}
+
+.scene-spot__art--on-shelf {
+  position: relative;
+  z-index: var(--layer-scene-fixture-decor);
+  height: 55%;
+  margin-bottom: -3px;
+}
+
+.kitchen-wall__shelf {
+  width: 92%;
+  height: auto;
+  flex: none;
+}
+
+/* An empty wall still has the nail something used to hang from. */
+.kitchen-wall__nail {
+  width: 6px;
+  height: 6px;
+  margin-bottom: 30%;
+  border-radius: 50%;
+  background: var(--rack-wire);
+  box-shadow: 0 2px 2px rgb(80 45 15 / 0.35);
+}
+
+/* Something new in a spot settles in. Instantly under reduced motion (the durations are zero). */
+.scene-spot svg:not(.kitchen-wall__shelf) {
+  animation: decor-settle var(--duration-base) var(--ease-out);
+}
+
+@keyframes decor-settle {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---- The cupboard doors under the counter ---- */
+
+.kitchen-cupboard {
+  --cupboard-height: 6rem;
+
+  position: relative;
+  z-index: var(--layer-scene-front);
+  height: var(--cupboard-height);
+  padding: var(--space-2);
+  background: var(--cupboard-shade);
+  border: var(--border-ink);
+  border-radius: 0 0 var(--radius-paper) var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.kitchen-cupboard__doors {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  height: 100%;
+}
+
+.kitchen-cupboard__door {
+  position: relative;
+  display: block;
+  background: var(--cupboard);
+  border: 2px solid var(--ink);
+  border-radius: 4px 5px 4px 6px;
+  /* a raised inner panel */
+  box-shadow:
+    inset 0 0 0 6px var(--cupboard),
+    inset 0 0 0 7.5px rgb(43 29 20 / 0.35);
+}
+
+.kitchen-cupboard__keyhole {
+  position: absolute;
+  top: 50%;
+  right: 14%;
+  width: 7px;
+  height: 12px;
+  background: var(--ink);
+  clip-path: polygon(50% 0, 100% 30%, 70% 40%, 80% 100%, 20% 100%, 30% 40%, 0 30%);
+  transform: translateY(-50%);
+}
+
+.kitchen-cupboard__key {
+  position: absolute;
+  top: 50%;
+  right: 6%;
+  width: 2.75rem;
+  height: auto;
+  transform: translateY(-40%) rotate(-8deg);
+}
+
+.kitchen-cupboard__handle {
+  position: absolute;
+  top: 22%;
+  left: 50%;
+  width: 46%;
+  height: 7px;
+  background: var(--brass);
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  transform: translateX(-50%);
+}
+
+/* The towel hangs over the right-hand door's handle, a little past the bottom of the door. */
+.kitchen-cupboard__towel {
+  position: absolute;
+  top: calc(var(--space-2) + 22% - 0.6rem);
+  right: calc(var(--space-2) + (100% - 2 * var(--space-2)) / 6 - 2.25rem);
+  width: 4.5rem;
+  height: calc(var(--cupboard-height) * 1.05);
+}
+
+.kitchen-cupboard__towel .scene-spot {
+  height: 100%;
+  align-items: flex-start;
+}
+
+/* The way in: a paper tag tied to the brass key. */
+.kitchen-cupboard__tag {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--space-2) + var(--space-3));
+  display: grid;
+  gap: 1px;
+  min-height: var(--tap-target);
+  max-width: calc(100% / 3 * 1.6);
+  padding: var(--space-1) var(--space-3);
+  color: var(--ink);
+  text-decoration: none;
+  background: var(--kraft);
+  border: var(--border-ink);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  transform: translateY(-50%) rotate(-2deg);
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.kitchen-cupboard__tag:hover,
+.kitchen-cupboard__tag:focus-visible {
+  transform: translateY(calc(-50% + var(--lift-hover))) rotate(0deg);
+}
+
+.kitchen-cupboard__tag-name {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+}
+
+.kitchen-cupboard__tag-detail {
+  font-family: var(--font-hand);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+/* ---- Edit mode: every spot is a button, drawn as a pen outline on the picture ---- */
+
+.kitchen-wall--editing {
+  /* squared paper over the tiles: this is a plan, not the kitchen yet */
+  background-image:
+    radial-gradient(circle, rgb(29 79 145 / 0.2) 1px, transparent 1.5px),
+    var(--wall-tiles);
+  background-size:
+    12px 12px,
+    48px 24px;
+  border-color: var(--ink-pen);
+  border-style: dashed;
+  border-bottom-style: solid;
+  border-bottom-color: var(--wood-500);
+}
+
+.kitchen-cupboard--editing {
+  border-color: var(--ink-pen);
+  border-style: dashed;
+}
+
+.scene-spot__button {
+  position: absolute;
+  inset: 2px;
+  z-index: var(--layer-scene-edit);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-width: var(--tap-target);
+  min-height: var(--tap-target);
+  padding: 3px;
+  color: var(--ink-pen);
+  background: transparent;
+  border: 2px dashed var(--ink-pen);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.scene-spot__button:hover {
+  background: rgb(255 255 255 / 0.25);
+}
+
+.scene-spot__button[aria-pressed='true'] {
+  background: rgb(251 231 166 / 0.4);
+  border-style: solid;
+  border-width: 3px;
+}
+
+.scene-spot__label {
+  max-width: 100%;
+  white-space: nowrap;
+  padding: 0 var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  line-height: 1.35;
+  color: var(--ink-pen);
+  text-align: left;
+  background: var(--paper);
+  border: 1.5px solid var(--ink-pen);
+  border-radius: var(--radius-paper);
+  overflow-wrap: anywhere;
+}
+
+/* The chosen spot's tag is filled in, and says so in words beside the outline (see the chooser). */
+.scene-spot__button[aria-pressed='true'] .scene-spot__label {
+  color: var(--ink-on-accent);
+  background: var(--ink-pen);
+}
+
+/* Something being tried, not out yet: a written "Trying it" slip, not just an outline. */
+.scene-spot__preview {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  z-index: var(--layer-scene-edit);
+  padding: 0 var(--space-1);
+  font-family: var(--font-hand);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  line-height: 1.35;
+  color: var(--ink);
+  background: var(--butter-300);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-paper);
+  transform: rotate(-3deg);
+  pointer-events: none;
+}
+
+@media (forced-colors: active) {
+  .scene-spot__button,
+  .scene-spot__label {
+    border-color: ButtonText;
+  }
+
+  .scene-spot__button[aria-pressed='true'] {
+    border-color: Highlight;
+  }
+}
+
+/* ---- Tablets: a little shorter ---- */
+@media (max-width: 959px) {
+  .kitchen-wall {
+    --wall-row: 8.5rem;
+    --back-row: 5rem;
+  }
+}
+
+/* ---- Phones: the same picture, shorter ---- */
+@media (max-width: 719px) {
+  .kitchen-wall {
+    --wall-row: 5.5rem;
+    --back-row: 3.5rem;
+
+    column-gap: var(--space-2);
+    padding: var(--space-2) var(--space-2) 0;
+    border-bottom-width: 7px;
+  }
+
+  .kitchen-cupboard {
+    --cupboard-height: 4rem;
+  }
+
+  .kitchen-cupboard__towel {
+    width: 3.25rem;
+    right: calc(var(--space-2) + (100% - 2 * var(--space-2)) / 6 - 1.625rem);
+  }
+
+  .kitchen-cupboard__key {
+    width: 2.1rem;
+  }
+
+  .kitchen-cupboard__tag {
+    left: var(--space-3);
+    max-width: 60%;
+    padding-inline: var(--space-2);
+  }
+
+  .kitchen-cupboard__tag-name {
+    font-size: var(--text-sm);
+  }
+
+  /* Narrow spots: a long tag wraps rather than running off the edge. */
+  .scene-spot__label {
+    white-space: normal;
+  }
+}
+
+/* Short landscape phones: shorter still, so the counter stays in view. */
+@media (max-height: 500px) and (max-width: 959px) {
+  .kitchen-wall {
+    --wall-row: 4.5rem;
+    --back-row: 3rem;
+  }
+}
