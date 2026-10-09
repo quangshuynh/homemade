@@ -233,7 +233,7 @@ describe('the Recipe Book', () => {
     expect(within(card).getByText('Uncommon')).toBeInTheDocument()
 
     const blanks = screen.getAllByText('Not discovered yet').map((text) => text.closest('li')!)
-    expect(blanks).toHaveLength(23)
+    expect(blanks).toHaveLength(30)
     for (const blank of blanks) {
       expect(blank).not.toHaveTextContent(/common|rare|epic|legendary|mythic|peanut|honey|chocolate/i)
     }

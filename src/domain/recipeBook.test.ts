@@ -65,7 +65,7 @@ describe('secret recipes', () => {
     const save = bakeInto(makeSave(), SNOWBALL.ingredientIds).save
     const curious = bookSections(save).find((section) => section.family.id === 'curious')!
     expect(curious.entries.find((entry) => entry.recipe.id === SNOWBALL.id)).toMatchObject({ kind: 'found' })
-    expect(curious).toMatchObject({ found: 0, total: 3, secretsFound: 1 })
+    expect(curious).toMatchObject({ found: 0, total: 4, secretsFound: 1 })
     expect(bookCounts(save)).toEqual({ found: 0, total: VISIBLE_RECIPES.length, secretsFound: 1 })
   })
 

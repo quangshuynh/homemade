@@ -42,7 +42,7 @@ describe('ingredient catalog', () => {
 describe('recipe catalog', () => {
   it('stays a small, curated catalog with unique ids', () => {
     expect(RECIPES.length).toBeGreaterThanOrEqual(10)
-    expect(RECIPES.length).toBeLessThanOrEqual(30)
+    expect(RECIPES.length).toBeLessThanOrEqual(40)
     expect(new Set(RECIPES.map((recipe) => recipe.id)).size).toBe(RECIPES.length)
   })
 

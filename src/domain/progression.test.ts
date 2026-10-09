@@ -59,7 +59,7 @@ describe('rarity', () => {
     const count = (rarity: string) => RECIPES.filter((recipe) => recipe.rarity === rarity).length
     expect(count('common')).toBeGreaterThanOrEqual(count('uncommon'))
     expect(count('uncommon')).toBeGreaterThanOrEqual(count('rare'))
-    expect(count('epic')).toBeLessThanOrEqual(3)
+    expect(count('epic')).toBeLessThanOrEqual(4)
     expect(count('legendary')).toBeLessThanOrEqual(2)
     expect(count('mythic')).toBe(1)
   })
@@ -393,7 +393,7 @@ describe('balance', () => {
       (recipe) =>
         !recipe.isSecret && !INTERVAL_4_RECIPES.includes(recipe) && recipe.ingredientIds.every((id) => INTERVAL_4_PANTRY.includes(id)),
     )
-    expect(fromOldShelf.map((recipe) => recipe.name)).toEqual(['Meringue Kiss', 'Honeycomb Crunch'])
+    expect(fromOldShelf.map((recipe) => recipe.name)).toEqual(['Meringue Kiss', 'Honeycomb Crunch', 'Chocolate Haystack', 'Spiced Cocoa Square', 'Honey Madeleine'])
     const newAdditions = INGREDIENT_UNLOCKS.filter((unlock) => !INTERVAL_4_PANTRY.includes(unlock.ingredientId))
     const cheapest = Math.min(...newAdditions.map((unlock) => unlock.crumbs))
     expect(bestCase(VETERAN, []).progression.crumbs).toBeGreaterThanOrEqual(cheapest)

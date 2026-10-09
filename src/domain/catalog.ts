@@ -29,7 +29,7 @@ export const GAME_CATALOG: Catalog = {
 /** Secrets are always a real find: never Common or Uncommon. */
 const SECRET_RARITIES: readonly CookieRarity[] = ['rare', 'epic', 'legendary', 'mythic']
 
-/** Every pantry addition has to be worth adding: it's in at least this many recipes. */
+/** Every pantry addition has to be worth adding: it's in at least this many recipes, secrets aside. */
 export const MIN_RECIPES_PER_ADDITION = 2
 
 function duplicates(values: readonly string[]): string[] {
@@ -113,8 +113,11 @@ export function findCatalogProblems(catalog: Catalog = GAME_CATALOG): string[] {
       problems.push(`${unlock.ingredientId} opens at level ${unlock.level}, outside 2–${MAX_LEVEL}`)
     }
     if (!Number.isInteger(unlock.crumbs) || unlock.crumbs <= 0) problems.push(`${unlock.ingredientId} costs ${unlock.crumbs} Crumbs`)
-    const uses = recipes.filter((recipe) => recipe.ingredientIds.includes(unlock.ingredientId)).length
-    if (uses < MIN_RECIPES_PER_ADDITION) problems.push(`${unlock.ingredientId} is in only ${uses} recipe(s)`)
+    const uses = recipes.filter((recipe) => recipe.ingredientIds.includes(unlock.ingredientId))
+    if (uses.length < MIN_RECIPES_PER_ADDITION) problems.push(`${unlock.ingredientId} is in only ${uses.length} recipe(s)`)
+    // Counting secrets wouldn't do: a jar whose only other use is hidden feels like it's for one card.
+    const visibleUses = uses.filter((recipe) => !recipe.isSecret).length
+    if (visibleUses < MIN_RECIPES_PER_ADDITION) problems.push(`${unlock.ingredientId} is in only ${visibleUses} recipe(s) that aren't secret`)
   }
   for (const id of starter) if (!ingredientIds.has(id)) problems.push(`starter ingredient ${id} is not an ingredient`)
 

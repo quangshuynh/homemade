@@ -28,11 +28,11 @@ describe('the shipped catalog', () => {
     expect(findCatalogProblems()).toEqual([])
   })
 
-  it('has 19 ingredients and 27 recipes, 3 of them secret', () => {
+  it('has 19 ingredients and 34 recipes, 3 of them secret', () => {
     expect(INGREDIENTS).toHaveLength(19)
-    expect(RECIPES).toHaveLength(27)
+    expect(RECIPES).toHaveLength(34)
     expect(RECIPES.filter((recipe) => recipe.isSecret)).toHaveLength(3)
-    expect(VISIBLE_RECIPES).toHaveLength(24)
+    expect(VISIBLE_RECIPES).toHaveLength(31)
   })
 
   it('keeps rarity, family and secrecy independent of each other', () => {
@@ -61,7 +61,20 @@ describe('the shipped catalog', () => {
     for (let index = 1; index < RARITIES.length; index++) {
       expect(count(RARITIES[index]!), RARITIES[index]).toBeLessThanOrEqual(count(RARITIES[index - 1]!))
     }
-    expect(RARITIES.map(count)).toEqual([8, 7, 6, 3, 2, 1])
+    expect(RARITIES.map(count)).toEqual([11, 9, 7, 4, 2, 1])
+  })
+
+  it('gives every pantry addition at least two cards that aren’t secret, so no jar is for one recipe', () => {
+    for (const { ingredientId } of INGREDIENT_UNLOCKS) {
+      const visible = VISIBLE_RECIPES.filter((recipe) => recipe.ingredientIds.includes(ingredientId))
+      expect(visible.length, ingredientId).toBeGreaterThanOrEqual(2)
+    }
+  })
+
+  it('keeps the dividers balanced: no family is more than one card bigger than the smallest', () => {
+    const sizes = RECIPE_FAMILIES.map((family) => VISIBLE_RECIPES.filter((recipe) => recipe.family === family.id).length)
+    expect(sizes).toEqual([5, 4, 4, 4, 5, 5, 4])
+    expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(1)
   })
 })
 
@@ -123,6 +136,13 @@ describe('the catalog checks fail loudly on', () => {
     expect(findCatalogProblems(lonely)).toContain('ingredient_chocolate-chips is in no recipe')
     const twice = { ...GAME_CATALOG, starter: [...STARTER_PANTRY, INGREDIENT_UNLOCKS[0]!.ingredientId] }
     expect(findCatalogProblems(twice)).toContain('ingredient_chocolate-chips must be a starter or a pantry addition, not both')
+  })
+
+  it('a pantry addition whose only other recipe is a secret', () => {
+    const recipes = RECIPES.map((recipe) =>
+      recipe.id === 'recipe_chocolate-haystack' ? { ...recipe, isSecret: true, clue: null, rarity: 'rare' as const } : recipe,
+    )
+    expect(findCatalogProblems({ ...GAME_CATALOG, recipes })).toContain("ingredient_coconut is in only 1 recipe(s) that aren't secret")
   })
 
   it('a family that would only ever hold secrets', () => {

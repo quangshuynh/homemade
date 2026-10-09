@@ -296,7 +296,7 @@ describe('undiscovered recipe hints', () => {
     await screen.findByRole('heading', { level: 1, name: 'Recipe Book' })
 
     const hints = screen.getAllByText(/^Needs \d ingredients$/)
-    expect(hints).toHaveLength(24)
+    expect(hints).toHaveLength(31)
     expect(hints.map((hint) => hint.textContent)).toContain('Needs 3 ingredients')
     expect(screen.queryByText(/Shortbread|Peanut|Macaroon|Flapjack|Oatmeal/)).not.toBeInTheDocument()
     expect(document.querySelectorAll('.book-card--blank svg')).toHaveLength(0)

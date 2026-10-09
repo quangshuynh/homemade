@@ -239,7 +239,7 @@ describe('Interval 6 content on older saves', () => {
     expect(Object.keys(save).sort()).toEqual(
       ['bakedCreations', 'createdAt', 'discoveredRecipes', 'pantryIngredientIds', 'profile', 'progression', 'settings', 'story', 'tutorial', 'updatedAt', 'version'],
     )
-    expect(bookCounts(save)).toEqual({ found: 3, total: 24, secretsFound: 0 })
+    expect(bookCounts(save)).toEqual({ found: 3, total: 31, secretsFound: 0 })
   })
 
   it('reads a current save exactly as it was written', () => {
