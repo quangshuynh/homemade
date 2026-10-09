@@ -154,7 +154,7 @@ describe('edit mode', () => {
     const { saved } = startAt(finished(), '#/decorate')
     await openDecorating()
     await putOut(user, /^Wall/, 'Framed recipe card')
-    await putOut(user, /^Wall/, 'The gold seal, framed')
+    await putOut(user, /^Wall/, 'Framed gold seal')
     await waitFor(() => expect(saved().decorating.equippedBySlot).toEqual({ wall: 'decoration_gold-seal-frame' }))
     expect(announcement()).toHaveTextContent('The framed recipe card went back in the cupboard.')
 

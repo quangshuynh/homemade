@@ -59,6 +59,10 @@ describe('the decoration catalog', () => {
     for (const entry of DECORATIONS) expect(entry.id, entry.name).toMatch(/^decoration_[a-z0-9-]+$/)
   })
 
+  it('names pieces without an article, since the cupboard says “put out the …” and “buy the …”', () => {
+    for (const entry of DECORATIONS) expect(entry.name).not.toMatch(/^(a|an|the) /i)
+  })
+
   it('puts every piece in a real spot, and gives every spot something to choose', () => {
     for (const entry of DECORATIONS) expect(DECORATION_SLOTS, entry.name).toContain(entry.slot)
     for (const slot of DECORATION_SLOTS) {
@@ -334,6 +338,17 @@ describe('Marmalade’s decorating remarks', () => {
     expect(last.moment).toEqual({ id: 'first-set', theme: 'cottage' })
     const swapped = equip(clearSlot(last.save, 'window').save, 'cafe-curtains')
     expect(swapped.decorating.noticedMomentIds.filter((id) => id === 'first-set')).toHaveLength(1)
+  })
+
+  it('doesn’t say “first thing out” on the second thing, when the first already got a bigger remark', () => {
+    const save = openKitchen({ discoveredRecipes: found('recipe_millionaires-shortbread', 'recipe_snowball') })
+    const scrap = equipDecoration(save, 'shelf', decoration('recipe-scrap-frame'))
+    if (!scrap.ok) throw new Error(scrap.reason)
+    expect(scrap.moment).toEqual({ id: 'scrap-frame' })
+    expect(scrap.save.decorating.noticedMomentIds).toEqual(['scrap-frame', 'first-equip'])
+    const next = equipDecoration(scrap.save, 'plant', decoration('potted-thyme'))
+    if (!next.ok) throw new Error(next.reason)
+    expect(next.moment).toBeNull()
   })
 
   it('has a word about the framed scrap from the recipe box, once', () => {

@@ -206,9 +206,10 @@ export function equipDecoration(save: GameSave, slot: DecorationSlot, id: Decora
     decorating: { ...save.decorating, equippedBySlot: { ...save.decorating.equippedBySlot, [slot]: id } },
   }
   const moment = momentFor(equipped, decoration)
-  const next = moment
-    ? { ...equipped, decorating: { ...equipped.decorating, noticedMomentIds: [...equipped.decorating.noticedMomentIds, moment.id] } }
-    : equipped
+  // Whatever she says about the first thing out counts as her first-thing-out remark too.
+  const noticed = equipped.decorating.noticedMomentIds
+  const newlyNoticed = moment ? [moment.id, ...(moment.id !== 'first-equip' && !noticed.includes('first-equip') ? ['first-equip'] : [])] : []
+  const next = moment ? { ...equipped, decorating: { ...equipped.decorating, noticedMomentIds: [...noticed, ...newlyNoticed] } } : equipped
   return { ok: true, save: next, decoration, replaced, moment }
 }
 

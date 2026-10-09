@@ -88,7 +88,7 @@ export const DECORATIONS: readonly DecorationDefinition[] = [
   // ---- Keepsakes: earned once by something already done in the kitchen ----
   {
     id: defineId('decoration', 'gold-seal-frame'),
-    name: 'The gold seal, framed',
+    name: 'Framed gold seal',
     description: 'A gold-leaf seal in a gilt frame, for the day this kitchen wrote down a Mythic.',
     slot: 'wall',
     unlock: { type: 'first-rarity', rarity: 'mythic' },
@@ -104,7 +104,7 @@ export const DECORATIONS: readonly DecorationDefinition[] = [
   },
   {
     id: defineId('decoration', 'recipe-scrap-frame'),
-    name: 'A scrap, framed',
+    name: 'Framed scrap',
     description: 'A torn scrap of pencil in a tiny frame, propped up. For a first secret.',
     slot: 'shelf',
     unlock: { type: 'first-secret' },
