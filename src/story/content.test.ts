@@ -23,8 +23,8 @@ describe('story content', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
-  it('numbers chapters 1 to 5 in order, each with at least one scene', () => {
-    expect(STORY_CHAPTERS.map((chapter) => chapter.number)).toEqual([1, 2, 3, 4, 5])
+  it('numbers chapters 1 to 6 in order, each with at least one scene', () => {
+    expect(STORY_CHAPTERS.map((chapter) => chapter.number)).toEqual([1, 2, 3, 4, 5, 6])
     for (const chapter of STORY_CHAPTERS) expect(chapter.scenes.length, chapter.title).toBeGreaterThan(0)
   })
 

@@ -153,3 +153,59 @@ describe('the story under reduced motion', () => {
     expect(declaration(rules(read('screens/RecipeBookScreen.css')).find(({ selector }) => selector === '.recipe-book__notes')!.body, 'min-height')).toBe('var(--tap-target)')
   })
 })
+
+describe('the kitchen picture and decorating (Interval 8)', () => {
+  const read = (file: string) => readFileSync(join(SRC, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+  const decorating = ['decorating/KitchenScene.css', 'decorating/DecorNews.css', 'screens/DecorateScreen.css']
+  const rule = (file: string, selector: string) => rules(read(file)).find((entry) => entry.selector === selector)?.body ?? ''
+
+  it('takes every z-index in the app from the layer tokens, so stacking is decided in one place', () => {
+    for (const { file, css } of stylesheets()) {
+      for (const { selector, body } of rules(css)) {
+        const z = declaration(body, 'z-index')
+        if (z) expect(z, `${file} ${selector}`).toMatch(/^var\(--layer-[a-z-]+\)$/)
+      }
+    }
+  })
+
+  it('layers the kitchen back to front: wall, its decorations, fixtures, the counter, its objects, the front, edit mode, then the page', () => {
+    const tokens = readFileSync(join(SRC, 'styles/tokens.css'), 'utf8')
+    const order = ['wall', 'wall-decor', 'fixtures', 'fixture-decor', 'counter-back', 'counter-decor', 'objects', 'front', 'edit'].map((name) =>
+      Number(tokens.match(new RegExp(`--layer-scene-${name}:\\s*(\\d+)`))?.[1]),
+    )
+    expect(order.every((value) => Number.isFinite(value))).toBe(true)
+    expect(order).toEqual([...order].sort((a, b) => a - b))
+    expect(new Set(order).size).toBe(order.length)
+    const nav = Number(tokens.match(/--layer-nav:\s*(\d+)/)?.[1])
+    expect(Math.max(...order)).toBeLessThan(nav)
+  })
+
+  it('moves only through duration tokens, which reduced motion zeroes: no bounce or slide-in of its own', () => {
+    for (const file of decorating) {
+      for (const { selector, body } of rules(read(file))) {
+        for (const property of ['animation', 'animation-duration', 'transition', 'transition-duration']) {
+          const value = declaration(body, property)
+          if (value && value !== 'none') expect(value, `${file} ${selector}`).toMatch(/var\(--duration-(quick|base|slow)\)/)
+        }
+        expect(body, `${file} ${selector}`).not.toMatch(/animation-delay|infinite/)
+      }
+    }
+    // Something new in a spot only fades in: nothing moves, so there's nothing to bounce.
+    const settle = read('decorating/KitchenScene.css').match(/@keyframes decor-settle\s*\{([\s\S]*?)\n\}/)?.[1] ?? ''
+    expect(settle).not.toMatch(/transform|translate|scale/)
+  })
+
+  it('keeps every spot, piece and way in a full-size touch target', () => {
+    expect(declaration(rule('decorating/KitchenScene.css', '.scene-spot__button'), 'min-height')).toBe('var(--tap-target)')
+    expect(declaration(rule('decorating/KitchenScene.css', '.scene-spot__button'), 'min-width')).toBe('var(--tap-target)')
+    expect(declaration(rule('decorating/KitchenScene.css', '.kitchen-cupboard__tag'), 'min-height')).toBe('var(--tap-target)')
+    expect(declaration(rule('screens/DecorateScreen.css', '.cupboard-piece'), 'min-height')).toBe('var(--tap-target)')
+    expect(declaration(rule('decorating/DecorNews.css', '.decor-news a'), 'min-height')).toBe('var(--tap-target)')
+  })
+
+  it('wraps the cupboard’s pieces onto more rows rather than scrolling sideways on a phone', () => {
+    const shelf = rule('screens/DecorateScreen.css', '.cupboard-shelf')
+    expect(declaration(shelf, 'grid-template-columns')).toMatch(/auto-fill/)
+    expect(shelf).not.toMatch(/overflow-x|nowrap/)
+  })
+})

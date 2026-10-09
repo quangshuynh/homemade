@@ -1,6 +1,9 @@
 import { createContext, useContext } from 'react'
+import type { EquipResult, PurchaseResult } from '../decorating/rules'
+import type { DecorationSlot } from '../decorating/slots'
+import type { DecorationDefinition } from '../decorating/types'
 import type { BakeOutcome, Bowl, PreparedBake } from '../domain/baking'
-import type { IngredientId, RecipeId, StorySceneId } from '../domain/ids'
+import type { DecorationId, IngredientId, RecipeId, StorySceneId } from '../domain/ids'
 import type { UnlockResult } from '../domain/progression'
 import type { NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
@@ -17,8 +20,14 @@ export type GameState =
 
 export type SaveStatus = 'saved' | 'saving' | 'failed'
 
-/** What came out of the oven, and whether it opened up the next bit of the story. */
-export type KitchenBake = BakeOutcome & { story: StoryNews | null }
+/**
+ * What came out of the oven, whether it opened up the next bit of the story,
+ * and anything it earned for the kitchen cupboard (almost always nothing).
+ */
+export type KitchenBake = BakeOutcome & { story: StoryNews | null; decor: DecorationDefinition[] }
+
+/** A story scene seen, and anything that put in the cupboard (the starter set, when Chapter 5 ends). */
+export type KitchenScene = (Extract<SeeSceneResult, { ok: true }> & { decor: DecorationDefinition[] }) | Extract<SeeSceneResult, { ok: false }>
 
 /** A pantry addition, and whether it opened up the next bit of the story. */
 export type KitchenUnlock = (Extract<UnlockResult, { ok: true }> & { story: StoryNews | null }) | Extract<UnlockResult, { ok: false }>
@@ -44,7 +53,17 @@ export type GameContextValue = {
    * pays its chapter's small reward the first time, in one write. A scene
    * already seen changes nothing, so a replay can never pay twice.
    */
-  seeStoryScene: (id: StorySceneId) => SeeSceneResult
+  seeStoryScene: (id: StorySceneId) => KitchenScene
+  /**
+   * Puts an owned decoration out in its spot (whatever was there goes back
+   * in the cupboard) and notes any one-time remark it earns, in one write.
+   * Refuses, changing nothing, if it isn't owned or doesn't belong there. Cosmetic only.
+   */
+  equipDecoration: (slot: DecorationSlot, id: DecorationId) => EquipResult
+  /** Puts whatever is in a spot back in the cupboard. Returns what was there, if anything. */
+  clearDecorationSlot: (slot: DecorationSlot) => DecorationDefinition | null
+  /** Buys a decoration for Crumbs, in one write. Refuses, changing nothing, if it can't be bought. Callers confirm first. */
+  buyDecoration: (id: DecorationId) => PurchaseResult
   /** Ingredients laid out by "Bake again", for the Bake screen to start from. In memory only. */
   preparedBowl: PreparedBake | null
   /**

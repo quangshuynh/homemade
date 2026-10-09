@@ -174,7 +174,7 @@ describe('opening a save file', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Replace this kitchen?' })
     expect(within(dialog).getByText('Oven Mitts')).toBeInTheDocument()
     expect(within(dialog).getByText('Sam')).toBeInTheDocument()
-    expect(within(dialog).getByText('1 of 24 recipes')).toBeInTheDocument()
+    expect(within(dialog).getByText('1 of 31 recipes')).toBeInTheDocument()
     expect(within(dialog).getByText('2 bakes')).toBeInTheDocument()
     expect(within(dialog).getByText(/will be set aside in this browser’s archive rather than deleted/)).toBeInTheDocument()
     // The safe choice has focus, and nothing has been touched yet.

@@ -60,20 +60,32 @@ export function createIndexedDbSaveRepository(options: IndexedDbSaveRepositoryOp
     await transactionDone(tx)
   }
 
-  return {
-    async load(): Promise<LoadResult> {
-      const raw = await readRaw()
-      if (raw === undefined) return { kind: 'empty' }
+  async function loadOnce(): Promise<LoadResult> {
+    const raw = await readRaw()
+    if (raw === undefined) return { kind: 'empty' }
 
-      const result = readSave(raw, options.schema)
-      if (!result.ok) {
-        return { kind: 'incompatible', reason: result.reason, version: result.version, detail: result.detail, raw }
-      }
-      if (result.migratedFrom !== null) {
-        // Keep the pre-migration original so an upgrade bug can never eat a save.
-        await archive(raw, `Upgraded from save version ${result.migratedFrom}`, result.save)
-      }
-      return { kind: 'loaded', save: result.save, migratedFrom: result.migratedFrom }
+    const result = readSave(raw, options.schema)
+    if (!result.ok) {
+      return { kind: 'incompatible', reason: result.reason, version: result.version, detail: result.detail, raw }
+    }
+    if (result.migratedFrom !== null) {
+      // Keep the pre-migration original so an upgrade bug can never eat a save.
+      await archive(raw, `Upgraded from save version ${result.migratedFrom}`, result.save)
+    }
+    return { kind: 'loaded', save: result.save, migratedFrom: result.migratedFrom }
+  }
+
+  // Loads asked for while one is still running share it. Otherwise two at once
+  // (React StrictMode runs the load effect twice in development) would both
+  // read the old save before either wrote the upgrade, and archive it twice.
+  let loading: Promise<LoadResult> | null = null
+
+  return {
+    load(): Promise<LoadResult> {
+      loading ??= loadOnce().finally(() => {
+        loading = null
+      })
+      return loading
     },
 
     async write(save: GameSave): Promise<void> {

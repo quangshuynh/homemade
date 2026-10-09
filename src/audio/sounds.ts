@@ -1,4 +1,7 @@
 import type { CookieRarity } from '../domain/types'
+import decorEquip from '../assets/sounds/decor-equip.wav'
+import decorOpen from '../assets/sounds/decor-open.wav'
+import decorUnlock from '../assets/sounds/decor-unlock.wav'
 import ding from '../assets/sounds/ding.wav'
 import discoverCommon from '../assets/sounds/discover-common.wav'
 import discoverEpic from '../assets/sounds/discover-epic.wav'
@@ -31,6 +34,9 @@ export type SoundId =
   | 'ingredient-unlock'
   | 'tutorial-next'
   | 'story-note'
+  | 'decor-open'
+  | 'decor-equip'
+  | 'decor-unlock'
 
 export type SoundDefinition = {
   url: string
@@ -57,6 +63,11 @@ export const SOUNDS: Record<SoundId, SoundDefinition> = {
   'tutorial-next': { url: tutorialNext, volume: 0.3 },
   // A story scene read (or skipped) for the first time. Never on a replay.
   'story-note': { url: storyNote, volume: 0.3 },
+  // Decorating (Interval 8). The old cupboard opened for the first time; something put out
+  // in its spot (never on a preview, never on a clear); something new for the cupboard.
+  'decor-open': { url: decorOpen, volume: 0.3 },
+  'decor-equip': { url: decorEquip, volume: 0.3 },
+  'decor-unlock': { url: decorUnlock, volume: 0.35 },
 }
 
 export function discoverySound(rarity: CookieRarity): SoundId {

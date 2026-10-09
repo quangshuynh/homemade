@@ -67,6 +67,15 @@
   box-shadow: var(--shadow-paper);
 }
 
+/* "Make it yours", after the cupboard's scene: a full-size tap target on its own line. */
+.notes__ended a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-target);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+
 .notes__crumbs {
   font-weight: var(--weight-bold);
 }

@@ -96,3 +96,19 @@ export const LAST_CARD: SceneContent = {
     { speaker: 'marmalade', expression: 'proud', line: 'The key doesn’t fit anything in this kitchen. Nothing I’ve found. Not yet.' },
   ],
 }
+
+export const OLD_CUPBOARD: SceneContent = {
+  nudge: 'The brass key has been waiting for something.',
+  beats: [
+    { speaker: 'marmalade', expression: 'thinking', line: '“Not yet,” said the tag. I’ve been thinking about it, and I think it’s yet now.' },
+    {
+      speaker: 'marmalade',
+      expression: 'surprised',
+      line: 'The little cupboard under the counter. I always thought it was painted shut. It isn’t. It’s locked. Was locked.',
+    },
+    note('cupboard-door'),
+    { speaker: 'marmalade', expression: 'happy', line: 'Oh. I wondered where these went. That jar always sat by the recipe box, and I used to sleep on that towel.' },
+    { speaker: 'marmalade', expression: 'thinking', line: 'The frame, though. I’ve never seen that before in my life.' },
+    { speaker: 'marmalade', expression: 'proud', line: 'They’re yours now. Put them out wherever makes the kitchen feel like yours.' },
+  ],
+}

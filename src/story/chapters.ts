@@ -1,9 +1,10 @@
 import { defineId, type StoryChapterId, type StorySceneId } from '../domain/ids'
-import { FADED_BOX, HIDDEN_RECIPES, LAST_CARD, MARGINS, MARGINS_SPICE, SECOND_SHELF } from './scenes'
+import { FADED_BOX, HIDDEN_RECIPES, LAST_CARD, MARGINS, MARGINS_SPICE, OLD_CUPBOARD, SECOND_SHELF } from './scenes'
 import type { StoryChapter, StoryScene } from './types'
 
 /**
- * The first arc of the recipe box's story: five short chapters, read in
+ * The first arc of the recipe box's story: five short chapters and a short
+ * epilogue (Interval 8), read in
  * order. Each scene waits for every scene before it, and for something the
  * player has done in the kitchen (see requirements.ts). Nothing waits on
  * time, on how often they bake, or on chance.
@@ -75,6 +76,17 @@ export const STORY_CHAPTERS: readonly StoryChapter[] = [
         ...LAST_CARD,
       },
     ],
+  },
+  // Interval 8: a short epilogue, not a new arc. The brass key finally fits
+  // something. The cupboard opens as soon as Chapter 5 ends (see decorating/);
+  // this scene is what's found inside, read here or the first time the
+  // cupboard is opened in the kitchen. Its reward is the cupboard itself.
+  {
+    id: defineId('chapter', 'old-cupboard'),
+    number: 6,
+    title: 'The Old Cupboard',
+    reward: null,
+    scenes: [{ id: defineId('scene', 'old-cupboard'), requirement: { type: 'straight-after' }, ...OLD_CUPBOARD }],
   },
 ]
 

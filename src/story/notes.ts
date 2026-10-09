@@ -90,6 +90,13 @@ export const STORY_NOTES: readonly StoryNote[] = [
     title: 'Taped to the back of the last card',
     text: 'A small brass key on a loop of kitchen string. Its tag says only: Not yet.',
   },
+  {
+    id: defineId('note', 'cupboard-door'),
+    chapterId: chapter('old-cupboard'),
+    kind: 'label',
+    title: 'Inside the cupboard door',
+    text: 'Put away, not thrown away. For when the kitchen is lived in again.',
+  },
 ]
 
 const byId = new Map(STORY_NOTES.map((note) => [note.id, note]))

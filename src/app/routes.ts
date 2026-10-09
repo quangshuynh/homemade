@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react'
 /**
  * Hash-based routes: no server config needed, the back button works, and
  * every place in the kitchen has a real link. A router library would be
- * more than five screens need.
+ * more than a handful of screens need.
  */
 export const ROUTES = {
   kitchen: { path: '/', title: 'Kitchen' },
@@ -15,6 +15,8 @@ export const ROUTES = {
   memories: { path: '/memories', title: 'Baking Memories' },
   /** The story's home: reached from the Recipe Book (and the kitchen's recipe box) rather than a tab. */
   notes: { path: '/recipe-book/notes', title: 'Recipe Box Notes' },
+  /** Decorating: reached from the old cupboard in the kitchen once the brass key turns, rather than a tab. */
+  decorate: { path: '/decorate', title: 'Make it yours' },
 } as const
 
 export type RouteId = keyof typeof ROUTES

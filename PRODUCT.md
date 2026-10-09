@@ -16,7 +16,7 @@ Players who want a calm, personal game they can open in a browser tab and spend 
 
 ## Product Purpose
 
-A cozy baking game about discovering recipes by experimenting with ingredients, remembering what you make, keeping a recipe book, and making a kitchen your own. Success is a player who feels the kitchen is theirs and wants to come back to see what else they can make.
+A cozy baking game about discovering recipes by experimenting with ingredients, remembering what you make, keeping a recipe book, and making a kitchen your own (literally, since Interval 8's decorating). Success is a player who feels the kitchen is theirs and wants to come back to see what else they can make.
 
 ## Positioning
 
@@ -112,6 +112,29 @@ The kitchen has a history. The old recipe box's cards were wiped blank; as the p
 - **Existing kitchens catch up.** A version 4 save upgrades with no scenes seen (nothing is marked seen on the player's behalf) and every other field exactly as it was, tutorial state included, so nobody is sent through the tutorial again. Its first chapter is ready straight away, and whatever its progress has already earned follows one scene at a time, as fast as the player cares to read.
 - **Marmalade** reads each scene with the player. She knows the kitchen but not the whole story: she's surprised by notes, remembers small things after a discovery, and never explains the mystery.
 
+## Kitchen decorating (Interval 8)
+
+The kitchen becomes visibly the player's. The thread left open at the end of Chapter 5 pays off: the brass key opens a cupboard under the counter, and what was put away in it can come out again.
+
+- **Cosmetic only.** A decoration never affects a recipe, a rarity, XP, Crumb rewards, baking, an ingredient or a level. There are no stats, no passive income, no decoration rarity and no power. Nothing about a bake reads the decorating state (a test bakes the same recipes in a bare and a decorated kitchen and compares the outcomes).
+- **Curated spots, not freeform placement.** Seven fixed spots in the kitchen picture: the wall, the window, a wall shelf, three along the back of the counter (left, under the window, right) and a towel on the cupboard door. Each spot holds nothing or exactly one thing. No dragging, no stacking, no overlap, and the counter objects the player uses never move.
+- **Owned versus out.** The save keeps the decorations the player owns (in the order they arrived, never removed) and, separately, which one is out in each spot (`decorating.equippedBySlot`). Only something owned can be out, and only in its own spot. Putting something else out sends the old piece back to the cupboard, still owned. Ids only: names and drawings live in the catalog.
+- **When it opens.** The cupboard opens the moment Chapter 5 ends, however that happened. A save that had already finished Chapter 5 finds it open straight away after upgrading; no story is replayed. A one-scene epilogue, *Chapter 6: The Old Cupboard*, is what's found inside (Marmalade recognises some of it, not all). It plays the first time the cupboard is opened in the kitchen, or can be read in the Recipe Box Notes, and it's skippable. It pays nothing: the cupboard is the reward. E., R. and M. stay unexplained.
+- **Free to start.** The cupboard holds a starter set (six pieces, four of them the Cottage theme) the moment it opens. Nothing is put out for the player; the kitchen looks the same until they choose.
+- **Deterministic rewards.** Keepsakes are earned once by something already done: a first Mythic (the framed gold seal), a first Legendary (a little lemon tree), a first secret (a framed scrap), every Classics card (an old rolling pin), every Fruity card (a fruit-print towel). Each rule reads only the save; nothing is rolled, timed or random.
+- **Retroactive, never twice.** One idempotent rule hands over everything earned and not yet owned, after every bake and scene, on load and on import. A kitchen that earned a keepsake long before the cupboard opened finds it waiting inside. The same milestone never grants twice (reloads, replays, rebakes and imports included), and nothing earned is ever taken away, even if a later catalog would no longer count the milestone.
+- **Cosmetic Crumb purchases.** Seven themed pieces can be bought for 40–80 Crumbs each (395 in all), after a confirm that says it's just for looks and how many Crumbs will be left. One write takes the Crumbs and hands the piece over. No duplicates, no refunds, no second currency, no rotating stock, no random drops. Anything that can be earned is never for sale. The cupboard only opens after the first Mythic, which needs sea salt (Level 11, the last addition), so by then a kitchen is at the top level with most of its pantry bought, and decorations barely compete with ingredients.
+- **Themes are just groupings.** Cottage, Warm Bakery and Garden Kitchen help the cupboard sort itself. There's no "apply theme" button and nothing for matching. Marmalade notices the first time a whole set is out at once.
+- **Marmalade, sparingly.** Three one-time remarks per kitchen, remembered in the save so none is repeated: the first thing put out, the first whole set out together, and the framed scrap going on the shelf. Swapping things about otherwise gets no comment.
+- **Saved and portable.** Save version 6 adds `decorating { ownedDecorationIds, equippedBySlot, noticedMomentIds }`. Older saves upgrade with an empty cupboard (the migration never reads the catalog); earned pieces arrive on the first load. Save files carry decorations exactly. A file with something out that it doesn't own, or out in a spot that doesn't exist, is refused as damaged (never repaired). A decoration id the catalog doesn't know is kept but not shown, like a retired recipe.
+
+## Recipe expansion (Interval 8)
+
+- **Seven new recipes, no new ingredients.** Coconut, strawberry jam, white chocolate and pistachios each had only one card that wasn't secret; now every pantry addition is in at least two visible recipes (a catalog check). Warm & Spiced, the thinnest divider, gained two. Every family now has four or five visible cards.
+- **New rarities only.** Three Common, two Uncommon, one Rare and one Epic (Pistachio Nougat); no new Legendary, Mythic or secret. Existing recipes keep their rarities. Each tier is still no bigger than the one below it.
+- **Progression stays deadlock-free, at the same cap.** The extra early XP let a kitchen buy honey (100 Crumbs) before it could afford anything after, which the anti-deadlock walk caught. A second honey recipe from the starter shelf (Honey Madeleine) fixed it without touching any price or level. No new ingredient needed a new level gate, so Level 11 stays the top.
+- **No new secret.** None of the ideas improved on the three secrets' story clues, so none was added.
+
 ## Voice
 
 Warm, plain, a little playful, never cutesy. Short sentences, written like a note left on the counter. Controls say what they do ("Open the kitchen", "Keep my kitchen"). Errors say what happened and what's safe.
@@ -119,7 +142,7 @@ Warm, plain, a little playful, never cutesy. Short sentences, written like a not
 ## Open decisions
 
 - Whether finishing a family should ever earn something (deliberately not, for now).
-- Who E., R. and M. are, and what the key opens (deliberately unanswered after the first arc).
+- Who E., R. and M. are (deliberately unanswered; the key now opens the cupboard, and that's all it explains).
 - Whether memories should ever be kept beyond the cap.
 - Whether to offer background music (deliberately not yet).
 - Whether archived saves should ever be visible to the player (today they're kept, but only reachable through browser devtools).

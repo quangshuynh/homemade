@@ -124,3 +124,38 @@ describe('refusing files that are not a readable Homemade save', () => {
     expect(readSaveFile(' '.repeat(MAX_IMPORT_BYTES + 1))).toMatchObject({ ok: false, problem: 'too-large' })
   })
 })
+
+describe('decorations in a save file', () => {
+  const decorated = () =>
+    makeSave({
+      decorating: {
+        ownedDecorationIds: ['decoration_gingham-towel', 'decoration_copper-crock', 'decoration_cafe-curtains'] as never,
+        equippedBySlot: { textile: 'decoration_gingham-towel', 'counter-right': 'decoration_copper-crock' } as never,
+        noticedMomentIds: ['first-equip'],
+      },
+    })
+
+  it('carries what the kitchen owns and what’s out, exactly, there and back', () => {
+    const save = decorated()
+    const result = readSaveFile(exportSave(save, FIXED_NOW).text)
+    if (!result.ok) throw new Error(result.message)
+    expect(result.save).toEqual(save)
+    expect(result.save.decorating).toEqual(save.decorating)
+  })
+
+  it('refuses a file whose decorations don’t add up, and says it’s damaged rather than patching it', () => {
+    const save = decorated()
+    const broken = { ...save, decorating: { ...save.decorating, equippedBySlot: { wall: 'decoration_gold-seal-frame' } } }
+    expect(readSaveFile(fileWith(broken))).toMatchObject({ ok: false, problem: 'damaged' })
+    const unknownSpot = { ...save, decorating: { ...save.decorating, equippedBySlot: { attic: 'decoration_gingham-towel' } } }
+    expect(readSaveFile(fileWith(unknownSpot))).toMatchObject({ ok: false, problem: 'damaged' })
+  })
+
+  it('opens an Interval 7 file with an empty cupboard, never inventing decorations in the file itself', () => {
+    const v5 = { ...makeSave(), version: 5, decorating: undefined }
+    const result = readSaveFile(fileWith(v5))
+    if (!result.ok) throw new Error(result.message)
+    expect(result.migratedFrom).toBe(5)
+    expect(result.save.decorating).toEqual({ ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] })
+  })
+})
