@@ -2,15 +2,15 @@ import { defineId, type AchievementId } from '../domain/ids'
 import type { AchievementCategory, AchievementDefinition } from './types'
 
 /**
- * The keepsake catalog. Fifteen in all, on purpose: each one marks
+ * The keepsake catalog. Sixteen in all, on purpose: each one marks
  * something worth remembering, and none asks for a grind. The biggest
  * mastery ask is one recipe baked ten times.
  *
- * Rewards are cosmetic: six of them come with a decoration for the old
+ * Rewards are cosmetic: seven of them come with a decoration for the old
  * cupboard; the rest are the stamped card itself. None pays Crumbs or XP.
  *
- * Two are hidden until earned (a first secret and a first Mythic), so their
- * names can't give anything away.
+ * Three are hidden until earned (a first secret, a first Mythic and the end
+ * of the second story arc), so their names can't give anything away.
  *
  * Never reuse or rename an id once shipped; saves record keepsakes by id.
  */
@@ -162,10 +162,21 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   {
     id: defineId('achievement', 'last-page'),
     name: 'The Last Page',
-    description: 'Read every note at the back of the recipe box.',
+    // The first arc, as it was when this keepsake was made: a second arc doesn't take it back or move it on.
+    description: 'Read the recipe box’s first story, all the way to the old cupboard.',
     category: 'story',
-    requirement: { type: 'story-complete' },
+    requirement: { type: 'chapter-complete', chapterId: defineId('chapter', 'old-cupboard') },
     hidden: false,
+  },
+  // Interval 10. Hidden until earned: its name and its frame would give the second arc away.
+  {
+    id: defineId('achievement', 'kept-in-the-tin'),
+    name: 'Kept in the Tin',
+    description: 'Read everything in the tin behind the old cupboard.',
+    category: 'story',
+    requirement: { type: 'chapter-complete', chapterId: defineId('chapter', 'for-m') },
+    hidden: true,
+    reward: decor('fair-day-photograph'),
   },
 ]
 

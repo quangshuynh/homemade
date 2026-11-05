@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { bake, recordBake } from '../domain/baking'
-import type { CreationId, RecipeId, StorySceneId } from '../domain/ids'
+import type { CreationId, DecorationId, RecipeId, StorySceneId } from '../domain/ids'
 import { CINNAMON, EGG, FLOUR, BUTTER, SUGAR, STARTER_PANTRY, VANILLA } from '../domain/ingredients'
 import { RECIPES } from '../domain/recipes'
 import type { GameSave } from '../domain/types'
@@ -42,19 +42,37 @@ function readAll(save: GameSave): { save: GameSave; read: StorySceneId[] } {
   return { save: current, read }
 }
 
-/** A late kitchen that has done everything the first arc asks, without a single secret. */
+/**
+ * A late kitchen that has done everything the story asks, without a single
+ * secret: every card that isn't secret, a towel out on the cupboard door
+ * (Chapter 7) and R.'s lunchbox biscuit baked three times (Chapter 10).
+ */
 const everythingButSecrets = () =>
-  makeSave({ discoveredRecipes: found(...visibleIds), progression: { crumbs: 0, xp: 5000 } })
+  makeSave({
+    discoveredRecipes: found(...visibleIds),
+    progression: { crumbs: 0, xp: 5000 },
+    decorating: {
+      ownedDecorationIds: ['decoration_gingham-towel' as DecorationId],
+      equippedBySlot: { textile: 'decoration_gingham-towel' as DecorationId },
+      noticedMomentIds: [],
+    },
+    recipeBakeCounts: { ['recipe_lunchbox-window' as RecipeId]: 3 },
+  })
 
 describe('chapter eligibility', () => {
-  it('has a first arc of five chapters, in order, and a short epilogue', () => {
-    expect(STORY_CHAPTERS.map((chapter) => [chapter.number, chapter.title])).toEqual([
-      [1, 'The Faded Recipe Box'],
-      [2, 'Notes in the Margins'],
-      [3, 'The Second Shelf'],
-      [4, 'Recipes Someone Hid'],
-      [5, 'The Last Card'],
-      [6, 'The Old Cupboard'],
+  it('has a first arc of five chapters and a short epilogue, then a second arc of five, in order', () => {
+    expect(STORY_CHAPTERS.map((chapter) => [chapter.number, chapter.arc, chapter.title])).toEqual([
+      [1, 1, 'The Faded Recipe Box'],
+      [2, 1, 'Notes in the Margins'],
+      [3, 1, 'The Second Shelf'],
+      [4, 1, 'Recipes Someone Hid'],
+      [5, 1, 'The Last Card'],
+      [6, 1, 'The Old Cupboard'],
+      [7, 2, 'Behind the Cupboard'],
+      [8, 2, 'E.’s Handwriting'],
+      [9, 2, 'R.’s Lunchbox'],
+      [10, 2, 'The Photograph'],
+      [11, 2, 'For M.'],
     ])
     // The epilogue is one scene with no reward: the cupboard is the reward.
     expect(STORY_CHAPTERS[5]).toMatchObject({ reward: null, scenes: [{ requirement: { type: 'straight-after' } }] })
@@ -137,6 +155,11 @@ describe('ordering and the queue', () => {
       scene('hidden-recipes'),
       scene('last-card'),
       scene('old-cupboard'),
+      scene('behind-cupboard'),
+      scene('edies-hand'),
+      scene('rs-lunchbox'),
+      scene('photograph'),
+      scene('for-m'),
     ])
   })
 
@@ -237,10 +260,12 @@ describe('seeing scenes and completing chapters', () => {
     expect(first.save.progression.crumbs).toBe(3)
   })
 
-  it('adds the whole arc’s rewards up to a small bonus', () => {
+  it('adds each arc’s rewards up to a small bonus: 70 Crumbs for the first, 60 for the second, never XP', () => {
     const start = everythingButSecrets()
     const { save } = readAll(start)
-    expect(save.progression.crumbs - start.progression.crumbs).toBe(70)
+    const arc = (n: 1 | 2) => STORY_CHAPTERS.filter((chapter) => chapter.arc === n).reduce((sum, chapter) => sum + (chapter.reward?.crumbs ?? 0), 0)
+    expect([arc(1), arc(2)]).toEqual([70, 60])
+    expect(save.progression.crumbs - start.progression.crumbs).toBe(130)
     expect(save.progression.xp).toBe(start.progression.xp)
   })
 

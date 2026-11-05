@@ -455,6 +455,48 @@ export const RECIPES: readonly Recipe[] = [
     isSecret: false,
     clue: 'Shaped like a seashell, with a little hump in the middle.',
   },
+  // ---- Interval 10: three cards from the tin behind the old cupboard. Ordinary
+  // recipes, found the ordinary way; the story is why they're in the box.
+  {
+    id: defineId('recipe', 'edies-oat-crisp'),
+    name: 'Edie’s Oat Crisps',
+    ingredientIds: [OATS, SUGAR, BUTTER, EGG, HONEY],
+    description: 'Thin, lacy and golden, with no flour to speak of and the edges gone dark and toffee-ish. They snap.',
+    descriptors: ['thin', 'lacy', 'toasty'],
+    look: { dough: 'golden', topping: 'oats', shape: 'wobbly' },
+    discoveryText: 'The card from the tin came back, and this one is signed.',
+    rarity: 'rare',
+    family: 'curious',
+    isSecret: false,
+    clue: 'Thin and toasty, held together by almost nothing. Don’t walk away from the oven.',
+  },
+  {
+    id: defineId('recipe', 'lunchbox-window'),
+    name: 'Lunchbox Windows',
+    ingredientIds: [FLOUR, SUGAR, BUTTER, CHOCOLATE_CHIPS, STRAWBERRY_JAM],
+    description: 'Two speckled, crumbly rounds, with a little window cut in the top one and something red shining through.',
+    descriptors: ['crumbly', 'sweet in the middle', 'packed for later'],
+    look: { dough: 'golden', topping: 'jam-dot', shape: 'round' },
+    discoveryText: 'The sort of thing you’d swap a whole lunch for, and never swap.',
+    rarity: 'uncommon',
+    family: 'chocolate',
+    isSecret: false,
+    clue: 'Speckled on the outside, sweet in the middle. Made for a lunchbox.',
+  },
+  {
+    id: defineId('recipe', 'fair-day-parkin'),
+    name: 'Fair-Day Parkin',
+    ingredientIds: [OATS, BROWN_SUGAR, BUTTER, MAPLE_SYRUP, CINNAMON],
+    description: 'Dark, sticky, spiced squares that get better for keeping, if anyone lets them.',
+    descriptors: ['sticky', 'dark', 'spiced'],
+    look: { dough: 'caramel', topping: 'drizzle', shape: 'square' },
+    discoveryText: 'Sold out by noon, says the back of the photograph. You can see why.',
+    rarity: 'rare',
+    family: 'warm-spiced',
+    isSecret: false,
+    clue: 'Dark and sticky, the kind passed round a bonfire.',
+  },
+
   // ---- Interval 6 secrets: no card, count or clue until they're baked ----
   {
     id: defineId('recipe', 'snowball'),

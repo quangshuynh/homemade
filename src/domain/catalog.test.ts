@@ -28,11 +28,11 @@ describe('the shipped catalog', () => {
     expect(findCatalogProblems()).toEqual([])
   })
 
-  it('has 19 ingredients and 34 recipes, 3 of them secret', () => {
+  it('has 19 ingredients and 37 recipes, 3 of them secret', () => {
     expect(INGREDIENTS).toHaveLength(19)
-    expect(RECIPES).toHaveLength(34)
+    expect(RECIPES).toHaveLength(37)
     expect(RECIPES.filter((recipe) => recipe.isSecret)).toHaveLength(3)
-    expect(VISIBLE_RECIPES).toHaveLength(31)
+    expect(VISIBLE_RECIPES).toHaveLength(34)
   })
 
   it('keeps rarity, family and secrecy independent of each other', () => {
@@ -61,7 +61,7 @@ describe('the shipped catalog', () => {
     for (let index = 1; index < RARITIES.length; index++) {
       expect(count(RARITIES[index]!), RARITIES[index]).toBeLessThanOrEqual(count(RARITIES[index - 1]!))
     }
-    expect(RARITIES.map(count)).toEqual([11, 9, 7, 4, 2, 1])
+    expect(RARITIES.map(count)).toEqual([11, 10, 9, 4, 2, 1])
   })
 
   it('gives every pantry addition at least two cards that aren’t secret, so no jar is for one recipe', () => {
@@ -73,7 +73,7 @@ describe('the shipped catalog', () => {
 
   it('keeps the dividers balanced: no family is more than one card bigger than the smallest', () => {
     const sizes = RECIPE_FAMILIES.map((family) => VISIBLE_RECIPES.filter((recipe) => recipe.family === family.id).length)
-    expect(sizes).toEqual([5, 4, 4, 4, 5, 5, 4])
+    expect(sizes).toEqual([5, 5, 5, 4, 5, 5, 5])
     expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(1)
   })
 })

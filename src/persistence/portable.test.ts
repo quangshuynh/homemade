@@ -159,3 +159,45 @@ describe('decorations in a save file', () => {
     expect(result.save.decorating).toEqual({ ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] })
   })
 })
+
+describe('Arc 2 state (Interval 10)', () => {
+  /** A kitchen part-way through the second arc: new scenes seen, a story card found and baked, the photograph out. */
+  function arc2Save() {
+    return makeSave({
+      discoveredRecipes: [
+        { recipeId: 'recipe_edies-oat-crisp' as never, discoveredAt: '2026-11-01T10:00:00.000Z' },
+        { recipeId: 'recipe_lunchbox-window' as never, discoveredAt: '2026-11-02T10:00:00.000Z' },
+      ],
+      recipeBakeCounts: { ['recipe_lunchbox-window' as never]: 3, ['recipe_edies-oat-crisp' as never]: 1 },
+      story: { seenSceneIds: ['scene_faded-box', 'scene_behind-cupboard', 'scene_edies-hand', 'scene_rs-lunchbox'] as never },
+      decorating: {
+        ownedDecorationIds: ['decoration_gingham-towel', 'decoration_fair-day-photograph'] as never,
+        equippedBySlot: { textile: 'decoration_gingham-towel' as never, wall: 'decoration_fair-day-photograph' as never },
+        noticedMomentIds: ['first-equip'],
+      },
+      achievementIds: ['achievement_last-page', 'achievement_kept-in-the-tin'] as never,
+    })
+  }
+
+  it('needs no new save version: it fits the Interval 9 shape exactly', () => {
+    expect(CURRENT_SAVE_VERSION).toBe(7)
+    const save = arc2Save()
+    expect(Object.keys(save).sort()).toEqual(Object.keys(makeSave()).sort())
+  })
+
+  it('round-trips through a save file unchanged', () => {
+    const save = arc2Save()
+    const result = readSaveFile(exportSave(save, FIXED_NOW).text)
+    if (!result.ok) throw new Error(result.problem)
+    expect(result.save).toEqual(save)
+    expect(result.migratedFrom).toBeNull()
+  })
+
+  it('opens in an older-catalog copy of the game too: ids it doesn’t know are kept, not refused', () => {
+    // The same shape with ids from a later interval than this build knows.
+    const later = { ...arc2Save(), story: { seenSceneIds: ['scene_faded-box', 'scene_from-the-future'] } }
+    const result = readSaveFile(fileWith(later))
+    if (!result.ok) throw new Error(result.problem)
+    expect(result.save.story.seenSceneIds).toEqual(['scene_faded-box', 'scene_from-the-future'])
+  })
+})

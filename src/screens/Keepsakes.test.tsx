@@ -217,7 +217,8 @@ describe('an Interval 8 kitchen', () => {
         recipeId: 'recipe_shortbread',
         bakedAt: `2026-08-1${n}T10:00:00.000Z`,
       })),
-      story: { seenSceneIds: STORY_SCENES.map((placed) => placed.scene.id) as StorySceneId[] },
+      // The whole story as Interval 8 had it: the first arc.
+      story: { seenSceneIds: STORY_SCENES.filter((placed) => placed.chapter.arc === 1).map((placed) => placed.scene.id) as StorySceneId[] },
     })
     const { saved } = startAt(v6, '#/recipe-book')
     await screen.findByRole('article', { name: 'Shortbread' })

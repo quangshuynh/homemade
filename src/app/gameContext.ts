@@ -36,9 +36,9 @@ export type KitchenScene =
   | (Extract<SeeSceneResult, { ok: true }> & { decor: DecorationDefinition[]; keepsakes: KeepsakeNews })
   | Extract<SeeSceneResult, { ok: false }>
 
-/** A decoration put out, and any keepsake (and keepsake decoration) that earned. */
+/** A decoration put out, any keepsake (and keepsake decoration) that earned, and whether it opened up the story (Interval 10). */
 export type KitchenEquip =
-  | (Extract<EquipResult, { ok: true }> & { decor: DecorationDefinition[]; keepsakes: KeepsakeNews })
+  | (Extract<EquipResult, { ok: true }> & { decor: DecorationDefinition[]; keepsakes: KeepsakeNews; story: StoryNews | null })
   | Extract<EquipResult, { ok: false }>
 
 /** A pantry addition, and whether it opened up the next bit of the story. */

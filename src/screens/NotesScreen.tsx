@@ -6,7 +6,7 @@ import { Button, LinkButton } from '../components/Button'
 import { HandNote } from '../components/Paper'
 import { ScreenTitle } from '../components/ScreenTitle'
 import type { StorySceneId } from '../domain/ids'
-import { findScene, type PlacedScene } from '../story/chapters'
+import { findScene, isArcEnd, type PlacedScene } from '../story/chapters'
 import { availableScene, chapterViews, currentChapter, type ChapterView } from '../story/progress'
 import { StoryNoteCard } from '../story/StoryNoteCard'
 import { StoryScenePlayer, type SceneEnding } from '../story/StoryScenePlayer'
@@ -17,7 +17,15 @@ import './NotesScreen.css'
 type Playing = { sceneId: StorySceneId; mode: 'first' | 'replay' }
 
 /** What just happened, said once after a scene closes. */
-type Ended = { how: SceneEnding; chapterTitle: string | null; crumbs: number | null; cupboard: boolean; keepsakes: AchievementDefinition[] }
+type Ended = {
+  how: SceneEnding
+  chapterTitle: string | null
+  crumbs: number | null
+  cupboard: boolean
+  /** The second arc just ended (Interval 10): the tin is empty, and the story says so. */
+  tinEmpty: boolean
+  keepsakes: AchievementDefinition[]
+}
 
 /** The epilogue whose scene is what's inside the old cupboard. Reading it here points the way back to the kitchen. */
 const CUPBOARD_CHAPTER = 'chapter_old-cupboard'
@@ -68,7 +76,9 @@ export function NotesScreen() {
     const result = seeStoryScene(playing.sceneId)
     setPlaying(null)
     if (!result.ok) return
-    if (result.firstTime) playSound('story-note')
+    // The end of an arc gets its own, slightly longer sound, instead of the usual one. Never on a replay.
+    const arcEnded = result.completedChapter !== null && isArcEnd(result.completedChapter)
+    if (result.firstTime) playSound(arcEnded ? 'arc-complete' : 'story-note')
     if (result.keepsakes.earned.length > 0) window.setTimeout(() => playSound('achievement-unlock'), 900)
     setEnded({
       keepsakes: result.keepsakes.earned,
@@ -76,6 +86,7 @@ export function NotesScreen() {
       chapterTitle: result.completedChapter?.title ?? null,
       crumbs: result.reward?.crumbs ?? null,
       cupboard: placed.chapter.id === CUPBOARD_CHAPTER,
+      tinEmpty: arcEnded && result.completedChapter?.arc === 2,
     })
   }
 
@@ -97,7 +108,7 @@ export function NotesScreen() {
             <div className="notes__ended" ref={endedNote} tabIndex={-1}>
               <p>
                 {ended.how === 'skipped' ? 'Skipped. Whatever was found is filed below, and you can replay it any time.' : 'Put back in the box.'}
-                {ended.chapterTitle && ` That’s the end of ${ended.chapterTitle}.`}
+                {ended.chapterTitle && ` That’s the end of ${ended.chapterTitle}${ended.chapterTitle.endsWith('.') ? '' : '.'}`}
               </p>
               {ended.crumbs !== null && <p className="notes__crumbs">Tucked between the cards: {ended.crumbs} Crumbs.</p>}
               {ended.cupboard && (
@@ -105,6 +116,7 @@ export function NotesScreen() {
                   The old cupboard in your kitchen is open now. <a href={hrefFor('decorate')}>Make it yours</a>
                 </p>
               )}
+              {ended.tinEmpty && <p>The tin is empty now, all but the letter. Marmalade put it back behind the board, where Edie kept it.</p>}
               <KeepsakeNews keepsakes={ended.keepsakes} />
             </div>
           )}

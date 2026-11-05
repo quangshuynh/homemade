@@ -17,6 +17,7 @@ import pick from '../assets/sounds/pick.wav'
 import remove from '../assets/sounds/remove.wav'
 import storyNote from '../assets/sounds/story-note.wav'
 import achievementUnlock from '../assets/sounds/achievement-unlock.wav'
+import arcComplete from '../assets/sounds/arc-complete.wav'
 import favorite from '../assets/sounds/favorite.wav'
 import masteryUp from '../assets/sounds/mastery-up.wav'
 import tutorialNext from '../assets/sounds/tutorial-next.wav'
@@ -43,6 +44,7 @@ export type SoundId =
   | 'achievement-unlock'
   | 'mastery-up'
   | 'favorite'
+  | 'arc-complete'
 
 export type SoundDefinition = {
   url: string
@@ -79,6 +81,8 @@ export const SOUNDS: Record<SoundId, SoundDefinition> = {
   'achievement-unlock': { url: achievementUnlock, volume: 0.32 },
   'mastery-up': { url: masteryUp, volume: 0.3 },
   favorite: { url: favorite, volume: 0.25 },
+  // Story (Interval 10): the last scene of an arc, read or skipped for the first time. Instead of 'story-note', never with it; never on a replay.
+  'arc-complete': { url: arcComplete, volume: 0.3 },
 }
 
 export function discoverySound(rarity: CookieRarity): SoundId {

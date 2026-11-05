@@ -393,7 +393,7 @@ describe('balance', () => {
       (recipe) =>
         !recipe.isSecret && !INTERVAL_4_RECIPES.includes(recipe) && recipe.ingredientIds.every((id) => INTERVAL_4_PANTRY.includes(id)),
     )
-    expect(fromOldShelf.map((recipe) => recipe.name)).toEqual(['Meringue Kiss', 'Honeycomb Crunch', 'Chocolate Haystack', 'Spiced Cocoa Square', 'Honey Madeleine'])
+    expect(fromOldShelf.map((recipe) => recipe.name)).toEqual(['Meringue Kiss', 'Honeycomb Crunch', 'Chocolate Haystack', 'Spiced Cocoa Square', 'Honey Madeleine', 'Edie’s Oat Crisps'])
     const newAdditions = INGREDIENT_UNLOCKS.filter((unlock) => !INTERVAL_4_PANTRY.includes(unlock.ingredientId))
     const cheapest = Math.min(...newAdditions.map((unlock) => unlock.crumbs))
     expect(bestCase(VETERAN, []).progression.crumbs).toBeGreaterThanOrEqual(cheapest)

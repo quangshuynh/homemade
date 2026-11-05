@@ -10,14 +10,14 @@ import './Mascot.css'
  *
  * Purely decorative: whatever she says is written next to her as text.
  */
-export type MascotExpression = 'idle' | 'happy' | 'thinking' | 'surprised' | 'excited' | 'proud' | 'celebrate' | 'starstruck'
+export type MascotExpression = 'idle' | 'happy' | 'thinking' | 'surprised' | 'excited' | 'proud' | 'celebrate' | 'starstruck' | 'wistful'
 
 export const MASCOT_NAME = 'Marmalade'
 
-type Eyes = 'open' | 'closed' | 'wide' | 'lidded' | 'sparkle' | 'glance' | 'stars'
-type Mouth = 'smile' | 'open' | 'o' | 'smirk'
+type Eyes = 'open' | 'closed' | 'wide' | 'lidded' | 'sparkle' | 'glance' | 'stars' | 'downcast'
+type Mouth = 'smile' | 'open' | 'o' | 'smirk' | 'soft'
 
-const FACES: Record<MascotExpression, { eyes: Eyes; mouth: Mouth; blush: boolean; brow?: 'raised' | 'smug' }> = {
+const FACES: Record<MascotExpression, { eyes: Eyes; mouth: Mouth; blush: boolean; brow?: 'raised' | 'smug' | 'soft' }> = {
   idle: { eyes: 'open', mouth: 'smile', blush: false },
   happy: { eyes: 'closed', mouth: 'smile', blush: true },
   thinking: { eyes: 'glance', mouth: 'smirk', blush: false, brow: 'raised' },
@@ -27,6 +27,8 @@ const FACES: Record<MascotExpression, { eyes: Eyes; mouth: Mouth; blush: boolean
   celebrate: { eyes: 'closed', mouth: 'open', blush: true },
   // Saved for the rarest moment there is: a first Mythic.
   starstruck: { eyes: 'stars', mouth: 'open', blush: true },
+  // Interval 10: a quiet, remembering look, for the story only (Edie, R. on Sundays, the letter for M.). Never for a bake.
+  wistful: { eyes: 'downcast', mouth: 'soft', blush: false, brow: 'soft' },
 }
 
 const INK = 'var(--ink)'
@@ -56,6 +58,17 @@ function Eye({ cx, cy, eyes }: { cx: number; cy: number; eyes: Eyes }) {
     case 'closed':
       // Happy crescents: ^ ^
       return <path d={`M${cx - 9} ${cy + 2} Q${cx} ${cy - 9} ${cx + 9} ${cy + 2}`} fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round" />
+    case 'downcast':
+      // Looking down and away, lids half lowered: remembering something, not sleepy and not smug.
+      return (
+        <g>
+          <ellipse cx={cx} cy={cy} rx="10" ry="11" fill="var(--chef-white)" stroke={INK} strokeWidth="2" />
+          <circle cx={cx - 2} cy={cy + 4.5} r="6" fill="var(--marmalade-eye)" />
+          <circle cx={cx - 2} cy={cy + 4.5} r="3.2" fill={INK} />
+          <path d={`M${cx - 11} ${cy - 1} A11 12 0 0 1 ${cx + 11} ${cy - 1} Z`} fill={FUR} />
+          <path d={`M${cx - 10.5} ${cy - 1} Q${cx} ${cy + 2} ${cx + 10.5} ${cy - 1}`} fill="none" stroke={INK} strokeWidth="2.2" strokeLinecap="round" />
+        </g>
+      )
     case 'lidded':
       return (
         <g>
@@ -101,6 +114,9 @@ function MouthShape({ mouth }: { mouth: Mouth }) {
       return <path d="M70 82 V85 M62 86 Q66 88.5 70 85 Q75 90 80 83" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" />
     case 'smile':
       return <path d="M70 82 V85 M62 85 Q66 89 70 85 Q74 89 78 85" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" />
+    case 'soft':
+      // Barely a smile: the corners settle rather than lift.
+      return <path d="M70 82 V85 M63 87 Q66.5 87.5 70 85 Q73.5 87.5 77 87" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" />
   }
 }
 
@@ -166,6 +182,9 @@ export function Mascot({ expression = 'idle', className }: MascotProps) {
         )}
 
         {face.brow === 'raised' && <path d="M78 50 Q86 44 94 50" fill="none" stroke={INK} strokeWidth="2.5" strokeLinecap="round" />}
+        {face.brow === 'soft' && (
+          <path d="M45 52 Q53 49 61 51 M79 51 Q87 49 95 52" fill="none" stroke={INK} strokeWidth="2.2" strokeLinecap="round" />
+        )}
         {face.brow === 'smug' && (
           <path d="M45 54 Q54 51 62 55 M78 55 Q86 51 95 54" fill="none" stroke={INK} strokeWidth="2.5" strokeLinecap="round" />
         )}

@@ -31,7 +31,7 @@ export function StoryNoteCard({ note, as, lineRef }: StoryNoteCardProps) {
         <p className="story-note__text" ref={lineRef} tabIndex={-1}>
           <span className="story-note__where">
             {note.title}
-            <span className="visually-hidden">, in someone else’s handwriting:</span>
+            <span className="visually-hidden">{note.intro === undefined ? ', in someone else’s handwriting:' : ':'}</span>
           </span>{' '}
           {note.text}
         </p>

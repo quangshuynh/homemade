@@ -1,5 +1,6 @@
 import type { MascotExpression } from '../components/Mascot'
 import type { RecipeId, StoryChapterId, StoryNoteId, StorySceneId } from '../domain/ids'
+import type { MasteryStage } from '../domain/mastery'
 import type { RecipeFamily } from '../domain/types'
 
 /**
@@ -29,13 +30,25 @@ export type StoryRequirement =
   | { type: 'any'; of: readonly StoryRequirement[] }
   /** Nothing beyond the scene before it: ready the moment that one is seen. For a short epilogue. */
   | { type: 'straight-after' }
+  /**
+   * Something out in the kitchen, in any spot (Interval 10). Every kitchen
+   * that can read this far owns the free starter set, so it never asks for
+   * Crumbs to be spent.
+   */
+  | { type: 'decoration-out' }
+  /**
+   * A recipe baked often enough to reach a mastery stage (Interval 10). Kept
+   * small on purpose: the story asks for this once, and never past Familiar.
+   */
+  | { type: 'mastery-stage'; recipeId: RecipeId; stage: MasteryStage }
 
 /**
  * How a note looks in the box: a pencilled line beside a recipe (`margin`),
- * a whole index card (`card`), a torn scrap (`scrap`) or a shelf or tin
- * label (`label`). Presentation only.
+ * a whole index card (`card`), a torn scrap (`scrap`), a shelf or tin
+ * label (`label`) or, since Interval 10, an old photograph (`photo`), whose
+ * text says what's in the picture. Presentation only.
  */
-export type StoryNoteKind = 'margin' | 'card' | 'scrap' | 'label'
+export type StoryNoteKind = 'margin' | 'card' | 'scrap' | 'label' | 'photo'
 
 /**
  * Something written down that the player finds in the kitchen. Notes are in
@@ -48,6 +61,14 @@ export type StoryNote = {
   /** Where it was found, as a short heading: "Pencilled beside the shortbread". */
   title: string
   text: string
+  /**
+   * How a screen reader is told whose words these are when the note is read
+   * out in a scene (Interval 10). Unset: "in someone else's handwriting".
+   * `described`: the text says what something looks like (a key, a
+   * photograph, an envelope), so no hand is named. `hand-in-title`: the
+   * title already says whose hand it is.
+   */
+  intro?: 'described' | 'hand-in-title'
   /**
    * Set when the note is a clue to a secret recipe. Never shown: the note
    * has to stand on its own. Once the secret is baked, the box says so.
@@ -74,6 +95,8 @@ export type StoryChapter = {
   id: StoryChapterId
   /** 1-based, in reading order. */
   number: number
+  /** Which arc it belongs to: 1, the recipe box; 2, the tin behind the cupboard. Presentation and sound only. */
+  arc: 1 | 2
   title: string
   /** Read in order. The chapter is complete once its last scene has been seen. */
   scenes: readonly StoryScene[]
