@@ -123,7 +123,7 @@ describe('earning keepsakes', () => {
   it('gives existing kitchens what they already earned, without repeating anything', () => {
     // A kitchen with a finished family, ten cards, a Legendary and a secret.
     const save = makeSave({
-      discoveredRecipes: found('shortbread', 'sugar-cookie', 'vanilla-kiss', 'oatmeal-cookie', 'blondie', 'chocolate-chip', 'snickerdoodle', 'honey-flapjack', 'jam-thumbprint', 'snowball'),
+      discoveredRecipes: found('shortbread', 'sugar-cookie', 'vanilla-kiss', 'oatmeal-cookie', 'blondie', 'marshmallow-puff', 'chocolate-chip', 'snickerdoodle', 'honey-flapjack', 'jam-thumbprint', 'snowball'),
     })
     expect(ids(grantEarnedAchievements(save).earned)).toEqual([
       'achievement_recipe-keeper',
@@ -186,7 +186,7 @@ describe('Lived In and its reward', () => {
   })
 
   it('keeps keepsake decorations waiting until the cupboard opens, then hands them over once', () => {
-    const early = settleSave(makeSave({ discoveredRecipes: found('shortbread', 'sugar-cookie', 'vanilla-kiss', 'oatmeal-cookie', 'blondie', 'chocolate-chip', 'snickerdoodle', 'jam-thumbprint', 'lemon-shortbread', 'honeycomb') }))
+    const early = settleSave(makeSave({ discoveredRecipes: found('shortbread', 'sugar-cookie', 'vanilla-kiss', 'oatmeal-cookie', 'blondie', 'marshmallow-puff', 'chocolate-chip', 'snickerdoodle', 'jam-thumbprint', 'lemon-shortbread', 'honeycomb') }))
     expect(ids(early.achievements)).toContain('achievement_recipe-keeper')
     expect(early.decor).toEqual([])
     const opened = settleSave({ ...early.save, story: ALL_SCENES })

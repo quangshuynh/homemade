@@ -81,7 +81,7 @@ describe('Marmalade’s Interval 6 milestones', () => {
 
   it('marks the first finished family, but not the next one', () => {
     const fruity = (ids: string[]) => ({ ...stocked(), discoveredRecipes: ids.map((recipeId) => ({ recipeId, discoveredAt: '2026-09-01T00:00:00Z' })) }) as GameSave
-    const first = bakeInto(fruity(['recipe_jam-thumbprint', 'recipe_lemon-shortbread', 'recipe_jam-sandwich', 'recipe_lemon-white-chocolate', 'recipe_vanilla-kiss']), [FLOUR, SUGAR, BUTTER, EGG, LEMON])
+    const first = bakeInto(fruity(['recipe_jam-thumbprint', 'recipe_lemon-shortbread', 'recipe_jam-sandwich', 'recipe_lemon-white-chocolate', 'recipe_orange-ginger-thin', 'recipe_orange-biscotti', 'recipe_vanilla-kiss']), [FLOUR, SUGAR, BUTTER, EGG, LEMON])
     expect(discoveryReaction(first.outcome, 6)?.line).toBe('Every Fruity card, back in the box. That’s a whole divider done.')
   })
 

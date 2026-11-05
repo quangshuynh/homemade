@@ -100,17 +100,23 @@ function JarContents({ ingredient }: { ingredient: Ingredient }) {
           <path d="M34 66 q10 -8 18 -2 q8 6 16 -2" fill="none" stroke="rgb(255 255 255 / 0.4)" strokeWidth="3" strokeLinecap="round" />
         </g>
       )
-    case 'fruit':
-      // Lemon halves, cut side out, stacked in the jar.
+    case 'fruit': {
+      // Citrus halves, cut side out, stacked in the jar. An orange's flesh is deeper than a lemon's.
+      const orange = ingredient.art.swatch === 'orange'
       return (
         <g stroke={INK} strokeWidth="1.8">
           <ellipse cx="36" cy="92" rx="14" ry="12" fill={fill} />
           <ellipse cx="64" cy="92" rx="14" ry="12" fill={fill} />
           <circle cx="50" cy="72" r="13" fill={fill} />
-          <circle cx="50" cy="72" r="8.5" fill="#fbf0b0" strokeWidth="1" />
-          <path d="M50 64 V80 M42 72 H58 M44.5 66.5 L55.5 77.5 M55.5 66.5 L44.5 77.5" stroke="rgb(200 160 40 / 0.7)" strokeWidth="1" />
+          <circle cx="50" cy="72" r="8.5" fill={orange ? '#fbc77e' : '#fbf0b0'} strokeWidth="1" />
+          <path
+            d="M50 64 V80 M42 72 H58 M44.5 66.5 L55.5 77.5 M55.5 66.5 L44.5 77.5"
+            stroke={orange ? 'rgb(210 110 30 / 0.7)' : 'rgb(200 160 40 / 0.7)'}
+            strokeWidth="1"
+          />
         </g>
       )
+    }
     case 'nuts':
       return (
         <g>
@@ -119,6 +125,15 @@ function JarContents({ ingredient }: { ingredient: Ingredient }) {
               <ellipse cx={x} cy={y} rx="7" ry="4.6" fill="#d8c39a" stroke={INK} strokeWidth="1" />
               <ellipse cx={x} cy={y} rx="4.4" ry="2.6" fill={fill} />
             </g>
+          ))}
+        </g>
+      )
+    case 'pillows':
+      // Soft little cylinders, tumbled in a heap.
+      return (
+        <g fill={fill} stroke={INK} strokeWidth="1.2">
+          {CHIP_PILE.map(([x, y], index) => (
+            <rect key={`${x}-${y}`} x={x - 6} y={y - 5} width="12" height="10" rx="4" transform={`rotate(${index * 33} ${x} ${y})`} />
           ))}
         </g>
       )
@@ -341,6 +356,38 @@ function Topping({ look }: { look: CookieLook }) {
           strokeWidth="3"
           strokeLinecap="round"
         />
+      )
+    case 'pecan':
+      // Pecan halves, each with its groove down the middle.
+      return (
+        <g>
+          {TOPPING_SPOTS.slice(0, 5).map(([x, y], index) => (
+            <g key={`${x}-${y}`} transform={`rotate(${index * 61} ${x} ${y})`}>
+              <ellipse cx={x} cy={y} rx="7" ry="4" fill="var(--swatch-pecan)" stroke={INK} strokeWidth="1" />
+              <path d={`M${x - 5} ${y} H${x + 5}`} stroke="rgb(43 29 20 / 0.6)" strokeWidth="0.9" />
+            </g>
+          ))}
+        </g>
+      )
+    case 'marshmallow':
+      // Puffed marshmallows, toasted golden on top.
+      return (
+        <g stroke={INK} strokeWidth="1.1">
+          {TOPPING_SPOTS.slice(0, 6).map(([x, y]) => (
+            <g key={`${x}-${y}`}>
+              <rect x={x - 5.5} y={y - 4.5} width="11" height="9" rx="3.5" fill="var(--swatch-marshmallow)" />
+              <path d={`M${x - 4} ${y - 2.5} Q${x} ${y - 5} ${x + 4} ${y - 2.5}`} fill="none" stroke="#c98a3a" strokeWidth="1.6" strokeLinecap="round" />
+            </g>
+          ))}
+        </g>
+      )
+    case 'orange-zest':
+      return (
+        <g fill="none" stroke="var(--swatch-orange)" strokeWidth="2.6" strokeLinecap="round">
+          {TOPPING_SPOTS.map(([x, y], index) => (
+            <path key={`${x}-${y}`} d={`M${x - 4} ${y} q4 ${index % 2 ? 4 : -4} 8 0`} />
+          ))}
+        </g>
       )
     case 'crinkle':
       return (

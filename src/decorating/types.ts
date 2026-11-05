@@ -36,7 +36,7 @@ export type DecorationLook =
   | { kind: 'scrap-frame' }
   | { kind: 'curtains' }
   | { kind: 'herb-bundle' }
-  | { kind: 'pot-plant'; plant: 'thyme' | 'lemon-tree' }
+  | { kind: 'pot-plant'; plant: 'thyme' | 'lemon-tree' | 'coffee' }
   | { kind: 'jar'; glaze: 'cream' | 'green' }
   | { kind: 'crock'; material: 'stoneware' | 'copper' }
   | { kind: 'rolling-pin' }
@@ -48,6 +48,8 @@ export type DecorationLook =
   | { kind: 'cookie-plate' }
   | { kind: 'trophy-spoon' }
   | { kind: 'cat-figurine' }
+  // Interval 11: for finishing a divider.
+  | { kind: 'orange-garland' }
 
 /**
  * Hand-authored, static catalog data. Saves store only the id, so a name,

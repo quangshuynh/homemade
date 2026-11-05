@@ -69,14 +69,14 @@ describe('the Recipe Book’s families', () => {
       'Strange & Wonderful',
     ])
     const classics = screen.getByRole('region', { name: 'Classics' })
-    expect(classics).toHaveTextContent('1 of 5 discovered')
+    expect(classics).toHaveTextContent('1 of 6 discovered')
     expect(within(classics).getByRole('heading', { level: 3, name: 'Shortbread' })).toBeInTheDocument()
-    expect(screen.getByRole('region', { name: 'Chocolate' })).toHaveTextContent('1 of 5 discovered')
+    expect(screen.getByRole('region', { name: 'Chocolate' })).toHaveTextContent('1 of 7 discovered')
     // A family with nothing found yet says so quietly, and still keeps its blank cards.
     const nutty = screen.getByRole('region', { name: 'Nutty' })
     expect(nutty).toHaveTextContent('No recipes written here yet.')
-    expect(within(nutty).getAllByText('Not discovered yet')).toHaveLength(4)
-    expect(screen.getByText('2 of 34 recipes written down.')).toBeInTheDocument()
+    expect(within(nutty).getAllByText('Not discovered yet')).toHaveLength(7)
+    expect(screen.getByText('2 of 47 recipes written down.')).toBeInTheDocument()
   })
 
   it('shows one family at a time from the dividers, by keyboard alone, and says what it shows', async () => {
@@ -95,7 +95,7 @@ describe('the Recipe Book’s families', () => {
     expect(classics).toHaveAttribute('aria-pressed', 'true')
     expect(every).toHaveAttribute('aria-pressed', 'false')
     expect(familyRegions()).toHaveLength(1)
-    expect(screen.getByRole('status')).toHaveTextContent('Showing Classics: 1 of 5 discovered.')
+    expect(screen.getByRole('status')).toHaveTextContent('Showing Classics: 1 of 6 discovered.')
 
     await user.tab()
     await user.keyboard(' ')
@@ -104,7 +104,7 @@ describe('the Recipe Book’s families', () => {
 
     await user.click(every)
     expect(familyRegions()).toHaveLength(7)
-    expect(screen.getByRole('status')).toHaveTextContent('Showing every family: 1 of 34 recipes.')
+    expect(screen.getByRole('status')).toHaveTextContent('Showing every family: 1 of 47 recipes.')
   })
 })
 
@@ -121,7 +121,7 @@ describe('clues on blank cards', () => {
     // Lemon isn't on a new kitchen's shelf, so the Fruity cards only say how many.
     const fruity = screen.getByRole('region', { name: 'Fruity' })
     expect(within(fruity).queryByText(/Marmalade scribbled/)).not.toBeInTheDocument()
-    expect(within(fruity).getAllByText(/^Needs \d ingredients$/)).toHaveLength(5)
+    expect(within(fruity).getAllByText(/^Needs \d ingredients$/)).toHaveLength(7)
   })
 
   it('never name an ingredient, a rarity or a recipe', async () => {
@@ -152,10 +152,10 @@ describe('secret recipes in the book', () => {
     startAt('#/recipe-book', stocked({ discoveredRecipes: found('recipe_shortbread', 'recipe_snowball') }))
     await openBook()
 
-    expect(screen.getByText('1 of 34 recipes written down.')).toBeInTheDocument()
+    expect(screen.getByText('1 of 47 recipes written down.')).toBeInTheDocument()
     expect(screen.getByText('Secrets found: 1')).toBeInTheDocument()
     const curious = screen.getByRole('region', { name: 'Strange & Wonderful' })
-    expect(curious).toHaveTextContent('0 of 5 discovered · 1 secret')
+    expect(curious).toHaveTextContent('0 of 7 discovered · 1 secret')
     const card = within(curious).getByRole('heading', { level: 3, name: 'Snowball' }).closest('li')!
     expect(within(card).getByText('Secret')).toBeInTheDocument()
     expect(within(card).getByText('Rare')).toBeInTheDocument()
@@ -252,7 +252,7 @@ describe('Marmalade’s milestones', () => {
     startAt(
       '#/bake',
       stocked({
-        discoveredRecipes: found('recipe_jam-thumbprint', 'recipe_lemon-shortbread', 'recipe_jam-sandwich', 'recipe_lemon-white-chocolate', 'recipe_vanilla-kiss'),
+        discoveredRecipes: found('recipe_jam-thumbprint', 'recipe_lemon-shortbread', 'recipe_jam-sandwich', 'recipe_lemon-white-chocolate', 'recipe_orange-ginger-thin', 'recipe_orange-biscotti', 'recipe_vanilla-kiss'),
         progression: { crumbs: 0, xp: 1200 },
       }),
     )

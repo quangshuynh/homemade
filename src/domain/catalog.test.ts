@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { findCatalogProblems, GAME_CATALOG, type Catalog } from './catalog'
+import { familyAudit, ingredientUsage } from './catalogAudit'
 import { defineId } from './ids'
 import { BUTTER, EGG, FLOUR, INGREDIENTS, STARTER_PANTRY, SUGAR } from './ingredients'
 import { INGREDIENT_UNLOCKS, RARITIES } from './progression'
@@ -28,11 +29,11 @@ describe('the shipped catalog', () => {
     expect(findCatalogProblems()).toEqual([])
   })
 
-  it('has 19 ingredients and 37 recipes, 3 of them secret', () => {
-    expect(INGREDIENTS).toHaveLength(19)
-    expect(RECIPES).toHaveLength(37)
+  it('has 24 ingredients and 50 recipes, 3 of them secret', () => {
+    expect(INGREDIENTS).toHaveLength(24)
+    expect(RECIPES).toHaveLength(50)
     expect(RECIPES.filter((recipe) => recipe.isSecret)).toHaveLength(3)
-    expect(VISIBLE_RECIPES).toHaveLength(34)
+    expect(VISIBLE_RECIPES).toHaveLength(47)
   })
 
   it('keeps rarity, family and secrecy independent of each other', () => {
@@ -61,7 +62,7 @@ describe('the shipped catalog', () => {
     for (let index = 1; index < RARITIES.length; index++) {
       expect(count(RARITIES[index]!), RARITIES[index]).toBeLessThanOrEqual(count(RARITIES[index - 1]!))
     }
-    expect(RARITIES.map(count)).toEqual([11, 10, 9, 4, 2, 1])
+    expect(RARITIES.map(count)).toEqual([15, 15, 11, 6, 2, 1])
   })
 
   it('gives every pantry addition at least two cards that aren’t secret, so no jar is for one recipe', () => {
@@ -73,8 +74,34 @@ describe('the shipped catalog', () => {
 
   it('keeps the dividers balanced: no family is more than one card bigger than the smallest', () => {
     const sizes = RECIPE_FAMILIES.map((family) => VISIBLE_RECIPES.filter((recipe) => recipe.family === family.id).length)
-    expect(sizes).toEqual([5, 5, 5, 4, 5, 5, 5])
+    expect(sizes).toEqual([6, 7, 6, 7, 7, 7, 7])
     expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(1)
+  })
+})
+
+describe('the Interval 11 audit', () => {
+  it('leaves no ingredient forgotten: every one is in at least two cards that aren’t secret', () => {
+    for (const usage of ingredientUsage()) expect(usage.visible, usage.name).toBeGreaterThanOrEqual(2)
+  })
+
+  it('lifts the quietest jars: nothing that was down to two or three cards lost one, and sea salt doubled', () => {
+    const uses = new Map(ingredientUsage().map((usage) => [usage.name, usage.recipes]))
+    // Before Interval 11 (secrets included): sea salt 2; vanilla, cocoa, peanut butter, coconut and maple 3.
+    expect(uses.get('Sea salt')).toBe(4)
+    for (const name of ['Vanilla', 'Cocoa powder', 'Peanut butter', 'Coconut', 'Maple syrup']) expect(uses.get(name), name).toBe(4)
+    for (const name of ['Lemon', 'White chocolate', 'Pistachios']) expect(uses.get(name), name).toBeGreaterThanOrEqual(3)
+  })
+
+  it('keeps every divider a mix of rarities, with nothing above Rare in Classics', () => {
+    for (const family of familyAudit()) {
+      const tiers = Object.values(family.rarities).filter((count) => count > 0).length
+      expect(tiers, family.id).toBeGreaterThanOrEqual(2)
+    }
+    // Nutty used to be all Rare and Epic; it has an everyday card now.
+    const nutty = familyAudit().find((family) => family.id === 'nutty')!
+    expect(nutty.rarities.common + nutty.rarities.uncommon).toBeGreaterThanOrEqual(2)
+    const classics = familyAudit().find((family) => family.id === 'classics')!
+    expect(classics.rarities.rare + classics.rarities.epic + classics.rarities.legendary + classics.rarities.mythic).toBe(0)
   })
 })
 
@@ -140,9 +167,9 @@ describe('the catalog checks fail loudly on', () => {
 
   it('a pantry addition whose only other recipe is a secret', () => {
     const recipes = RECIPES.map((recipe) =>
-      recipe.id === 'recipe_chocolate-haystack' ? { ...recipe, isSecret: true, clue: null, rarity: 'rare' as const } : recipe,
+      recipe.id === 'recipe_gingersnap' ? { ...recipe, isSecret: true, clue: null, rarity: 'rare' as const } : recipe,
     )
-    expect(findCatalogProblems({ ...GAME_CATALOG, recipes })).toContain("ingredient_coconut is in only 1 recipe(s) that aren't secret")
+    expect(findCatalogProblems({ ...GAME_CATALOG, recipes })).toContain("ingredient_ginger is in only 1 recipe(s) that aren't secret")
   })
 
   it('a family that would only ever hold secrets', () => {

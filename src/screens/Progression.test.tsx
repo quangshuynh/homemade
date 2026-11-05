@@ -139,7 +139,7 @@ describe('pantry additions', () => {
     expect(chips).not.toHaveTextContent(/cookie|recipe/i)
     // Only the five starter ingredients are on the shelves.
     expect(screen.getByRole('region', { name: 'Baking basics' })).toHaveTextContent('Flour')
-    expect(within(additions()).getAllByRole('listitem').filter((item) => item.classList.contains('addition'))).toHaveLength(14)
+    expect(within(additions()).getAllByRole('listitem').filter((item) => item.classList.contains('addition'))).toHaveLength(19)
   })
 
   it('explains, in words a screen reader reaches, why an addition isn’t possible yet', async () => {
@@ -208,7 +208,7 @@ describe('pantry additions', () => {
 
     const news = await screen.findByRole('generic', { name: 'Added chocolate chips to the pantry' })
     expect(news).toHaveTextContent('Baker Level 3! Strawberry jam, oats and cocoa powder can go in the pantry now.')
-    await waitFor(() => expect(played).toContain('level-up'))
+    expect(played).toEqual(['ingredient-unlock', 'level-up'])
   })
 
   it('isn’t shown at all in a kitchen that already owns everything', async () => {
@@ -237,7 +237,7 @@ describe('the Recipe Book', () => {
     expect(within(card).getByText('Uncommon')).toBeInTheDocument()
 
     const blanks = screen.getAllByText('Not discovered yet').map((text) => text.closest('li')!)
-    expect(blanks).toHaveLength(33)
+    expect(blanks).toHaveLength(46)
     for (const blank of blanks) {
       expect(blank).not.toHaveTextContent(/common|rare|epic|legendary|mythic|peanut|honey|chocolate/i)
     }

@@ -158,6 +158,33 @@ function HerbBundleArt({ className }: ArtProps) {
   )
 }
 
+/** Dried orange slices on a string, swagged across the top of the window. */
+function OrangeGarlandArt({ className }: ArtProps) {
+  const slices: readonly [number, number][] = [
+    [30, 22],
+    [45, 27],
+    [60, 29],
+    [75, 27],
+    [90, 22],
+  ]
+  return (
+    <Svg viewBox="0 0 120 100" className={className}>
+      <path d="M21 14 Q60 40 99 14" fill="none" stroke="var(--kraft)" strokeWidth="1.6" />
+      {slices.map(([x, y]) => (
+        <g key={x}>
+          <circle cx={x} cy={y} r="6.5" fill="var(--swatch-orange)" stroke={INK} strokeWidth="1.2" />
+          <circle cx={x} cy={y} r="4.6" fill="#f6b25c" />
+          <path
+            d={`M${x} ${y - 4.6} V${y + 4.6} M${x - 4.6} ${y} H${x + 4.6} M${x - 3.3} ${y - 3.3} L${x + 3.3} ${y + 3.3} M${x + 3.3} ${y - 3.3} L${x - 3.3} ${y + 3.3}`}
+            stroke="rgb(150 70 20 / 0.6)"
+            strokeWidth="0.8"
+          />
+        </g>
+      ))}
+    </Svg>
+  )
+}
+
 // ---------------------------------------------------------------- the wall
 
 function FrameArt({ look, className }: { look: Extract<DecorationLook, { kind: 'frame' }>; className?: string }) {
@@ -248,7 +275,7 @@ function ScrapFrameArt({ className }: ArtProps) {
 
 // ---------------------------------------------------------------- on the counter and the shelf
 
-function PotPlantArt({ plant, className }: { plant: 'thyme' | 'lemon-tree'; className?: string }) {
+function PotPlantArt({ plant, className }: { plant: 'thyme' | 'lemon-tree' | 'coffee'; className?: string }) {
   const pot = (
     <g stroke={INK} strokeWidth={LINE} strokeLinejoin="round">
       <path d="M17 62 H51 L47 86 H21 Z" fill="var(--terracotta)" />
@@ -272,6 +299,38 @@ function PotPlantArt({ plant, className }: { plant: 'thyme' | 'lemon-tree'; clas
         <path d="M30 56 Q28 40 24 32 M34 56 Q36 36 36 26 M38 56 Q42 42 46 34" fill="none" stroke="var(--leaf-700)" strokeWidth="1.4" />
         {tufts.map(([x, y]) => (
           <ellipse key={`${x}-${y}`} cx={x} cy={y} rx="6" ry="4.5" fill={(x + y) % 3 ? 'var(--leaf-500)' : 'var(--leaf-700)'} stroke={INK} strokeWidth="1" />
+        ))}
+        {pot}
+      </Svg>
+    )
+  }
+  if (plant === 'coffee') {
+    // Glossy, dark pointed leaves in pairs up a thin stem, with clusters of red cherries.
+    const pairs: readonly [number, number][] = [
+      [50, 0],
+      [42, 1],
+      [34, 0],
+      [26, 1],
+      [18, 0],
+    ]
+    return (
+      <Svg viewBox="0 0 68 88" className={className}>
+        <path d="M34 58 V12" stroke="var(--wood-500)" strokeWidth="2" strokeLinecap="round" />
+        {pairs.map(([y, tilt]) => (
+          <g key={y} fill="var(--leaf-700)" stroke={INK} strokeWidth="1">
+            <path d={`M34 ${y} Q${22 - tilt * 2} ${y - 9} ${12 + tilt * 2} ${y - 2} Q${22} ${y + 3} 34 ${y} Z`} />
+            <path d={`M34 ${y} Q${46 + tilt * 2} ${y - 9} ${56 - tilt * 2} ${y - 2} Q${46} ${y + 3} 34 ${y} Z`} />
+          </g>
+        ))}
+        {[
+          [31, 44],
+          [37, 36],
+          [31, 28],
+        ].map(([x, y]) => (
+          <g key={y} fill="var(--jam-500)" stroke={INK} strokeWidth="0.8">
+            <circle cx={x} cy={y} r="2.4" />
+            <circle cx={x! + 3} cy={y! + 1.5} r="2.4" />
+          </g>
         ))}
         {pot}
       </Svg>
@@ -533,6 +592,8 @@ export function DecorationArt({ look, className }: { look: DecorationLook; class
       return <CookiePlateArt className={className} />
     case 'trophy-spoon':
       return <TrophySpoonArt className={className} />
+    case 'orange-garland':
+      return <OrangeGarlandArt className={className} />
     case 'cat-figurine':
       return <CatFigurineArt className={className} />
   }

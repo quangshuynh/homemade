@@ -51,9 +51,9 @@ function equip(save: GameSave, slug: string): GameSave {
 }
 
 describe('the decoration catalog', () => {
-  it('is small and curated: 18–26 pieces (seven of them keepsake rewards), with unique ids and names', () => {
+  it('is small and curated: 18–28 pieces (seven of them keepsake rewards), with unique ids and names', () => {
     expect(DECORATIONS.length).toBeGreaterThanOrEqual(18)
-    expect(DECORATIONS.length).toBeLessThanOrEqual(26)
+    expect(DECORATIONS.length).toBeLessThanOrEqual(28)
     expect(DECORATIONS.filter((entry) => entry.unlock.type === 'achievement')).toHaveLength(7)
     expect(new Set(DECORATIONS.map((entry) => entry.id)).size).toBe(DECORATIONS.length)
     expect(new Set(DECORATIONS.map((entry) => entry.name)).size).toBe(DECORATIONS.length)
@@ -202,6 +202,19 @@ describe('earned decorations', () => {
     if (!replay.ok) throw new Error(replay.reason)
     expect(replay.save).toBe(open)
     expect(grantEarnedDecorations(replay.save).granted).toEqual([])
+  })
+
+  it('come with finishing Warm & Spiced and Chocolate, including the cards Interval 11 added', () => {
+    const family = (id: string) => VISIBLE_RECIPES.filter((recipe) => recipe.family === id).map((recipe) => recipe.id)
+    // An Interval 10 kitchen that had every Warm & Spiced card then: the Gingersnap is new, so not yet.
+    const almost = openKitchen({ discoveredRecipes: found(...family('warm-spiced').filter((id) => id !== 'recipe_gingersnap')) })
+    expect(almost.decorating.ownedDecorationIds).not.toContain(decoration('orange-garland'))
+    const done = openKitchen({ discoveredRecipes: found(...family('warm-spiced'), ...family('chocolate')) })
+    expect(done.decorating.ownedDecorationIds).toEqual(expect.arrayContaining([decoration('orange-garland'), decoration('coffee-plant')]))
+    // Cosmetic only, never for sale, and nothing about it touches Crumbs or XP.
+    expect(findDecoration(decoration('orange-garland'))).toMatchObject({ slot: 'window', unlock: { type: 'family-complete', familyId: 'warm-spiced' } })
+    expect(findDecoration(decoration('coffee-plant'))).toMatchObject({ slot: 'plant', unlock: { type: 'family-complete', familyId: 'chocolate' } })
+    expect(done.progression).toEqual(openKitchen().progression)
   })
 
   it('are kept for good, even when the milestone wouldn’t count any more', () => {

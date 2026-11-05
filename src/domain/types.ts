@@ -26,7 +26,7 @@ export type GameSettings = {
 export type IngredientCategory = 'basic' | 'flavouring'
 
 /** How an ingredient looks in its jar. Presentation reads these; rules never do. */
-export type IngredientForm = 'powder' | 'granules' | 'block' | 'eggs' | 'liquid' | 'chips' | 'flakes' | 'spread' | 'fruit' | 'nuts'
+export type IngredientForm = 'powder' | 'granules' | 'block' | 'eggs' | 'liquid' | 'chips' | 'flakes' | 'spread' | 'fruit' | 'nuts' | 'pillows'
 export type IngredientSwatch =
   | 'wheat'
   | 'white'
@@ -46,6 +46,11 @@ export type IngredientSwatch =
   | 'white-chocolate'
   | 'maple'
   | 'pistachio'
+  | 'orange'
+  | 'ginger'
+  | 'espresso'
+  | 'pecan'
+  | 'marshmallow'
 
 /** Hand-authored, static catalog data. Saves refer to ingredients only by id. */
 export type Ingredient = {
@@ -75,6 +80,9 @@ export type CookieTopping =
   | 'salt-flakes'
   | 'swirl'
   | 'drizzle'
+  | 'pecan'
+  | 'marshmallow'
+  | 'orange-zest'
 export type CookieShape = 'round' | 'square' | 'wobbly'
 
 /** Enough to draw a cookie; used by recipes and by experiments. */
