@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { bake, recordBake } from '../domain/baking'
 import type { CreationId } from '../domain/ids'
-import { CINNAMON, EGG, BUTTER, FLOUR, SUGAR } from '../domain/ingredients'
+import { BUTTER, CHOCOLATE_CHIPS, CINNAMON, COCONUT, EGG, FLOUR, MARSHMALLOW, PECAN, SUGAR, VANILLA } from '../domain/ingredients'
 import { CURRENT_SAVE_VERSION } from '../domain/save'
 import { FIXED_NOW, makeSave, makeV1Save, makeV2Save } from '../test/fixtures'
 import { exportSave, MAX_IMPORT_BYTES, readSaveFile, SAVE_FILE_FORMAT, saveFileName } from './portable'
@@ -199,5 +199,23 @@ describe('Arc 2 state (Interval 10)', () => {
     const result = readSaveFile(fileWith(later))
     if (!result.ok) throw new Error(result.problem)
     expect(result.save.story.seenSceneIds).toEqual(['scene_faded-box', 'scene_from-the-future'])
+  })
+})
+
+describe('Interval 11 content in a save file', () => {
+  it('carries the new jars, cards, mastery, favourites and memories there and back, with no version change', () => {
+    let save = makeSave({ favoriteRecipeIds: [] })
+    const sandie = [FLOUR, SUGAR, BUTTER, VANILLA, PECAN]
+    for (let n = 0; n < 3; n++) save = recordBake(save, bake(sandie), new Date(`2026-11-0${n + 1}T10:00:00.000Z`), `creation_${n}` as CreationId).save
+    save = recordBake(save, bake([CHOCOLATE_CHIPS, MARSHMALLOW, COCONUT, PECAN]), new Date('2026-11-04T10:00:00.000Z'), 'creation_rr' as CreationId).save
+    save = { ...save, favoriteRecipeIds: ['recipe_pecan-sandie' as never] }
+
+    const result = readSaveFile(exportSave(save, FIXED_NOW).text)
+    if (!result.ok) throw new Error(result.message)
+    expect(result.migratedFrom).toBeNull()
+    expect(result.save).toEqual(save)
+    expect(result.save.version).toBe(CURRENT_SAVE_VERSION)
+    expect(result.save.recipeBakeCounts).toMatchObject({ 'recipe_pecan-sandie': 3, 'recipe_rocky-road': 1 })
+    expect(result.summary).toMatchObject({ recipeCount: 2, memoryCount: 4 })
   })
 })

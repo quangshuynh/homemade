@@ -69,7 +69,7 @@ The loop is *experiment → discover → see its rarity → earn Crumbs and XP �
 - **Rarity is fixed.** Every recipe has one authored rarity (common, uncommon, rare, epic, legendary, mythic). It's part of the recipe, the same every bake, and never rolled. High rarities are genuinely scarce.
 - **First discoveries earn; nothing else does.** A recipe's first bake pays Crumbs and Baker XP by its rarity, exactly once. Rebakes and Kitchen Experiments earn nothing, so there is nothing to farm. Reward values live in domain code (`RARITY_REWARDS`); screens only show them.
 - **One currency: Crumbs.** Earned, kept and spent only by the player. Never bought, never expiring, never regenerating, never needed to bake. There is no energy, no timer, no waiting.
-- **Levels open up access, not power.** Baker Levels 1–11 (1–10 until Interval 6) come from total XP (derived, never stored). A level makes ingredients available to add; it never makes baking faster, luckier, better or rarer. No stats.
+- **Levels open up access, not power.** Baker Levels 1–11 (1–10 until Interval 6; Interval 11 added none) come from total XP (derived, never stored). A level makes ingredients available to add; it never makes baking faster, luckier, better or rarer. No stats.
 - **Adding an ingredient is clear and permanent.** Each locked ingredient shows its level and Crumb cost up front, and why it can't be added yet. The player confirms; the Crumbs, the ingredient and its small XP thank-you change in one save write.
 - **Nothing can get stuck.** Costs are balanced so that whatever order ingredients are added in, the next one is always reachable from discoveries the pantry allows. A test checks every reachable pantry.
 - **Undiscovered recipes still give nothing away.** Locked ingredients never say which recipes they're for, and a blank Recipe Book card never shows rarity or ingredients.
@@ -166,6 +166,16 @@ The second arc, *the tin behind the cupboard*, is five chapters (7–11) in the 
 - **Keepsakes per arc.** *The Last Page* is now "the first arc read", which is what it meant when it was earned; *Kept in the Tin* is the second. A new arc never moves a keepsake an older kitchen already has.
 - **No save change.** Arc 2 is derived from fields that already exist (`story.seenSceneIds`, discoveries, `recipeBakeCounts`, `decorating.equippedBySlot`, `achievementIds`), so the save stays at version 7 and needs no migration.
 - **No "new keepsake" seen-state, deliberately.** Every keepsake earned by something the player does is already announced under it at that moment. The only silent arrivals are on load or import (an upgrade's backlog), which is rare and better served by the Keepsakes page itself. Revisit if a later interval adds silent grants.
+
+## Content expansion (Interval 11)
+
+Five ingredients (orange, ginger, espresso, pecans, marshmallows: 24 in all) and thirteen visible recipes (50 in all, 47 visible, still three secrets). No new system, level, secret, Mythic or story.
+
+- **A new jar pays for itself from the starter shelf.** Every Interval 11 addition has at least one card made from the five starter ingredients and that jar alone, worth at least its price (Orange Biscotti, Gingersnap, Coffee Kiss, Pecan Sandie, Marshmallow Puff). Adding one can therefore never leave a kitchen worse off than not adding it, which is what keeps every purchase order recoverable. The first draft priced the jars like the old ones and the anti-deadlock walk found 386 stuck orders; it's a test now, for these five. Later additions should follow it or prove themselves another way.
+- **No new levels.** The jars sit at existing levels (orange 4, ginger 5, espresso 6, pecans 7, marshmallows 10) and cost 15–25 Crumbs. Level 11 stays the top and sea salt stays the last addition; no threshold or older price moved. A kitchen already past a jar's level still has to buy it.
+- **Existing kitchens keep everything, and get a way in.** The new jars start locked. One new card (*Salted Peanut Butter Cookie*, Rare) uses only the old nineteen, so a finished Interval 10 kitchen with no Crumbs left can earn its first 40. The anti-deadlock walk now starts from that kitchen too.
+- **Bigger dividers re-open, and nothing earned is taken back.** New cards sit behind existing dividers (each now six or seven cards), so a family that was finished shows as not quite finished again. Keepsakes and decorations already earned stay. Two new cosmetic pieces use the existing family rule: a *dried orange garland* for the window (every Warm & Spiced card) and a *potted coffee plant* (every Chocolate card).
+- **No save change.** Ownership, discoveries, mastery and favourites already store ids; the catalogs carry the rest. Saves stay at version 7.
 
 ## Voice
 
