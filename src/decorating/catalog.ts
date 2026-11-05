@@ -261,3 +261,11 @@ export function themeName(id: DecorationThemeId): string {
 export function themeDecorations(id: DecorationThemeId): DecorationDefinition[] {
   return DECORATIONS.filter((decoration) => decoration.theme === id)
 }
+
+/**
+ * A decoration's name as it reads mid-sentence: "Put out the cookie tin."
+ * Marmalade keeps her capital: she's a name, not a thing.
+ */
+export function nameInSentence(piece: Pick<DecorationDefinition, 'name'>): string {
+  return /^Marmalade\b/.test(piece.name) ? piece.name : piece.name.toLowerCase()
+}

@@ -358,3 +358,11 @@ describe('Marmalade’s decorating remarks', () => {
     expect(scrap.moment).toEqual({ id: 'scrap-frame' })
   })
 })
+
+describe('decoration names in a sentence', async () => {
+  const { nameInSentence } = await import('./catalog')
+  it('lowercases things but keeps Marmalade’s capital', () => {
+    expect(nameInSentence({ name: 'Cookie tin' })).toBe('cookie tin')
+    expect(nameInSentence({ name: 'Marmalade figurine' })).toBe('Marmalade figurine')
+  })
+})

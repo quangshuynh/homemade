@@ -1,12 +1,10 @@
-import { findDecoration } from '../decorating/catalog'
+import { findDecoration, nameInSentence } from '../decorating/catalog'
 import type { AchievementDefinition } from './types'
 
 /**
  * How keepsakes and mastery are put into words, shared by every screen
  * that mentions them, so the status line and the page always agree.
  */
-
-const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1)
 
 /** "Baked once", "Baked twice", "Baked 4 times". */
 export function bakedTimes(count: number): string {
@@ -29,7 +27,7 @@ export function describeReward(keepsake: AchievementDefinition, cupboardOpen: bo
   if (!keepsake.reward) return null
   const piece = findDecoration(keepsake.reward.decorationId)
   if (!piece) return null
-  const name = lowerFirst(piece.name)
+  const name = nameInSentence(piece)
   if (!earned) return `Comes with the ${name}.`
   return cupboardOpen ? `Came with the ${name}, now in the old cupboard.` : `Came with the ${name}, kept for when the old cupboard opens.`
 }

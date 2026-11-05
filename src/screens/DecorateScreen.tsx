@@ -9,7 +9,7 @@ import { MixingBowl, PantryJar, RecipeBox } from '../components/illustrations'
 import { MascotSays } from '../components/Mascot'
 import { HandNote } from '../components/Paper'
 import { ScreenTitle } from '../components/ScreenTitle'
-import { DECORATION_THEMES, DECORATIONS, findDecoration, themeDecorations } from '../decorating/catalog'
+import { DECORATION_THEMES, DECORATIONS, findDecoration, nameInSentence, themeDecorations } from '../decorating/catalog'
 import { DecorationArt } from '../decorating/DecorArt'
 import { KitchenCupboard, KitchenWall, type ScenePieces } from '../decorating/KitchenScene'
 import { decorRemark } from '../decorating/moments'
@@ -28,7 +28,6 @@ import type { AchievementDefinition } from '../keepsakes/types'
 import { keepsakeReaction } from '../mascot/reactions'
 import './DecorateScreen.css'
 
-const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1)
 
 const CUPBOARD_SCENE_CHAPTER = 'chapter_old-cupboard'
 
@@ -59,7 +58,7 @@ function howToGet(status: Exclude<DecorationStatus, { kind: 'owned' }>): string 
     case 'achievement': {
       // Only ever a visible keepsake: a hidden one never comes with a decoration.
       const keepsake = findAchievement(rule.achievementId)
-      return keepsake ? `With the “${keepsake.name}” keepsake: ${lowerFirst(keepsake.description)}` : 'With a keepsake.'
+      return keepsake ? `Comes with the “${keepsake.name}” keepsake.` : 'Comes with a keepsake.'
     }
   }
 }
@@ -166,7 +165,7 @@ export function DecorateScreen() {
       return
     }
     setTrying(piece.id)
-    setStatus(`Trying the ${piece.name.toLowerCase()} on ${spot}. It isn’t out yet.`)
+    setStatus(`Trying the ${nameInSentence(piece)} on ${spot}. It isn’t out yet.`)
   }
 
   function putOut() {
@@ -178,8 +177,8 @@ export function DecorateScreen() {
     setTrying(null)
     setRemark(result.moment)
     setKeepsakes(result.keepsakes)
-    const replaced = result.replaced ? ` The ${result.replaced.name.toLowerCase()} went back in the cupboard.` : ''
-    const arrived = result.decor.length > 0 ? ` New in your cupboard: ${result.decor.map((piece) => piece.name.toLowerCase()).join(', ')}.` : ''
+    const replaced = result.replaced ? ` The ${nameInSentence(result.replaced)} went back in the cupboard.` : ''
+    const arrived = result.decor.length > 0 ? ` New in your cupboard: ${result.decor.map(nameInSentence).join(', ')}.` : ''
     setStatus(`Put out: ${result.decoration.name}, on ${spot}.${replaced} ${describeKeepsakes(result.keepsakes.earned)}${arrived}`.trim())
   }
 
@@ -200,7 +199,7 @@ export function DecorateScreen() {
     const { decoration } = result
     focusAfterBuy.current = decoration.id
     if (decoration.slot === selected) setTrying(decoration.id)
-    setStatus(`Bought the ${decoration.name.toLowerCase()}. It’s in your cupboard for good. Trying it on ${SPOT_PHRASE[decoration.slot]}.`)
+    setStatus(`Bought the ${nameInSentence(decoration)}. It’s in your cupboard for good. Trying it on ${SPOT_PHRASE[decoration.slot]}.`)
   }
 
   const nothingToPut = !triedPiece
@@ -286,7 +285,7 @@ export function DecorateScreen() {
             aria-describedby={nothingToPut ? ids.putReason : undefined}
             onClick={putOut}
           >
-            {triedPiece ? `Put out the ${triedPiece.name.toLowerCase()}` : 'Put it out'}
+            {triedPiece ? `Put out the ${nameInSentence(triedPiece)}` : 'Put it out'}
           </Button>
           <Button
             aria-disabled={nothingToClear ? true : undefined}
@@ -372,7 +371,7 @@ export function DecorateScreen() {
 
       <ConfirmDialog
         open={pending !== undefined}
-        title={pending ? `Buy the ${pending.name.toLowerCase()}?` : ''}
+        title={pending ? `Buy the ${nameInSentence(pending)}?` : ''}
         confirmLabel="Buy it"
         cancelLabel="Not now"
         confirmVariant="primary"
@@ -414,7 +413,7 @@ function NotYetPiece({ piece, status, onBuy }: { piece: DecorationDefinition; st
               className="later-piece__buy"
               aria-disabled={short ? true : undefined}
               aria-describedby={short ? reasonId : undefined}
-              aria-label={`Buy the ${piece.name.toLowerCase()} for ${status.price} Crumbs`}
+              aria-label={`Buy the ${nameInSentence(piece)} for ${status.price} Crumbs`}
               onClick={() => {
                 if (!short) onBuy()
               }}

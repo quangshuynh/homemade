@@ -202,7 +202,7 @@
 
 /* Not yet: a faint pencil outline on the back of the box, not a greyed-out trophy. */
 .keepsake--not-yet {
-  background: transparent;
+  background: rgb(255 253 246 / 0.6);
   box-shadow: none;
   border: 1.5px dashed var(--pencil);
 }

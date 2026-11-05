@@ -1,11 +1,12 @@
 import { hrefFor } from '../app/routes'
 import { BrassKey } from './DecorArt'
+import { nameInSentence } from './catalog'
 import type { DecorationDefinition } from './types'
 import './DecorNews.css'
 
 /** "the old rolling pin", "the gold seal, framed and the little lemon tree" */
 function listNames(pieces: readonly DecorationDefinition[]): string {
-  const names = pieces.map((piece) => piece.name.charAt(0).toLowerCase() + piece.name.slice(1))
+  const names = pieces.map(nameInSentence)
   if (names.length <= 1) return names.join('')
   return `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`
 }

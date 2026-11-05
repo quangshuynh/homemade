@@ -135,13 +135,31 @@ The kitchen becomes visibly the player's. The thread left open at the end of Cha
 - **Progression stays deadlock-free, at the same cap.** The extra early XP let a kitchen buy honey (100 Crumbs) before it could afford anything after, which the anti-deadlock walk caught. A second honey recipe from the starter shelf (Honey Madeleine) fixed it without touching any price or level. No new ingredient needed a new level gate, so Level 11 stays the top.
 - **No new secret.** None of the ideas improved on the three secrets' story clues, so none was added.
 
+## Keepsakes, mastery and favourites (Interval 9)
+
+Reasons to come back that feel like "I want to try that", never "I have to".
+
+- **Keepsakes are one-time and permanent.** Fifteen curated milestones, each a rule over the save (`keepsakes/catalog.ts`): an experiment, 10 cards, half the box, every card, a first Legendary, a first secret, a first Mythic, one family, four families, a first Familiar recipe, Familiar recipes in three families, a first House Favourite, something put out, every spot filled, every story note read. The save keeps only the ids earned (`achievementIds`). Earned once, never taken away (even if a decoration is later put back), never repeated.
+- **Evaluated in one place.** `settleSave` runs keepsakes then the cupboard after every bake, scene and decoration put out, and on every load and import. It's pure, deterministic and idempotent, so several keepsakes at once arrive in catalog order and nothing is paid twice. The UI only reports what it returns.
+- **Retroactive.** An older kitchen gets every keepsake it already qualifies for on first load, without repeating anything. Mastery-based ones use the conservative counts below, so a returning player may earn them a little later than they "really" did, never earlier.
+- **Rewards are cosmetic.** Six keepsakes come with a decoration through the existing decorating system (unlock rule `achievement`); the rest are just the stamped card. No keepsake pays Crumbs or XP or opens an ingredient, and none is needed for anything. A keepsake decoration earned before the cupboard opens waits inside it.
+- **Hidden keepsakes can't spoil secrets.** The first-secret and first-Mythic keepsakes aren't shown, named or counted until earned (the same rule as secret recipes), and neither comes with a decoration, so the cupboard can't hint at them either.
+- **Mastery thresholds are intentionally small:** Discovered (1 bake), Familiar (3), Well-Loved (5), House Favourite (10), and nothing past ten. Every bake of a recipe counts (first or again); experiments, opening a card and laying a bowl out with *Bake again* don't. Rebakes still earn no Crumbs or XP. Stages are a word, a stamp and a flourish on the card, and a sugar dusting on a House Favourite's cookie: no effect on matching, rarity or rewards.
+- **Lifetime counts, honestly initialised.** `recipeBakeCounts` is kept apart from the 50-bake history so trimming never loses mastery. Save version 7 starts each recipe at what the save can prove: the times it appears in the remembered bakes, or 1 for a card in the book with none left. It never claims more bakes than that; bakes trimmed before Interval 9 are unknowable.
+- **Favourites have no gameplay effect.** Any found recipe can be marked (`favoriteRecipeIds`). They get a Favourites divider in the Recipe Book and a short *Bake again* list in the kitchen, and nothing else reads them.
+- **No grind, streak or daily system.** No login rewards, daily or weekly goals, streaks, timers, energy, notifications or expiring anything. "Something to try" on the Keepsakes page is one gentle, untimed suggestion worked out from the save each time (a favourite's next stage, the nearest family, any new card); it never resets.
+- **Marmalade, sparingly.** A line for the kitchen's first keepsake, three or more at once, a first House Favourite and every spot filled. Routine mastery steps get nothing.
+- **Saved and portable.** Save version 7 adds `achievementIds`, `recipeBakeCounts` and `favoriteRecipeIds`; save files carry them exactly. Malformed values (a non-keepsake id, a duplicate, a count that isn't a positive whole number) are refused as damaged. A keepsake id the catalog doesn't know is kept but not shown, like a retired recipe.
+- **No new recipes.** Mastery and keepsakes work with the existing 34; nothing needed adding.
+
 ## Voice
 
 Warm, plain, a little playful, never cutesy. Short sentences, written like a note left on the counter. Controls say what they do ("Open the kitchen", "Keep my kitchen"). Errors say what happened and what's safe.
 
 ## Open decisions
 
-- Whether finishing a family should ever earn something (deliberately not, for now).
+- Whether finishing a family should ever earn more than a keepsake card (deliberately not, for now).
+- Whether any time-based goal could ever fit (no dailies or streaks for now).
 - Who E., R. and M. are (deliberately unanswered; the key now opens the cupboard, and that's all it explains).
 - Whether memories should ever be kept beyond the cap.
 - Whether to offer background music (deliberately not yet).
