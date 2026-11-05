@@ -13,13 +13,14 @@ import { DECORATION_THEMES, DECORATIONS, findDecoration, nameInSentence, themeDe
 import { DecorationArt } from '../decorating/DecorArt'
 import { KitchenCupboard, KitchenWall, type ScenePieces } from '../decorating/KitchenScene'
 import { decorRemark } from '../decorating/moments'
-import { decoratingOpen, decorationStatus, equippedIn, ownedForSlot, type DecorMoment, type DecorationStatus } from '../decorating/rules'
+import { decoratingOpen, decorationStatus, equippedIn, hiddenUntilOwned, ownedForSlot, type DecorMoment, type DecorationStatus } from '../decorating/rules'
 import { DECORATION_SLOTS, SLOT_INFO, type DecorationSlot } from '../decorating/slots'
 import type { DecorationDefinition } from '../decorating/types'
 import type { DecorationId } from '../domain/ids'
 import { familyName } from '../domain/recipeBook'
 import { RARITY_LABELS } from '../domain/progression'
-import { availableScene } from '../story/progress'
+import { availableScene, type StoryNews } from '../story/progress'
+import { StoryNudge } from '../story/StoryNudge'
 import { StoryScenePlayer, type SceneEnding } from '../story/StoryScenePlayer'
 import { findAchievement } from '../keepsakes/catalog'
 import { KeepsakeNews } from '../keepsakes/KeepsakeNews'
@@ -56,7 +57,7 @@ function howToGet(status: Exclude<DecorationStatus, { kind: 'owned' }>): string 
     case 'first-secret':
       return 'For your first secret recipe.'
     case 'achievement': {
-      // Only ever a visible keepsake: a hidden one never comes with a decoration.
+      // Only ever a visible keepsake: a hidden one's decoration isn't listed until it's owned (hiddenUntilOwned).
       const keepsake = findAchievement(rule.achievementId)
       return keepsake ? `Comes with the “${keepsake.name}” keepsake.` : 'Comes with a keepsake.'
     }
@@ -82,6 +83,8 @@ export function DecorateScreen() {
   // Keepsakes the last change earned (Make It Yours, Lived In, The Last Page). Shown once, under it.
   const [keepsakes, setKeepsakes] = useState<{ earned: AchievementDefinition[]; first: boolean }>({ earned: [], first: false })
   const [sceneKeepsakes, setSceneKeepsakes] = useState<AchievementDefinition[]>([])
+  // A story scene the last thing put out opened (Chapter 7), said once under it like a keepsake.
+  const [storyNews, setStoryNews] = useState<StoryNews | null>(null)
   const [status, setStatus] = useState('')
   const [confirming, setConfirming] = useState<DecorationId | null>(null)
   const focusAfterBuy = useRef<DecorationId | null>(null)
@@ -140,7 +143,8 @@ export function DecorateScreen() {
   const equipped = equippedIn(save, selected)
   const triedPiece = trying ? findDecoration(trying) : undefined
   const owned = ownedForSlot(save, selected)
-  const notYet = DECORATIONS.filter((piece) => piece.slot === selected && decorationStatus(save, piece).kind !== 'owned')
+  // Anything not owned yet, except what a hidden keepsake brings (it would name the story before it's read).
+  const notYet = DECORATIONS.filter((piece) => piece.slot === selected && decorationStatus(save, piece).kind !== 'owned' && !hiddenUntilOwned(save, piece))
   const pieces: ScenePieces = Object.fromEntries(
     DECORATION_SLOTS.flatMap((slot) => {
       const shown = slot === selected && triedPiece ? triedPiece : equippedIn(save, slot)
@@ -177,6 +181,7 @@ export function DecorateScreen() {
     setTrying(null)
     setRemark(result.moment)
     setKeepsakes(result.keepsakes)
+    setStoryNews(result.story)
     const replaced = result.replaced ? ` The ${nameInSentence(result.replaced)} went back in the cupboard.` : ''
     const arrived = result.decor.length > 0 ? ` New in your cupboard: ${result.decor.map(nameInSentence).join(', ')}.` : ''
     setStatus(`Put out: ${result.decoration.name}, on ${spot}.${replaced} ${describeKeepsakes(result.keepsakes.earned)}${arrived}`.trim())
@@ -317,6 +322,7 @@ export function DecorateScreen() {
           })()}
         </div>
         <KeepsakeNews keepsakes={keepsakes.earned} className="chooser__keepsakes" />
+        {storyNews && <StoryNudge news={storyNews} className="chooser__story" />}
 
         {notYet.length > 0 && (
           <div className="chooser__later">
@@ -336,7 +342,7 @@ export function DecorateScreen() {
         </h2>
         <p className="decor-sets__intro">Some pieces go together. Put out as many or as few as you like.</p>
         <div className="decor-sets__groups">
-          {[...DECORATION_THEMES.map((theme) => ({ name: theme.name, pieces: themeDecorations(theme.id) })), { name: 'Keepsakes', pieces: DECORATIONS.filter((piece) => !piece.theme) }].map(
+          {[...DECORATION_THEMES.map((theme) => ({ name: theme.name, pieces: themeDecorations(theme.id) })), { name: 'Keepsakes', pieces: DECORATIONS.filter((piece) => !piece.theme && !hiddenUntilOwned(save, piece)) }].map(
             (group) => {
               const outCount = group.pieces.filter((piece) => save.decorating.equippedBySlot[piece.slot] === piece.id).length
               return (

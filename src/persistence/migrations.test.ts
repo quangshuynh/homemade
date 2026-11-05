@@ -258,7 +258,7 @@ describe('Interval 6 content on older saves', () => {
         'version',
       ],
     )
-    expect(bookCounts(save)).toEqual({ found: 3, total: 31, secretsFound: 0 })
+    expect(bookCounts(save)).toEqual({ found: 3, total: 34, secretsFound: 0 })
   })
 
   it('reads a current save exactly as it was written', () => {

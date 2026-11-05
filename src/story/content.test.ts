@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { INGREDIENTS } from '../domain/ingredients'
+import { DECORATIONS } from '../decorating/catalog'
+import { INGREDIENTS, STARTER_PANTRY } from '../domain/ingredients'
+import { INGREDIENT_UNLOCKS } from '../domain/progression'
+import { MASTERY_STAGES } from '../domain/mastery'
+import { ACHIEVEMENTS } from '../keepsakes/catalog'
 import { findRecipeById, RECIPES } from '../domain/recipes'
 import { RECIPE_FAMILIES } from '../domain/recipeBook'
-import { STORY_CHAPTERS, STORY_SCENES } from './chapters'
+import { findChapter, STORY_CHAPTERS, STORY_RECIPES, STORY_SCENES } from './chapters'
 import { STORY_NOTES } from './notes'
 import type { StoryRequirement } from './types'
 
@@ -23,8 +27,9 @@ describe('story content', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
-  it('numbers chapters 1 to 6 in order, each with at least one scene', () => {
-    expect(STORY_CHAPTERS.map((chapter) => chapter.number)).toEqual([1, 2, 3, 4, 5, 6])
+  it('numbers chapters 1 to 11 in order, in two arcs, each chapter with at least one scene', () => {
+    expect(STORY_CHAPTERS.map((chapter) => chapter.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+    expect(STORY_CHAPTERS.map((chapter) => chapter.arc)).toEqual([1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2])
     for (const chapter of STORY_CHAPTERS) expect(chapter.scenes.length, chapter.title).toBeGreaterThan(0)
   })
 
@@ -106,6 +111,73 @@ describe('story content', () => {
         expect(chapter.reward.crumbs).toBeLessThanOrEqual(25)
       }
     }
+  })
+
+  it('asks for a mastery stage at most once, never past Familiar, and only of a card that isn’t secret', () => {
+    const asks = STORY_SCENES.flatMap((placed) => flatten(placed.scene.requirement).filter((requirement) => requirement.type === 'mastery-stage'))
+    expect(asks.length).toBeLessThanOrEqual(1)
+    const familiar = MASTERY_STAGES.findIndex((stage) => stage.id === 'familiar')
+    for (const ask of asks) {
+      expect(MASTERY_STAGES.findIndex((stage) => stage.id === ask.stage)).toBeLessThanOrEqual(familiar)
+      expect(findRecipeById(ask.recipeId)?.isSecret).toBe(false)
+    }
+  })
+
+  it('only asks for something out in the kitchen once the cupboard (and its free starter set) is open', () => {
+    const cupboard = STORY_SCENES.findIndex((placed) => placed.chapter.id === 'chapter_last-card')
+    STORY_SCENES.forEach((placed, index) => {
+      if (flatten(placed.scene.requirement).some((requirement) => requirement.type === 'decoration-out')) expect(index, placed.scene.id).toBeGreaterThan(cupboard)
+    })
+  })
+
+  it('only waits on recipes a kitchen can actually bake: every ingredient is on the shelf or can be added to it', () => {
+    const obtainable = new Set([...STARTER_PANTRY, ...INGREDIENT_UNLOCKS.map((unlock) => unlock.ingredientId)])
+    for (const placed of STORY_SCENES) {
+      for (const requirement of flatten(placed.scene.requirement)) {
+        const recipeId = requirement.type === 'recipe-discovered' || requirement.type === 'mastery-stage' ? requirement.recipeId : null
+        if (!recipeId) continue
+        for (const ingredientId of findRecipeById(recipeId)!.ingredientIds) expect(obtainable.has(ingredientId), `${placed.scene.id}: ${ingredientId}`).toBe(true)
+      }
+    }
+  })
+
+  it('keeps the story’s own cards ordinary: in the catalog, not secret, in a real family, and none rarer than Rare', () => {
+    const families = RECIPE_FAMILIES.map((family) => family.id)
+    for (const id of Object.values(STORY_RECIPES)) {
+      const recipe = findRecipeById(id)
+      expect(recipe, id).toBeDefined()
+      expect(recipe!.isSecret).toBe(false)
+      expect(families).toContain(recipe!.family)
+      expect(['uncommon', 'rare']).toContain(recipe!.rarity)
+      expect(recipe!.clue, id).not.toBeNull()
+    }
+    // Each one is a requirement of exactly one scene's opening, so none is there to pad the box.
+    for (const id of Object.values(STORY_RECIPES)) {
+      const openers = STORY_SCENES.filter((placed) => flatten(placed.scene.requirement).some((requirement) => requirement.type === 'recipe-discovered' && requirement.recipeId === id))
+      expect(openers, id).toHaveLength(1)
+    }
+  })
+
+  it('points every keepsake and decoration that waits on a chapter at a chapter that exists', () => {
+    for (const achievement of ACHIEVEMENTS) {
+      if (achievement.requirement.type === 'chapter-complete') expect(findChapter(achievement.requirement.chapterId), achievement.id).toBeDefined()
+    }
+    for (const decoration of DECORATIONS) {
+      if (decoration.unlock.type === 'chapter-complete') expect(findChapter(decoration.unlock.chapterId), decoration.id).toBeDefined()
+    }
+  })
+
+  it('never tells a screen reader “someone else’s handwriting” on top of a caption that already names the hand', () => {
+    for (const note of STORY_NOTES) {
+      if (/(’s pencil|crayon|grown-up hand)/.test(note.title) && !/^A paper lunch bag/.test(note.title)) expect(note.intro, note.id).toBe('hand-in-title')
+    }
+    // Pictures and objects are described, not quoted.
+    for (const id of ['note_key', 'note_tin-card', 'note_photograph', 'note_returned-envelope']) expect(STORY_NOTES.find((note) => note.id === id)?.intro).toBe('described')
+  })
+
+  it('uses the photograph note style only for the photograph, and keeps every note a known kind', () => {
+    for (const note of STORY_NOTES) expect(['margin', 'card', 'scrap', 'label', 'photo']).toContain(note.kind)
+    expect(STORY_NOTES.filter((note) => note.kind === 'photo').map((note) => note.id)).toEqual(['note_photograph'])
   })
 
   it('gives every scene a short nudge to leave where the player already is', () => {

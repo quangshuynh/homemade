@@ -1,4 +1,4 @@
-import type { AchievementId, DecorationId } from '../domain/ids'
+import type { AchievementId, DecorationId, StoryChapterId } from '../domain/ids'
 import type { CookieRarity } from '../domain/types'
 import type { MasteryStage } from '../domain/mastery'
 
@@ -28,8 +28,12 @@ export type AchievementRequirement =
   | { type: 'first-secret' }
   /** At least this many families with every non-secret card found. */
   | { type: 'families-complete'; count: number }
-  /** Every scene of the recipe box's story seen. */
-  | { type: 'story-complete' }
+  /**
+   * Every scene of one chapter seen (Interval 10; until then, "every scene of
+   * the story"). Each arc's keepsake names its own last chapter, so a new arc
+   * never moves a keepsake an older kitchen already has.
+   */
+  | { type: 'chapter-complete'; chapterId: StoryChapterId }
   /** Something out in at least this many spots (all of them when `every` is set). */
   | { type: 'decor-out'; every: boolean }
   /** At least `recipes` different recipes at this mastery stage or past it, from at least `families` families. */

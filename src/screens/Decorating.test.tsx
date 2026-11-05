@@ -184,7 +184,8 @@ describe('edit mode', () => {
       '#/bake',
       '#/pantry',
     ])
-    expect(screen.getByRole('link', { name: /The old cupboard.*Make it yours/ })).toBeInTheDocument()
+    // Something out shows the cupboard's loose back board: Chapter 7 is waiting, and the cupboard's tag says so in words.
+    expect(screen.getByRole('link', { name: /The old cupboard.*Something at the back/ })).toBeInTheDocument()
   })
 
   it('works with a keyboard alone: Tab to a spot, Enter, Tab to a piece, Space, Tab to put it out', async () => {

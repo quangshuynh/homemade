@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DECORATIONS, findDecoration } from '../decorating/catalog'
-import { equipDecoration, grantEarnedDecorations } from '../decorating/rules'
+import { equipDecoration, grantEarnedDecorations, hiddenUntilOwned } from '../decorating/rules'
 import { DECORATION_SLOTS } from '../decorating/slots'
 import { bake, prepareBowl, recordBake } from '../domain/baking'
 import type { CreationId, RecipeId, StorySceneId } from '../domain/ids'
@@ -19,6 +19,8 @@ const id = (slug: string) => `recipe_${slug}` as RecipeId
 const found = (...slugs: string[]): GameSave['discoveredRecipes'] => slugs.map((slug) => ({ recipeId: id(slug), discoveredAt: DAY }))
 const ids = (list: readonly { id: string }[]) => list.map((entry) => entry.id)
 const ALL_SCENES = { seenSceneIds: STORY_SCENES.map((placed) => placed.scene.id) as StorySceneId[] }
+/** The first arc only: the whole story as it was before Interval 10. */
+const ARC_1 = { seenSceneIds: STORY_SCENES.filter((placed) => placed.chapter.arc === 1).map((placed) => placed.scene.id) as StorySceneId[] }
 
 let creation = 0
 /** Bakes a recipe (or any bowl) through the real rules, as the game does. */
@@ -68,10 +70,18 @@ describe('the keepsake catalog', () => {
     }
   })
 
-  it('hides the ones that would spoil a secret or a Mythic, and those never come with a decoration', () => {
+  it('hides the ones that would spoil a secret, a Mythic or the second arc, and keeps their decorations out of sight too', () => {
     const hidden = ACHIEVEMENTS.filter((entry) => entry.hidden)
-    expect(ids(hidden)).toEqual(['achievement_secret-ingredient', 'achievement_written-in-gold'])
-    for (const achievement of hidden) expect(achievement.reward).toBeUndefined()
+    expect(ids(hidden)).toEqual(['achievement_secret-ingredient', 'achievement_written-in-gold', 'achievement_kept-in-the-tin'])
+    // Only the second arc's comes with something for the cupboard, and that isn't listed (by name or at all) until it's owned.
+    expect(hidden.filter((achievement) => achievement.reward).map((achievement) => achievement.reward!.decorationId)).toEqual(['decoration_fair-day-photograph'])
+    const photograph = findDecoration('decoration_fair-day-photograph' as never)!
+    expect(hiddenUntilOwned(makeSave({ story: ARC_1 }), photograph)).toBe(true)
+    const finished = settleSave(makeSave({ story: ALL_SCENES })).save
+    expect(finished.decorating.ownedDecorationIds).toContain(photograph.id)
+    expect(hiddenUntilOwned(finished, photograph)).toBe(false)
+    // Nothing tied to a visible keepsake is ever hidden.
+    for (const piece of DECORATIONS.filter((entry) => entry.id !== photograph.id)) expect(hiddenUntilOwned(makeSave(), piece), piece.id).toBe(false)
   })
 })
 
@@ -144,9 +154,9 @@ describe('earning keepsakes', () => {
   })
 
   it('stamps the whole story, and the decorating ones, only when they really happen', () => {
-    expect(ids(grantEarnedAchievements(makeSave({ story: ALL_SCENES })).earned)).toContain('achievement_last-page')
-    // The cupboard opens at the end of the story; put the gingham towel out, then fill every spot.
-    let save = grantEarnedDecorations(makeSave({ story: ALL_SCENES })).save
+    expect(ids(grantEarnedAchievements(makeSave({ story: ARC_1 })).earned)).toContain('achievement_last-page')
+    // The cupboard opens at the end of the first arc; put the gingham towel out, then fill every spot.
+    let save = grantEarnedDecorations(makeSave({ story: ARC_1 })).save
     const result = equipDecoration(save, 'textile', 'decoration_gingham-towel' as never)
     if (!result.ok) throw new Error(result.reason)
     save = result.save
@@ -295,11 +305,11 @@ describe('the keepsake box and something to try', () => {
   it('never shows a hidden keepsake, its name or its count until it’s earned', () => {
     const fresh = keepsakeGroups(makeSave()).flatMap((group) => group.entries)
     expect(fresh.some((entry) => entry.achievement.hidden)).toBe(false)
-    expect(keepsakeCounts(makeSave())).toEqual({ earned: 0, total: ACHIEVEMENTS.length - 2 })
+    expect(keepsakeCounts(makeSave())).toEqual({ earned: 0, total: ACHIEVEMENTS.length - 3 })
     const withSecret = settleSave(makeSave({ discoveredRecipes: found('snowball') })).save
     const shown = keepsakeGroups(withSecret).flatMap((group) => group.entries)
     expect(shown.find((entry) => entry.achievement.id === ('achievement_secret-ingredient' as never))?.kind).toBe('earned')
-    expect(keepsakeCounts(withSecret)).toEqual({ earned: 1, total: ACHIEVEMENTS.length - 1 })
+    expect(keepsakeCounts(withSecret)).toEqual({ earned: 1, total: ACHIEVEMENTS.length - 2 })
   })
 
   it('suggests a favourite’s next stage first, then the nearest family, then anything new', () => {

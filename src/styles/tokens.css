@@ -21,6 +21,11 @@
   --paper-margin: #de8a8f; /* the red header line */
   --kraft: #c9a47a;
   --tape: rgb(245 234 196 / 0.82);
+  /* An old photograph (Interval 10): the print behind a story note, and the faded tones drawn in the framed one. */
+  --photo-print: #eadcc2;
+  --photo-sepia: #b99a72;
+  --photo-light: #dcc7a4;
+  --photo-ink: #5e4630;
 
   /* ---- Colour: accents (enamelware, jam, butter) ---- */
   --jam-500: #a8323c;

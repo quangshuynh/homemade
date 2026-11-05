@@ -85,6 +85,33 @@
   color: var(--ink);
 }
 
+/*
+ * An old photograph (Interval 10): a faded sepia print on a white border,
+ * tilted the other way from a scrap, with its bottom-right corner torn off.
+ * The words say what's in the picture, so they're printed, not pencilled.
+ * Still: nothing slides in or flutters, so reduced motion needs nothing extra.
+ */
+.story-note[data-kind='photo'] {
+  padding: var(--space-4) var(--space-4) var(--space-6);
+  background: var(--photo-print);
+  border: 8px solid var(--chef-white);
+  box-shadow: 0 1px 0 rgb(43 29 20 / 0.18), 0 3px 8px rgb(43 29 20 / 0.12);
+  clip-path: polygon(0 0, 100% 0, 100% 84%, 95% 90%, 97% 94%, 90% 100%, 0 100%);
+  transform: rotate(0.9deg);
+}
+
+.story-note[data-kind='photo'] .story-note__text {
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  color: var(--ink);
+}
+
+.story-note[data-kind='photo'] .story-note__where {
+  color: var(--ink);
+}
+
 /* After a secret is baked, Marmalade's blue pen beside the clue. */
 .story-note__found {
   justify-self: start;

@@ -2,6 +2,7 @@ import type { DecorationId } from '../domain/ids'
 import { completedFamilies } from '../domain/recipeBook'
 import { findRecipeById } from '../domain/recipes'
 import type { GameSave } from '../domain/types'
+import { findAchievement } from '../keepsakes/catalog'
 import { findChapter } from '../story/chapters'
 import { isChapterComplete } from '../story/progress'
 import { CUPBOARD_CHAPTER_ID, DECORATION_THEMES, DECORATIONS, findDecoration, themeDecorations } from './catalog'
@@ -86,6 +87,17 @@ export function grantEarnedDecorations(save: GameSave): DecorGrant {
   if (granted.length === 0) return { save, granted }
   const ownedDecorationIds = [...save.decorating.ownedDecorationIds, ...granted.map((decoration) => decoration.id)]
   return { save: { ...save, decorating: { ...save.decorating, ownedDecorationIds } }, granted }
+}
+
+/**
+ * Whether a decoration should be left out of the cupboard's "not yet" list
+ * altogether: one that arrives with a hidden keepsake (Interval 10: the
+ * framed photograph), which would give the story away by name. Once owned,
+ * it's shown like anything else.
+ */
+export function hiddenUntilOwned(save: GameSave, decoration: DecorationDefinition): boolean {
+  if (ownsDecoration(save, decoration.id) || decoration.unlock.type !== 'achievement') return false
+  return findAchievement(decoration.unlock.achievementId)?.hidden === true
 }
 
 export type DecorationStatus =

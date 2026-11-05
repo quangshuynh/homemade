@@ -3,7 +3,8 @@ import type { StoryNote } from './types'
 
 /**
  * Everything written down in the kitchen that isn't a recipe: labels, scraps
- * and pencil in the margins, all in the same unknown hand. Short and plain,
+ * and pencil in the margins, nearly all in one hand: Edie's, as the second
+ * arc shows (a few are R.'s, and say so). Short and plain,
  * like a note left for someone who already knows the kitchen. They hint;
  * they never explain.
  *
@@ -88,6 +89,7 @@ export const STORY_NOTES: readonly StoryNote[] = [
     chapterId: chapter('last-card'),
     kind: 'label',
     title: 'Taped to the back of the last card',
+    intro: 'described',
     text: 'A small brass key on a loop of kitchen string. Its tag says only: Not yet.',
   },
   {
@@ -96,6 +98,85 @@ export const STORY_NOTES: readonly StoryNote[] = [
     kind: 'label',
     title: 'Inside the cupboard door',
     text: 'Put away, not thrown away. For when the kitchen is lived in again.',
+  },
+
+  // ---- Arc 2 (Interval 10): what's in the tin behind the cupboard. Edie's
+  // pencil throughout, except the three in R.'s hand, which say so.
+  {
+    id: defineId('note', 'back-board'),
+    chapterId: chapter('behind-cupboard'),
+    kind: 'label',
+    title: 'Pencilled on the cupboard’s back board',
+    text: 'Loose on purpose. Mind the tin.',
+  },
+  {
+    id: defineId('note', 'tin-card'),
+    chapterId: chapter('behind-cupboard'),
+    kind: 'card',
+    title: 'On top, inside a flat biscuit tin',
+    intro: 'described',
+    text: 'A recipe card, wiped blank like the others. It smells of something toasted, and one corner is sticky where a warm spoon was put down on it.',
+  },
+  {
+    id: defineId('note', 'signed-card'),
+    chapterId: chapter('edies-hand'),
+    kind: 'card',
+    title: 'The card from the tin, written back in',
+    text: 'Thin as you dare, the way my mother made them. Don’t walk away from the oven, not even for the door. — Edie',
+  },
+  {
+    id: defineId('note', 'lunch-bag'),
+    chapterId: chapter('edies-hand'),
+    kind: 'scrap',
+    title: 'A paper lunch bag, folded flat, with R. on it in crayon',
+    text: 'Wednesdays: the speckled ones with a window cut in, and something red showing through. R. says the plain ones are only for swapping.',
+  },
+  {
+    id: defineId('note', 'thank-you'),
+    chapterId: chapter('rs-lunchbox'),
+    kind: 'card',
+    title: 'A folded card, in the same crayon',
+    intro: 'hand-in-title',
+    text: 'Thank you Mum for the lunches. The window ones are the best ones. I did not swap any. Love from R.',
+  },
+  {
+    id: defineId('note', 'school-week'),
+    chapterId: chapter('rs-lunchbox'),
+    kind: 'label',
+    title: 'Inside the lid of the tin, in Edie’s pencil',
+    intro: 'hand-in-title',
+    text: 'R.’s first week at school. Mon., plain. Tue., plain (swapped). Wed., windows. Thu., windows. Fri., windows, two, one for a friend.',
+  },
+  {
+    id: defineId('note', 'photograph'),
+    chapterId: chapter('photograph'),
+    kind: 'photo',
+    title: 'A small square photograph, curled at the edges',
+    intro: 'described',
+    text: 'This kitchen, years ago. A table under the window, a sign for the winter fair, a woman with her sleeves rolled up and a boy on a crate guarding a tray. One corner is torn off.',
+  },
+  {
+    id: defineId('note', 'photo-back'),
+    chapterId: chapter('photograph'),
+    kind: 'margin',
+    title: 'On the back of the photograph',
+    text: 'First fair. R. sold out by noon. M. ate the profits: the dark, sticky squares, still warm, every last one. — E.',
+  },
+  {
+    id: defineId('note', 'returned-envelope'),
+    chapterId: chapter('for-m'),
+    kind: 'card',
+    title: 'Under the paper lining the tin, an envelope',
+    intro: 'described',
+    text: 'Addressed in Edie’s hand to M., at a street that has been crossed out. Stamped across the front: Returned, not known at this address. Never opened.',
+  },
+  {
+    id: defineId('note', 'envelope-flap'),
+    chapterId: chapter('for-m'),
+    kind: 'margin',
+    title: 'Pencilled on the back of the envelope, in a grown-up hand',
+    intro: 'hand-in-title',
+    text: 'Mum, keep it with the box. When M. comes back, it’ll be for the box. — R.',
   },
 ]
 

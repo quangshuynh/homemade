@@ -192,6 +192,20 @@ Object.assign(sounds, {
   favorite: render(0.18, (t) => partial(t, 2093, 0.035, 0.7) + partial(t, 3136, 0.02, 0.3)),
 })
 
+// Interval 10. After the others, so none of their files change.
+Object.assign(sounds, {
+  // The last scene of a story arc, first time only: the card slid into place
+  // (as for any scene), then a tin lid pressed shut and three low, unhurried
+  // bell notes settling downwards (A4, E4, C#4). Quiet, a little longer than
+  // a scene, never a fanfare. Played instead of 'story-note', not on top.
+  'arc-complete': render(1.6, (t) => {
+    const slide = t < 0.18 ? noise() * 0.2 * Math.sin((Math.PI * t) / 0.18) : 0
+    const lid = t - 0.2
+    const press = lid < 0 || lid > 0.06 ? 0 : partial(lid, 310, 0.025, 0.6) + noise() * 0.12 * Math.exp(-lid / 0.01)
+    return slide + press + bells(t - 0.34, [440, 329.6, 277.2], 0.2, 0.9) * 0.8
+  }),
+})
+
 for (const [name, data] of Object.entries(sounds)) {
   writeFileSync(new URL(`${name}.wav`, out), wav(data, name === 'mix' || name === 'tutorial-next' ? 0.45 : 0.6))
 }

@@ -19,6 +19,8 @@ import { greetingFor } from './greeting'
 
 /** The epilogue the cupboard opens on. Until it's read, the cupboard's tag says the key fits. */
 const OLD_CUPBOARD_CHAPTER = 'chapter_old-cupboard'
+/** The chapter that starts behind the cupboard's back board (Interval 10). Until it's read, the tag says so. */
+const BEHIND_CUPBOARD_CHAPTER = 'chapter_behind-cupboard'
 import './HomeKitchenScreen.css'
 
 /** How many recent bakes sit on the rack in the kitchen. */
@@ -41,6 +43,7 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
   const out = Object.values(pieces)
   const cupboardOpen = decoratingOpen(save)
   const cupboardUnread = waiting?.chapter.id === OLD_CUPBOARD_CHAPTER
+  const backBoardLoose = !tutorialOn && waiting?.chapter.id === BEHIND_CUPBOARD_CHAPTER
   const { prepareRecipe } = useGame()
   const favourites = favouriteRecipes(save)
 
@@ -111,7 +114,7 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
         <KitchenCupboard
           pieces={pieces}
           state={cupboardOpen ? 'open' : 'locked'}
-          tagDetail={cupboardUnread ? 'The brass key fits' : 'Make it yours'}
+          tagDetail={cupboardUnread ? 'The brass key fits' : backBoardLoose ? 'Something at the back' : 'Make it yours'}
         />
       </div>
 

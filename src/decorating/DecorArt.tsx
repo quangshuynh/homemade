@@ -201,6 +201,21 @@ function FrameArt({ look, className }: { look: Extract<DecorationLook, { kind: '
           <path d="M27 56 L24 66 L28 64 L30 67 L31 57 M37 56 L40 66 L36 64 L34 67 L33 57" fill="var(--jam-500)" stroke={INK} strokeWidth="0.8" />
         </g>
       )}
+      {look.picture === 'photograph' && (
+        // The fair-day photograph on a card mount: a white-edged print in faded sepia (the window, the
+        // table, two figures), with its bottom-right corner torn away to show the mount behind.
+        <g>
+          <path d="M16 28 H48 V58 L43 63 L40 60 L37 66 H16 Z" fill="var(--chef-white)" stroke={INK} strokeWidth="0.8" />
+          <path d="M19 31 H45 V56 L42 59 L39 57 L36 62 H19 Z" fill="var(--photo-sepia)" />
+          <rect x="24" y="34" width="16" height="10" fill="var(--photo-light)" stroke="var(--photo-ink)" strokeWidth="0.7" />
+          <path d="M32 34 V44 M24 39 H40" stroke="var(--photo-ink)" strokeWidth="0.6" />
+          <path d="M20 52 H40" stroke="var(--photo-ink)" strokeWidth="1.6" strokeLinecap="round" />
+          <circle cx="26" cy="44" r="2.4" fill="var(--photo-ink)" />
+          <path d="M23 52 Q26 45 29 52" fill="var(--photo-ink)" />
+          <circle cx="35" cy="47.5" r="1.8" fill="var(--photo-ink)" />
+          <path d="M33 52 Q35 48 37 52" fill="var(--photo-ink)" />
+        </g>
+      )}
       {look.picture === 'botanical' && (
         <g>
           <path d="M32 64 Q30 48 33 30" fill="none" stroke="var(--leaf-700)" strokeWidth="1.5" />

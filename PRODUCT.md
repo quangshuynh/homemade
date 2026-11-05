@@ -152,6 +152,21 @@ Reasons to come back that feel like "I want to try that", never "I have to".
 - **Saved and portable.** Save version 7 adds `achievementIds`, `recipeBakeCounts` and `favoriteRecipeIds`; save files carry them exactly. Malformed values (a non-keepsake id, a duplicate, a count that isn't a positive whole number) are refused as damaged. A keepsake id the catalog doesn't know is kept but not shown, like a retired recipe.
 - **No new recipes.** Mastery and keepsakes work with the existing 34; nothing needed adding.
 
+## Story Arc 2 (Interval 10)
+
+The second arc, *the tin behind the cupboard*, is five chapters (7–11) in the same story system: same content files, same requirement rules, same queue, replay and skip. Arc 1's chapters and words are unchanged. Canon lives in [`docs/story-canon.md`](docs/story-canon.md).
+
+- **Optional-light, still.** Scenes wait for the player and are mentioned once where they are (a bake result, the decorating chooser) and in words in the kitchen. Baking never needs the story.
+- **Arcs answer real questions.** Arc 2 settles who E. was (Edie, who wrote the notes) and who R. was (her son), and moves M. on without naming them. Each arc should close at least one thread and open at most one new strong one.
+- **No grind or waiting.** Chapter 7 opens when anything is out in the kitchen (the cupboard's starter set is free, so never Crumbs); 8, 9 and 11 when a story card is first baked; 10 when one of them reaches Familiar (three bakes). That's the story's only mastery step, and no story step will ever ask past Familiar. Never bake counts, Crumbs spent, logins, streaks or real time.
+- **Story recipes are ordinary recipes.** *Edie's Oat Crisps* (Rare, Curious), *Lunchbox Windows* (Uncommon, Chocolate) and *Fair-Day Parkin* (Rare, Warm & Spiced) are normal canonical cards: exact-set matching, a family divider, a Marmalade clue, the standard one-time reward, mastery like any other. No "story" family. They were fitted to the catalog's rules (no family more than one card bigger than another, at most four Epics, no ingredient-order deadlock), not the other way round. No new ingredient and no new secret.
+- **Small, one-time rewards.** Chapters 7–10 tuck 10, 15, 15 and 20 Crumbs between the cards; Chapter 11 pays nothing but its keepsake. No XP.
+- **Cosmetic story reward.** Finishing Arc 2 earns *Kept in the Tin*, a hidden keepsake (its name would give the arc away), and with it the *fair-day photograph* for the wall, through the ordinary keepsake → decoration rule. It's retroactive and granted once, like every keepsake. Until owned, a hidden keepsake's decoration isn't listed in the cupboard at all.
+- **Replays are idempotent.** A replay writes nothing: no Crumbs, XP, keepsakes, decorations or sounds of a first reading. Skipping a scene marks it seen and pays exactly what reading it would.
+- **Keepsakes per arc.** *The Last Page* is now "the first arc read", which is what it meant when it was earned; *Kept in the Tin* is the second. A new arc never moves a keepsake an older kitchen already has.
+- **No save change.** Arc 2 is derived from fields that already exist (`story.seenSceneIds`, discoveries, `recipeBakeCounts`, `decorating.equippedBySlot`, `achievementIds`), so the save stays at version 7 and needs no migration.
+- **No "new keepsake" seen-state, deliberately.** Every keepsake earned by something the player does is already announced under it at that moment. The only silent arrivals are on load or import (an upgrade's backlog), which is rare and better served by the Keepsakes page itself. Revisit if a later interval adds silent grants.
+
 ## Voice
 
 Warm, plain, a little playful, never cutesy. Short sentences, written like a note left on the counter. Controls say what they do ("Open the kitchen", "Keep my kitchen"). Errors say what happened and what's safe.
@@ -160,7 +175,7 @@ Warm, plain, a little playful, never cutesy. Short sentences, written like a not
 
 - Whether finishing a family should ever earn more than a keepsake card (deliberately not, for now).
 - Whether any time-based goal could ever fit (no dailies or streaks for now).
-- Who E., R. and M. are (deliberately unanswered; the key now opens the cupboard, and that's all it explains).
+- Who M. is, and what's in the sealed letter (deliberately open after Arc 2; E. and R. are answered, see `docs/story-canon.md`).
 - Whether memories should ever be kept beyond the cap.
 - Whether to offer background music (deliberately not yet).
 - Whether archived saves should ever be visible to the player (today they're kept, but only reachable through browser devtools).

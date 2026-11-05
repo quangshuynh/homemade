@@ -178,6 +178,16 @@ export const DECORATIONS: readonly DecorationDefinition[] = [
     visual: { kind: 'cat-figurine' },
   },
 
+  // ---- The story's own (Interval 10): arrives with the keepsake for finishing the second arc ----
+  {
+    id: defineId('decoration', 'fair-day-photograph'),
+    name: 'Fair-day photograph',
+    description: 'The first winter fair, in a plain wooden frame, torn corner and all. For everything in the tin behind the cupboard.',
+    slot: 'wall',
+    unlock: { type: 'achievement', achievementId: defineId('achievement', 'kept-in-the-tin') },
+    visual: { kind: 'frame', picture: 'photograph', moulding: 'wood' },
+  },
+
   // ---- For Crumbs: themed pieces, just for looks ----
   {
     id: defineId('decoration', 'copper-crock'),

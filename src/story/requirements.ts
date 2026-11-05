@@ -1,5 +1,7 @@
+import { findDecoration } from '../decorating/catalog'
 import { isDiscovered } from '../domain/baking'
 import { STARTER_PANTRY } from '../domain/ingredients'
+import { masteryStage, stageAtLeast } from '../domain/mastery'
 import { currentLevel } from '../domain/progression'
 import { findRecipeById } from '../domain/recipes'
 import { tutorialPending } from '../domain/save'
@@ -32,5 +34,10 @@ export function meetsRequirement(save: GameSave, requirement: StoryRequirement):
       return requirement.of.some((inner) => meetsRequirement(save, inner))
     case 'straight-after':
       return true
+    case 'decoration-out':
+      // Read straight from the save (not decorating/rules) so story and decorating don't import each other.
+      return Object.entries(save.decorating.equippedBySlot).some(([slot, id]) => id !== undefined && findDecoration(id)?.slot === slot)
+    case 'mastery-stage':
+      return stageAtLeast(masteryStage(save, requirement.recipeId), requirement.stage)
   }
 }

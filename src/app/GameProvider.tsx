@@ -189,7 +189,8 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       const { save: next, achievements, decor } = settleSave(result.save)
       const stamped = { ...next, updatedAt: new Date().toISOString() }
       commit(stamped)
-      return { ...result, save: stamped, decor, keepsakes: newsFor(current, achievements) }
+      // Putting something out can show the cupboard's back board (Chapter 7).
+      return { ...result, save: stamped, decor, keepsakes: newsFor(current, achievements), story: evaluateStoryProgress(current, stamped) }
     },
     [commit],
   )

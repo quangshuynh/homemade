@@ -32,7 +32,7 @@ export type DecorationUnlockRule =
 /** How a decoration is drawn: which reusable illustration, and its variant. Presentation reads these; rules never do. */
 export type DecorationLook =
   | { kind: 'towel'; pattern: 'gingham' | 'fruit' | 'stripe' }
-  | { kind: 'frame'; picture: 'recipe-card' | 'gold-seal' | 'botanical' | 'bakery-sign'; moulding: 'wood' | 'gilt' | 'painted' }
+  | { kind: 'frame'; picture: 'recipe-card' | 'gold-seal' | 'botanical' | 'bakery-sign' | 'photograph'; moulding: 'wood' | 'gilt' | 'painted' }
   | { kind: 'scrap-frame' }
   | { kind: 'curtains' }
   | { kind: 'herb-bundle' }

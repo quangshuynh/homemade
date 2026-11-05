@@ -5,7 +5,8 @@ import { bakeCount, nextStage, recipesAtStage } from '../domain/mastery'
 import { bookCounts, bookSections, completedFamilies, familyName } from '../domain/recipeBook'
 import { findRecipeById } from '../domain/recipes'
 import type { GameSave, Recipe } from '../domain/types'
-import { STORY_SCENES } from '../story/chapters'
+import { findChapter } from '../story/chapters'
+import { isChapterComplete } from '../story/progress'
 import { ACHIEVEMENTS, CATEGORY_NAMES, CATEGORY_ORDER, findAchievement } from './catalog'
 import type { AchievementCategory, AchievementDefinition, AchievementRequirement } from './types'
 
@@ -47,8 +48,10 @@ function meetsRequirement(save: GameSave, requirement: AchievementRequirement): 
       return found.some((recipe) => recipe.isSecret)
     case 'families-complete':
       return completedFamilies(save).length >= requirement.count
-    case 'story-complete':
-      return STORY_SCENES.length > 0 && STORY_SCENES.every((placed) => save.story.seenSceneIds.includes(placed.scene.id))
+    case 'chapter-complete': {
+      const chapter = findChapter(requirement.chapterId)
+      return chapter !== undefined && isChapterComplete(save, chapter)
+    }
     case 'decor-out': {
       const out = DECORATION_SLOTS.filter((slot) => equippedIn(save, slot) !== null)
       return requirement.every ? out.length === DECORATION_SLOTS.length : out.length > 0
