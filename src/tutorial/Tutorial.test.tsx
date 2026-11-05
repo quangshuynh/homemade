@@ -4,10 +4,12 @@ import { describe, expect, it, vi } from 'vitest'
 import { App } from '../app/App'
 import { GameProvider } from '../app/GameProvider'
 import type { AudioPlayer } from '../audio/audioPlayer'
+import { CueSchedulerContext } from '../audio/cues'
 import { SoundPlayerContext } from '../audio/soundContext'
 import type { GameSave } from '../domain/types'
 import { createMemorySaveRepository } from '../persistence/memorySaveRepository'
 import { makeNewKitchen, makeSave, makeV3Save } from '../test/fixtures'
+import { immediateCues } from '../test/soundCues'
 
 type User = ReturnType<typeof userEvent.setup>
 
@@ -18,9 +20,11 @@ function startAt(stored: unknown, hash = '#/') {
   window.location.hash = hash
   render(
     <SoundPlayerContext value={player}>
-      <GameProvider repository={memory.repository}>
-        <App />
-      </GameProvider>
+      <CueSchedulerContext value={immediateCues}>
+        <GameProvider repository={memory.repository}>
+          <App />
+        </GameProvider>
+      </CueSchedulerContext>
     </SoundPlayerContext>,
   )
   return { ...memory, played, saved: () => memory.state.stored as GameSave }
@@ -40,7 +44,7 @@ async function pickShortbread(user: User) {
   for (const name of ['Flour', 'Sugar', 'Butter']) await user.click(screen.getByRole('button', { name }))
 }
 
-/** Plays the whole tutorial with the pointer. Lingers on the result long enough for its chime. */
+/** Plays the whole tutorial with the pointer. */
 async function playThrough(user: User) {
   expect(await screen.findByText(/I’m Marmalade/)).toBeInTheDocument()
   await next(user, 'Hello, Marmalade')
@@ -51,7 +55,6 @@ async function playThrough(user: User) {
   await waitFor(() => card(5))
   await user.click(screen.getByRole('button', { name: 'Bake it' }))
   await waitFor(() => card(6))
-  await new Promise((resolve) => setTimeout(resolve, 400))
   await next(user, 'Where does it go?')
   await screen.findByRole('heading', { level: 1, name: 'Recipe Book' })
   await next(user, 'What are Crumbs?')

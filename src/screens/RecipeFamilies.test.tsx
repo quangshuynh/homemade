@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { App } from '../app/App'
 import { GameProvider } from '../app/GameProvider'
 import type { AudioPlayer } from '../audio/audioPlayer'
+import { CueSchedulerContext } from '../audio/cues'
 import { SoundPlayerContext } from '../audio/soundContext'
 import type { RecipeId } from '../domain/ids'
 import { VISIBLE_RECIPES } from '../domain/recipeBook'
@@ -11,6 +12,7 @@ import { RECIPES } from '../domain/recipes'
 import type { GameSave } from '../domain/types'
 import { createMemorySaveRepository } from '../persistence/memorySaveRepository'
 import { makeNewKitchen, makeSave } from '../test/fixtures'
+import { immediateCues } from '../test/soundCues'
 
 type User = ReturnType<typeof userEvent.setup>
 
@@ -31,9 +33,11 @@ function startAt(hash: string, save: GameSave) {
   window.location.hash = hash
   const view = render(
     <SoundPlayerContext value={player}>
-      <GameProvider repository={memory.repository}>
-        <App />
-      </GameProvider>
+      <CueSchedulerContext value={immediateCues}>
+        <GameProvider repository={memory.repository}>
+          <App />
+        </GameProvider>
+      </CueSchedulerContext>
     </SoundPlayerContext>,
   )
   return { played, saved: () => memory.state.stored as GameSave, container: view.container }
@@ -180,9 +184,8 @@ describe('the secret reveal', () => {
     // Marmalade's first-secret line, said once.
     expect(within(result).getByText(/A secret! Let’s keep it between us./)).toBeInTheDocument()
 
-    await waitFor(() => expect(played).toContain('discover-rare'), { timeout: 2500 })
-    expect(played.indexOf('discover-secret')).toBeGreaterThan(-1)
-    expect(played.indexOf('discover-secret')).toBeLessThan(played.indexOf('discover-rare'))
+    // The hush, then the chime, then the first-secret keepsake's stamp.
+    expect(played.slice(played.indexOf('ding'))).toEqual(['ding', 'discover-secret', 'discover-rare', 'achievement-unlock'])
     expect(saved().progression).toEqual({ crumbs: 40, xp: 1270 })
   })
 
@@ -206,7 +209,7 @@ describe('the secret reveal', () => {
     expect(within(result).queryByText('Something unexpected…')).not.toBeInTheDocument()
     expect(within(result).getByText('Secret')).toBeInTheDocument()
     expect(within(result).queryByText(/Crumbs ·/)).not.toBeInTheDocument()
-    await waitFor(() => expect(played).toContain('ding'))
+    expect(played.at(-1)).toBe('ding')
     expect(played).not.toContain('discover-secret')
   })
 })
@@ -228,7 +231,7 @@ describe('the first Mythic', () => {
     expect(within(result).getByText(/A Mythic. In this kitchen./)).toBeInTheDocument()
     expect(container.querySelector('.bake-result__mascot [data-expression="starstruck"]')).not.toBeNull()
 
-    await waitFor(() => expect(played).toContain('discover-mythic'), { timeout: 2500 })
+    expect(played).toContain('discover-mythic')
     expect(saved().progression).toEqual({ crumbs: 300, xp: 1520 })
   })
 

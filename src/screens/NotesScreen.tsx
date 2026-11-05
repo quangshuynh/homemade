@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useGame, useSave } from '../app/gameContext'
 import { hrefFor } from '../app/routes'
-import { useSound } from '../audio/soundContext'
+import { useSoundCues } from '../audio/cues'
 import { Button, LinkButton } from '../components/Button'
 import { HandNote } from '../components/Paper'
 import { ScreenTitle } from '../components/ScreenTitle'
@@ -41,7 +41,7 @@ const chapterHeadingId = (chapter: ChapterView['chapter']) => `chapter-${chapter
 export function NotesScreen() {
   const save = useSave()
   const { seeStoryScene } = useGame()
-  const playSound = useSound()
+  const ring = useSoundCues()
   const [playing, setPlaying] = useState<Playing | null>(null)
   const [ended, setEnded] = useState<Ended | null>(null)
   const [returnTo, setReturnTo] = useState<string | null>(null)
@@ -78,8 +78,10 @@ export function NotesScreen() {
     if (!result.ok) return
     // The end of an arc gets its own, slightly longer sound, instead of the usual one. Never on a replay.
     const arcEnded = result.completedChapter !== null && isArcEnd(result.completedChapter)
-    if (result.firstTime) playSound(arcEnded ? 'arc-complete' : 'story-note')
-    if (result.keepsakes.earned.length > 0) window.setTimeout(() => playSound('achievement-unlock'), 900)
+    ring([
+      ...(result.firstTime ? [{ id: arcEnded ? ('arc-complete' as const) : ('story-note' as const), at: 0 }] : []),
+      ...(result.keepsakes.earned.length > 0 ? [{ id: 'achievement-unlock' as const, at: 900 }] : []),
+    ])
     setEnded({
       keepsakes: result.keepsakes.earned,
       how,

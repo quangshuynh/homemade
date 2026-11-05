@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useGame, useSave } from '../app/gameContext'
 import { hrefFor } from '../app/routes'
+import { useSoundCues } from '../audio/cues'
 import { useSound } from '../audio/soundContext'
 import { CrumbsMark } from '../components/BakerPlaque'
 import { Button, LinkButton } from '../components/Button'
@@ -77,6 +78,7 @@ export function DecorateScreen() {
   const save = useSave()
   const { seeStoryScene, equipDecoration, clearDecorationSlot, buyDecoration } = useGame()
   const playSound = useSound()
+  const ring = useSoundCues()
   const [selected, setSelected] = useState<DecorationSlot>('wall')
   const [trying, setTrying] = useState<DecorationId | null>(null)
   const [remark, setRemark] = useState<DecorMoment | null>(null)
@@ -176,8 +178,7 @@ export function DecorateScreen() {
     if (!triedPiece) return
     const result = equipDecoration(selected, triedPiece.id)
     if (!result.ok) return
-    playSound('decor-equip')
-    if (result.keepsakes.earned.length > 0) window.setTimeout(() => playSound('achievement-unlock'), 450)
+    ring([{ id: 'decor-equip', at: 0 }, ...(result.keepsakes.earned.length > 0 ? [{ id: 'achievement-unlock' as const, at: 450 }] : [])])
     setTrying(null)
     setRemark(result.moment)
     setKeepsakes(result.keepsakes)

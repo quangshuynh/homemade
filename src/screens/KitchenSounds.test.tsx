@@ -4,10 +4,12 @@ import { describe, expect, it, vi } from 'vitest'
 import { App } from '../app/App'
 import { GameProvider } from '../app/GameProvider'
 import type { AudioPlayer } from '../audio/audioPlayer'
+import { CueSchedulerContext } from '../audio/cues'
 import { SoundPlayerContext } from '../audio/soundContext'
 import type { GameSave } from '../domain/types'
 import { createMemorySaveRepository } from '../persistence/memorySaveRepository'
 import { makeSave } from '../test/fixtures'
+import { immediateCues } from '../test/soundCues'
 
 function recordingPlayer(): AudioPlayer & { played: string[] } {
   const played: string[] = []
@@ -19,9 +21,11 @@ function startBaking(save: GameSave, player: AudioPlayer) {
   window.location.hash = '#/bake'
   render(
     <SoundPlayerContext value={player}>
-      <GameProvider repository={memory.repository}>
-        <App />
-      </GameProvider>
+      <CueSchedulerContext value={immediateCues}>
+        <GameProvider repository={memory.repository}>
+          <App />
+        </GameProvider>
+      </CueSchedulerContext>
     </SoundPlayerContext>,
   )
   return memory
@@ -47,7 +51,7 @@ describe('kitchen sounds', () => {
 
     await bakeShortbread(user)
 
-    await waitFor(() => expect(player.played).toEqual(['pick', 'pick', 'pick', 'pick', 'remove', 'mix', 'ding', 'discover-common']))
+    expect(player.played).toEqual(['pick', 'pick', 'pick', 'pick', 'remove', 'mix', 'ding', 'discover-common'])
   })
 
   it('plays nothing at all when sound is off, and the bake is unaffected', async () => {
@@ -57,7 +61,6 @@ describe('kitchen sounds', () => {
 
     await bakeShortbread(user)
 
-    await new Promise((resolve) => setTimeout(resolve, 400))
     expect(player.played).toEqual([])
     await waitFor(() => expect((state.stored as GameSave).discoveredRecipes).toHaveLength(1))
   })
