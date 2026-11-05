@@ -1,0 +1,281 @@
+/*
+ * Kitchen Keepsakes (Interval 9): rubber stamps, pinned cards and pencil
+ * outlines, never trophies. Earned keepsakes are stamped in jam ink on a
+ * card pinned up with a little tack; ones still to come are a faint pencil
+ * outline. The difference is always said in words too ("Stamped", "Not yet").
+ */
+
+/* ---- The stamp ---- */
+
+.keepsake-stamp {
+  display: block;
+  width: 3rem;
+  height: 3rem;
+  flex: none;
+}
+
+.keepsake-stamp--earned .keepsake-stamp__edge,
+.keepsake-stamp--earned .keepsake-stamp__face {
+  fill: var(--jam-500);
+}
+
+.keepsake-stamp--not-yet .keepsake-stamp__edge {
+  fill: none;
+  stroke: var(--pencil);
+  stroke-width: 0.6;
+  stroke-dasharray: 1.4 1.2;
+  opacity: 0.6;
+}
+
+.keepsake-stamp--not-yet .keepsake-stamp__face {
+  fill: var(--paper);
+}
+
+/* ---- The reveal: one label under whatever earned it ---- */
+
+.keepsake-news {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  max-width: 34rem;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  color: var(--ink);
+  background: var(--surface-card-raised);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(-0.4deg);
+}
+
+/* The stamp presses down once. Durations are 0 when motion is reduced, so it's simply there. */
+.keepsake-news__stamp {
+  transform: rotate(-8deg);
+  animation: keepsake-stamp-press var(--duration-slow) var(--ease-settle) both;
+}
+
+@keyframes keepsake-stamp-press {
+  from {
+    opacity: 0;
+    transform: rotate(-20deg) scale(1.5);
+  }
+}
+
+.keepsake-news__text {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.keepsake-news__label {
+  font-weight: var(--weight-bold);
+}
+
+.keepsake-news__detail {
+  font-family: var(--font-body);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-sm);
+}
+
+.keepsake-news a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-target);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+/* ---- The Keepsakes screen ---- */
+
+.keepsakes {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.keepsakes__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+}
+
+.keepsakes__title {
+  font-size: var(--text-2xl);
+}
+
+.keepsakes__back {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-target);
+}
+
+.keepsakes__intro {
+  max-width: var(--measure);
+  margin-top: calc(-1 * var(--space-2));
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+}
+
+.keepsakes__count {
+  justify-self: start;
+}
+
+/* "Something to try": a butter slip, pinned at an angle. An idea, never a task. */
+.keepsakes__goal {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  max-width: 30rem;
+  padding: var(--space-3) var(--space-5) var(--space-4);
+  background: var(--butter-300);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(0.6deg);
+}
+
+.keepsakes__goal-title {
+  font-family: var(--font-hand);
+  font-size: var(--text-lg);
+}
+
+.keepsakes__goal-aside {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.keepsakes__group,
+.keepsakes__mastery {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.keepsakes__group-name {
+  font-size: var(--text-lg);
+  padding-bottom: var(--space-1);
+  border-bottom: 2px solid var(--paper-margin);
+}
+
+.keepsakes__list,
+.keepsakes__known {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-4);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* A keepsake card, pinned up with a tack. */
+.keepsake {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface-card);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.keepsake--earned::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--enamel-600);
+  border: 1.5px solid var(--ink);
+  translate: -50% 0;
+}
+
+.keepsake--earned:nth-child(odd) {
+  transform: rotate(-0.5deg);
+}
+
+.keepsake--earned:nth-child(even) {
+  transform: rotate(0.4deg);
+}
+
+/* Not yet: a faint pencil outline on the back of the box, not a greyed-out trophy. */
+.keepsake--not-yet {
+  background: transparent;
+  box-shadow: none;
+  border: 1.5px dashed var(--pencil);
+}
+
+.keepsake__text {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.keepsake__name {
+  font-size: var(--text-md, 1rem);
+}
+
+.keepsake__status {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+}
+
+.keepsake--earned .keepsake__status {
+  color: var(--jam-500);
+}
+
+.keepsake--not-yet .keepsake__status {
+  color: var(--pencil);
+}
+
+.keepsake__description,
+.keepsake__reward {
+  font-size: var(--text-sm);
+}
+
+.keepsake__reward {
+  font-family: var(--font-hand);
+  color: var(--text-muted);
+}
+
+.keepsakes__stages {
+  max-width: var(--measure);
+  font-size: var(--text-sm);
+}
+
+.keepsakes__mastery-empty {
+  justify-self: start;
+}
+
+.known-recipe {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface-card);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.known-recipe__cookie {
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: none;
+}
+
+.known-recipe__name {
+  font-weight: var(--weight-bold);
+}
+
+.known-recipe__stage {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+}
+
+.known-recipe__next {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}

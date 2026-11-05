@@ -16,6 +16,9 @@ import mix from '../assets/sounds/mix.wav'
 import pick from '../assets/sounds/pick.wav'
 import remove from '../assets/sounds/remove.wav'
 import storyNote from '../assets/sounds/story-note.wav'
+import achievementUnlock from '../assets/sounds/achievement-unlock.wav'
+import favorite from '../assets/sounds/favorite.wav'
+import masteryUp from '../assets/sounds/mastery-up.wav'
 import tutorialNext from '../assets/sounds/tutorial-next.wav'
 
 /**
@@ -37,6 +40,9 @@ export type SoundId =
   | 'decor-open'
   | 'decor-equip'
   | 'decor-unlock'
+  | 'achievement-unlock'
+  | 'mastery-up'
+  | 'favorite'
 
 export type SoundDefinition = {
   url: string
@@ -68,6 +74,11 @@ export const SOUNDS: Record<SoundId, SoundDefinition> = {
   'decor-open': { url: decorOpen, volume: 0.3 },
   'decor-equip': { url: decorEquip, volume: 0.3 },
   'decor-unlock': { url: decorUnlock, volume: 0.35 },
+  // Keepsakes (Interval 9). A keepsake earned (once per reveal, however many arrive together);
+  // a recipe crossing a named mastery stage (never on an ordinary rebake); a favourite marked.
+  'achievement-unlock': { url: achievementUnlock, volume: 0.32 },
+  'mastery-up': { url: masteryUp, volume: 0.3 },
+  favorite: { url: favorite, volume: 0.25 },
 }
 
 export function discoverySound(rarity: CookieRarity): SoundId {

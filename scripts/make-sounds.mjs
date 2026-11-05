@@ -178,6 +178,20 @@ Object.assign(sounds, {
   }),
 })
 
+// Interval 9. After the others, so none of their files change.
+Object.assign(sounds, {
+  // A keepsake: a rubber stamp pressed onto card (a soft thud), then one
+  // small, warm bell pair (G5, D6). Shorter and quieter than a discovery.
+  'achievement-unlock': render(0.85, (t) => {
+    const stamp = t < 0.05 ? noise() * Math.exp(-t / 0.012) * 0.35 + partial(t, 180, 0.03, 0.8) : 0
+    return stamp + bells(t - 0.1, [784, 1174.7], 0.12, 0.6)
+  }),
+  // A recipe reaching a named mastery stage: two soft rising wooden-xylophone notes (C5, E5).
+  'mastery-up': render(0.55, (t) => partial(t, 523.3, 0.09) + partial(t, 523.3 * 3.9, 0.03, 0.25) + (t > 0.11 ? partial(t - 0.11, 659.3, 0.11) + partial(t - 0.11, 659.3 * 3.9, 0.03, 0.25) : 0)),
+  // Marking a favourite: a single tiny, high "tick", like a pencil heart on card.
+  favorite: render(0.18, (t) => partial(t, 2093, 0.035, 0.7) + partial(t, 3136, 0.02, 0.3)),
+})
+
 for (const [name, data] of Object.entries(sounds)) {
   writeFileSync(new URL(`${name}.wav`, out), wav(data, name === 'mix' || name === 'tutorial-next' ? 0.45 : 0.6))
 }

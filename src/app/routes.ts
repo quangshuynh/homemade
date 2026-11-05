@@ -17,6 +17,8 @@ export const ROUTES = {
   notes: { path: '/recipe-book/notes', title: 'Recipe Box Notes' },
   /** Decorating: reached from the old cupboard in the kitchen once the brass key turns, rather than a tab. */
   decorate: { path: '/decorate', title: 'Make it yours' },
+  /** Keepsakes and the recipes the kitchen knows best: reached from the Recipe Book rather than a tab. */
+  keepsakes: { path: '/recipe-book/keepsakes', title: 'Kitchen Keepsakes' },
 } as const
 
 export type RouteId = keyof typeof ROUTES

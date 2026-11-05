@@ -9,6 +9,7 @@ import type { NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
 import type { ImportResult } from '../persistence/portable'
 import type { LoadResult } from '../persistence/repository'
+import type { AchievementDefinition } from '../keepsakes/types'
 import type { SeeSceneResult, StoryNews } from '../story/progress'
 
 export type GameState =
@@ -20,14 +21,25 @@ export type GameState =
 
 export type SaveStatus = 'saved' | 'saving' | 'failed'
 
+/** Keepsakes a change earned, in catalog order, and whether they're the kitchen's very first. */
+export type KeepsakeNews = { earned: AchievementDefinition[]; first: boolean }
+
 /**
  * What came out of the oven, whether it opened up the next bit of the story,
- * and anything it earned for the kitchen cupboard (almost always nothing).
+ * and anything it earned for the kitchen cupboard or the keepsake box
+ * (almost always nothing).
  */
-export type KitchenBake = BakeOutcome & { story: StoryNews | null; decor: DecorationDefinition[] }
+export type KitchenBake = BakeOutcome & { story: StoryNews | null; decor: DecorationDefinition[]; keepsakes: KeepsakeNews }
 
-/** A story scene seen, and anything that put in the cupboard (the starter set, when Chapter 5 ends). */
-export type KitchenScene = (Extract<SeeSceneResult, { ok: true }> & { decor: DecorationDefinition[] }) | Extract<SeeSceneResult, { ok: false }>
+/** A story scene seen, and anything that put in the cupboard (the starter set, when Chapter 5 ends) or the keepsake box. */
+export type KitchenScene =
+  | (Extract<SeeSceneResult, { ok: true }> & { decor: DecorationDefinition[]; keepsakes: KeepsakeNews })
+  | Extract<SeeSceneResult, { ok: false }>
+
+/** A decoration put out, and any keepsake (and keepsake decoration) that earned. */
+export type KitchenEquip =
+  | (Extract<EquipResult, { ok: true }> & { decor: DecorationDefinition[]; keepsakes: KeepsakeNews })
+  | Extract<EquipResult, { ok: false }>
 
 /** A pantry addition, and whether it opened up the next bit of the story. */
 export type KitchenUnlock = (Extract<UnlockResult, { ok: true }> & { story: StoryNews | null }) | Extract<UnlockResult, { ok: false }>
@@ -59,11 +71,17 @@ export type GameContextValue = {
    * in the cupboard) and notes any one-time remark it earns, in one write.
    * Refuses, changing nothing, if it isn't owned or doesn't belong there. Cosmetic only.
    */
-  equipDecoration: (slot: DecorationSlot, id: DecorationId) => EquipResult
+  equipDecoration: (slot: DecorationSlot, id: DecorationId) => KitchenEquip
   /** Puts whatever is in a spot back in the cupboard. Returns what was there, if anything. */
   clearDecorationSlot: (slot: DecorationSlot) => DecorationDefinition | null
   /** Buys a decoration for Crumbs, in one write. Refuses, changing nothing, if it can't be bought. Callers confirm first. */
   buyDecoration: (id: DecorationId) => PurchaseResult
+  /**
+   * Marks or unmarks a discovered recipe as a favourite, in one write.
+   * Organisational only. Returns false, changing nothing, for a recipe not
+   * in the book or one already in that state.
+   */
+  setFavourite: (recipeId: RecipeId, favourite: boolean) => boolean
   /** Ingredients laid out by "Bake again", for the Bake screen to start from. In memory only. */
   preparedBowl: PreparedBake | null
   /**

@@ -1,3 +1,4 @@
+import { settleSave } from '../keepsakes/settle'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -32,7 +33,8 @@ function otherKitchen(): GameSave {
   let save = makeSave({ profile: { id: 'player_11111111-2222-4333-8444-555555555555' as GameSave['profile']['id'], name: 'Sam', bakeryName: 'Oven Mitts' } })
   save = recordBake(save, bake([FLOUR, SUGAR, BUTTER]), new Date('2026-05-01T10:00:00.000Z'), 'creation_a' as CreationId).save
   save = recordBake(save, bake([EGG, CINNAMON]), new Date('2026-05-02T10:00:00.000Z'), 'creation_b' as CreationId).save
-  return { ...save, updatedAt: '2026-05-02T10:00:00.000Z' }
+  // Settled, as the game itself keeps every save: the experiment's keepsake is already in it.
+  return { ...settleSave(save).save, updatedAt: '2026-05-02T10:00:00.000Z' }
 }
 
 const saveFile = (save: unknown, name = 'kitchen.json') =>

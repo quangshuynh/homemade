@@ -928,3 +928,19 @@
   font-size: var(--text-sm);
   color: var(--text-muted);
 }
+
+/* A named mastery stage reached (Interval 9): words first, with a small inked stamp. No animation. */
+.bake-result__mastery {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+}
+
+.bake-result__mastery-stamp {
+  display: inline-block;
+  padding: 0 var(--space-2);
+  font-weight: var(--weight-bold);
+  color: var(--jam-500);
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-sticker);
+  transform: rotate(-3deg);
+}

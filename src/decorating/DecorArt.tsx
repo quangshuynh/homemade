@@ -368,6 +368,123 @@ function BreadBoardArt({ className }: ArtProps) {
   )
 }
 
+// ---------------------------------------------------------------- keepsake rewards (Interval 9)
+
+function CookieTinArt({ className }: ArtProps) {
+  return (
+    <Svg viewBox="0 0 64 56" className={className}>
+      <ellipse cx="32" cy="52" rx="26" ry="3" fill="rgb(70 38 12 / 0.25)" />
+      <path d="M8 22 H56 V48 Q32 54 8 48 Z" fill="var(--enamel-600)" stroke={INK} strokeWidth={LINE} strokeLinejoin="round" />
+      {/* the windmill on the side, a little worn */}
+      <path d="M32 46 V34 M32 34 l-7 -6 M32 34 l7 -6 M32 34 l-7 6 M32 34 l7 6" stroke="var(--enamel-300)" strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M28 46 L30 36 H34 L36 46 Z" fill="var(--enamel-300)" />
+      {/* the lid, dented at one edge */}
+      <path d="M5 16 Q32 9 59 16 V23 Q32 27 5 23 Z" fill="var(--enamel-400)" stroke={INK} strokeWidth={LINE} strokeLinejoin="round" />
+      <path d="M46 14 q3 3 6 1" fill="none" stroke={INK} strokeWidth="1" />
+      <path d="M12 18 Q32 14 52 18" fill="none" stroke="rgb(255 255 255 / 0.5)" strokeWidth="2" strokeLinecap="round" />
+    </Svg>
+  )
+}
+
+function OvenMittArt({ className }: ArtProps) {
+  return (
+    <Svg viewBox="0 0 60 92" className={className}>
+      {/* the hanging loop over the handle */}
+      <path d="M30 4 Q24 10 30 16 Q36 10 30 4" fill="none" stroke="var(--kraft)" strokeWidth="2" />
+      <path
+        d="M16 18 H44 Q50 18 50 26 V70 Q50 84 34 84 H24 Q10 84 10 70 V52 Q2 50 4 40 Q6 34 12 38 L16 42 Z"
+        fill="var(--jam-500)"
+        stroke={INK}
+        strokeWidth={LINE}
+        strokeLinejoin="round"
+      />
+      {/* quilting, the scorched thumb and the stitched cookie */}
+      <path d="M18 30 L42 54 M18 46 L42 70 M42 30 L18 54 M42 46 L22 66" stroke="rgb(255 230 220 / 0.35)" strokeWidth="1.2" />
+      <path d="M5 40 Q7 46 11 46" fill="none" stroke="var(--wood-500)" strokeWidth="3" strokeLinecap="round" opacity="0.7" />
+      <circle cx="32" cy="58" r="7" fill="var(--dough-golden)" stroke={INK} strokeWidth="1" strokeDasharray="2 1.5" />
+      <path d="M29 56 h1 M34 57 h1 M31 61 h1" stroke="var(--ink-soft)" strokeWidth="1.6" strokeLinecap="round" />
+      <rect x="14" y="16" width="32" height="7" rx="2" fill="var(--paper)" stroke={INK} strokeWidth="1.6" />
+    </Svg>
+  )
+}
+
+function RecipeBundleArt({ className }: ArtProps) {
+  return (
+    <Svg viewBox="0 0 64 50" className={className}>
+      <ellipse cx="32" cy="46" rx="26" ry="3" fill="rgb(70 38 12 / 0.25)" />
+      {/* a stack of old index cards, a little uneven */}
+      <rect x="8" y="30" width="48" height="13" rx="1.5" fill="var(--paper-shade)" stroke={INK} strokeWidth="1.6" transform="rotate(2 32 36)" />
+      <rect x="6" y="20" width="50" height="13" rx="1.5" fill="var(--paper)" stroke={INK} strokeWidth="1.6" transform="rotate(-3 32 26)" />
+      <rect x="9" y="11" width="46" height="13" rx="1.5" fill="var(--paper-shade)" stroke={INK} strokeWidth="1.6" transform="rotate(1 32 18)" />
+      <path d="M14 15 H26 M14 19 H24" stroke="var(--pencil)" strokeWidth="1" strokeLinecap="round" />
+      {/* tied up with red ribbon, in a bow */}
+      <path d="M31 8 V44" stroke="var(--jam-500)" strokeWidth="3.5" />
+      <path d="M32 12 Q22 2 22 12 Q22 18 32 12 Q42 18 42 12 Q42 2 32 12" fill="var(--jam-500)" stroke={INK} strokeWidth="1.2" />
+      <path d="M32 12 L27 22 M32 12 L37 22" stroke="var(--jam-500)" strokeWidth="2.5" strokeLinecap="round" />
+    </Svg>
+  )
+}
+
+const PLATE_COOKIES: readonly Point[] = [
+  [30, 32],
+  [46, 32],
+  [38, 45],
+]
+
+function CookiePlateArt({ className }: ArtProps) {
+  return (
+    <Svg viewBox="0 0 76 72" className={className}>
+      <ellipse cx="38" cy="68" rx="28" ry="3" fill="rgb(70 38 12 / 0.25)" />
+      {/* propped up on a little wire stand */}
+      <path d="M22 68 L30 52 M54 68 L46 52" stroke="var(--rack-wire)" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="38" cy="36" r="30" fill="var(--paper)" stroke={INK} strokeWidth={LINE} />
+      <circle cx="38" cy="36" r="25" fill="none" stroke="var(--enamel-600)" strokeWidth="3" />
+      <circle cx="38" cy="36" r="20" fill="none" stroke="var(--enamel-300)" strokeWidth="1.2" strokeDasharray="3 2" />
+      {PLATE_COOKIES.map(([x, y]) => (
+        <g key={`${x}-${y}`}>
+          <circle cx={x} cy={y} r="8" fill="var(--dough-golden)" stroke={INK} strokeWidth="1.4" />
+          <path d={`M${x - 3} ${y - 2} h1 M${x + 2} ${y} h1 M${x - 1} ${y + 3} h1`} stroke="var(--ink-soft)" strokeWidth="2" strokeLinecap="round" />
+        </g>
+      ))}
+    </Svg>
+  )
+}
+
+function TrophySpoonArt({ className }: ArtProps) {
+  return (
+    <Svg viewBox="0 0 48 60" className={className}>
+      <ellipse cx="24" cy="56" rx="18" ry="2.5" fill="rgb(70 38 12 / 0.25)" />
+      {/* a little wooden plinth with an engraved plate */}
+      <path d="M8 46 H40 L42 54 H6 Z" fill="var(--wood-500)" stroke={INK} strokeWidth={LINE} strokeLinejoin="round" />
+      <rect x="15" y="48" width="18" height="4" rx="1" fill="var(--brass)" stroke={INK} strokeWidth="0.8" />
+      {/* the spoon, standing in its cradle */}
+      <path d="M24 46 V22" stroke="var(--rack-wire)" strokeWidth="3.5" strokeLinecap="round" />
+      <ellipse cx="24" cy="13" rx="7" ry="10" fill="var(--paper-shade)" stroke={INK} strokeWidth={LINE} />
+      <path d="M21 8 Q20 13 22 18" fill="none" stroke="rgb(255 255 255 / 0.8)" strokeWidth="2" strokeLinecap="round" />
+      <path d="M18 42 q6 -4 12 0" fill="none" stroke="var(--wood-300)" strokeWidth="2.5" strokeLinecap="round" />
+    </Svg>
+  )
+}
+
+function CatFigurineArt({ className }: ArtProps) {
+  return (
+    <Svg viewBox="0 0 64 44" className={className}>
+      <ellipse cx="32" cy="40" rx="26" ry="3" fill="rgb(70 38 12 / 0.25)" />
+      {/* curled up asleep, tail round her paws */}
+      <path d="M8 36 Q4 18 24 14 Q44 10 54 24 Q60 34 52 38 H12 Z" fill="var(--marmalade-500)" stroke={INK} strokeWidth={LINE} strokeLinejoin="round" />
+      <path d="M22 18 q2 6 0 10 M32 15 q2 6 0 10" fill="none" stroke="var(--marmalade-700)" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M12 36 Q20 30 34 34 Q40 36 42 34" fill="none" stroke={INK} strokeWidth="1.6" strokeLinecap="round" />
+      {/* her head, tucked in at the front, ears up */}
+      <path d="M40 30 L42 18 L48 24 L54 18 L56 30 Q56 38 48 38 Q40 38 40 30 Z" fill="var(--marmalade-500)" stroke={INK} strokeWidth={LINE} strokeLinejoin="round" />
+      <path d="M44 22 L45 25 M52 22 L51 25" stroke="var(--marmalade-pink)" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M43 30 q2 2 4 0 M49 30 q2 2 4 0" fill="none" stroke={INK} strokeWidth="1.3" strokeLinecap="round" />
+      <ellipse cx="48" cy="34" rx="3" ry="2" fill="var(--marmalade-cream)" />
+      {/* the china glaze */}
+      <path d="M14 24 Q18 18 26 17" fill="none" stroke="rgb(255 255 255 / 0.6)" strokeWidth="2.5" strokeLinecap="round" />
+    </Svg>
+  )
+}
+
 /** Any decoration, drawn from its look. */
 export function DecorationArt({ look, className }: { look: DecorationLook; className?: string }) {
   switch (look.kind) {
@@ -391,6 +508,18 @@ export function DecorationArt({ look, className }: { look: DecorationLook; class
       return <RollingPinArt className={className} />
     case 'bread-board':
       return <BreadBoardArt className={className} />
+    case 'cookie-tin':
+      return <CookieTinArt className={className} />
+    case 'oven-mitt':
+      return <OvenMittArt className={className} />
+    case 'recipe-bundle':
+      return <RecipeBundleArt className={className} />
+    case 'cookie-plate':
+      return <CookiePlateArt className={className} />
+    case 'trophy-spoon':
+      return <TrophySpoonArt className={className} />
+    case 'cat-figurine':
+      return <CatFigurineArt className={className} />
   }
 }
 

@@ -127,6 +127,27 @@ export function findSaveProblem(value: RawRecord): string | null {
     return 'decorating.noticedMomentIds is not a list of names'
   }
 
+  // Keepsake ids are checked for shape, not against the catalog, like
+  // recipes: one retired in a later build stays in the save, unshown.
+  const achievements = value.achievementIds
+  if (!Array.isArray(achievements) || !achievements.every((id) => isIdOf('achievement', id))) {
+    return 'achievementIds is not a list of keepsake ids'
+  }
+  if (new Set(achievements).size !== achievements.length) return 'achievementIds lists a keepsake twice'
+
+  const counts = value.recipeBakeCounts
+  if (!isRecord(counts)) return 'recipeBakeCounts is missing'
+  for (const [id, count] of Object.entries(counts)) {
+    if (!isIdOf('recipe', id)) return `recipeBakeCounts has "${id}", which is not a recipe id`
+    if (!isCount(count) || count === 0) return `recipeBakeCounts.${id} is not a whole number of bakes`
+  }
+
+  const favourites = value.favoriteRecipeIds
+  if (!Array.isArray(favourites) || !favourites.every((id) => isIdOf('recipe', id))) {
+    return 'favoriteRecipeIds is not a list of recipe ids'
+  }
+  if (new Set(favourites).size !== favourites.length) return 'favoriteRecipeIds lists a recipe twice'
+
   const settings = value.settings
   if (!isRecord(settings)) return 'settings are missing'
   if (typeof settings.soundEnabled !== 'boolean') return 'settings.soundEnabled is not a boolean'

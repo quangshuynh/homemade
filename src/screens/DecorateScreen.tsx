@@ -21,7 +21,14 @@ import { familyName } from '../domain/recipeBook'
 import { RARITY_LABELS } from '../domain/progression'
 import { availableScene } from '../story/progress'
 import { StoryScenePlayer, type SceneEnding } from '../story/StoryScenePlayer'
+import { findAchievement } from '../keepsakes/catalog'
+import { KeepsakeNews } from '../keepsakes/KeepsakeNews'
+import { describeKeepsakes } from '../keepsakes/words'
+import type { AchievementDefinition } from '../keepsakes/types'
+import { keepsakeReaction } from '../mascot/reactions'
 import './DecorateScreen.css'
+
+const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1)
 
 const CUPBOARD_SCENE_CHAPTER = 'chapter_old-cupboard'
 
@@ -49,6 +56,11 @@ function howToGet(status: Exclude<DecorationStatus, { kind: 'owned' }>): string 
       return `For your first ${RARITY_LABELS[rule.rarity]} recipe.`
     case 'first-secret':
       return 'For your first secret recipe.'
+    case 'achievement': {
+      // Only ever a visible keepsake: a hidden one never comes with a decoration.
+      const keepsake = findAchievement(rule.achievementId)
+      return keepsake ? `With the “${keepsake.name}” keepsake: ${lowerFirst(keepsake.description)}` : 'With a keepsake.'
+    }
   }
 }
 
@@ -68,6 +80,9 @@ export function DecorateScreen() {
   const [selected, setSelected] = useState<DecorationSlot>('wall')
   const [trying, setTrying] = useState<DecorationId | null>(null)
   const [remark, setRemark] = useState<DecorMoment | null>(null)
+  // Keepsakes the last change earned (Make It Yours, Lived In, The Last Page). Shown once, under it.
+  const [keepsakes, setKeepsakes] = useState<{ earned: AchievementDefinition[]; first: boolean }>({ earned: [], first: false })
+  const [sceneKeepsakes, setSceneKeepsakes] = useState<AchievementDefinition[]>([])
   const [status, setStatus] = useState('')
   const [confirming, setConfirming] = useState<DecorationId | null>(null)
   const focusAfterBuy = useRef<DecorationId | null>(null)
@@ -115,6 +130,7 @@ export function DecorateScreen() {
           onEnd={(how) => {
             const result = seeStoryScene(cupboardScene.scene.id)
             if (result.ok && result.firstTime) playSound('decor-open')
+            if (result.ok) setSceneKeepsakes(result.keepsakes.earned)
             setOpened(how)
           }}
         />
@@ -158,10 +174,13 @@ export function DecorateScreen() {
     const result = equipDecoration(selected, triedPiece.id)
     if (!result.ok) return
     playSound('decor-equip')
+    if (result.keepsakes.earned.length > 0) window.setTimeout(() => playSound('achievement-unlock'), 450)
     setTrying(null)
     setRemark(result.moment)
+    setKeepsakes(result.keepsakes)
     const replaced = result.replaced ? ` The ${result.replaced.name.toLowerCase()} went back in the cupboard.` : ''
-    setStatus(`Put out: ${result.decoration.name}, on ${spot}.${replaced}`)
+    const arrived = result.decor.length > 0 ? ` New in your cupboard: ${result.decor.map((piece) => piece.name.toLowerCase()).join(', ')}.` : ''
+    setStatus(`Put out: ${result.decoration.name}, on ${spot}.${replaced} ${describeKeepsakes(result.keepsakes.earned)}${arrived}`.trim())
   }
 
   function clear() {
@@ -205,6 +224,7 @@ export function DecorateScreen() {
             {opened === 'skipped' ? 'Skipped. ' : ''}The cupboard’s open, and everything in it is yours to put out. You can read what was
             inside again in the Recipe Box Notes.
           </p>
+          <KeepsakeNews keepsakes={sceneKeepsakes} />
         </div>
       )}
 
@@ -291,8 +311,13 @@ export function DecorateScreen() {
 
         {/* Marmalade's one-time remarks: read out where they appear, never taking focus. */}
         <div role="status" className="chooser__remark">
-          {remark && <MascotSays expression={decorRemark(remark).expression}>{decorRemark(remark).line}</MascotSays>}
+          {(() => {
+            // Her decorating remark if there is one; otherwise a keepsake moment worth a word (every spot filled).
+            const line = remark ? decorRemark(remark) : keepsakeReaction(keepsakes)
+            return line && <MascotSays expression={line.expression}>{line.line}</MascotSays>
+          })()}
         </div>
+        <KeepsakeNews keepsakes={keepsakes.earned} className="chooser__keepsakes" />
 
         {notYet.length > 0 && (
           <div className="chooser__later">

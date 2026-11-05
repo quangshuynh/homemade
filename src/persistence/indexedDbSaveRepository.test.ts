@@ -264,6 +264,9 @@ describe('IndexedDB save repository', () => {
         version: CURRENT_SAVE_VERSION,
         story: { seenSceneIds: [] },
         decorating: { ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] },
+        achievementIds: [],
+        recipeBakeCounts: { recipe_shortbread: 1, 'recipe_meringue-kiss': 1, 'recipe_chocolate-chip': 1, recipe_snickerdoodle: 1, 'recipe_jam-thumbprint': 1 },
+        favoriteRecipeIds: [],
       },
     })
     const archive = await readArchive(options)
@@ -288,7 +291,7 @@ describe('IndexedDB save repository', () => {
 
     const result = await createIndexedDbSaveRepository(options).load()
 
-    expect(result).toMatchObject({ kind: 'loaded', migratedFrom: 5, save: { version: 6, story: v5.story } })
+    expect(result).toMatchObject({ kind: 'loaded', migratedFrom: 5, save: { version: CURRENT_SAVE_VERSION, story: v5.story } })
     await expect(readArchive(options)).resolves.toHaveLength(1)
   })
 

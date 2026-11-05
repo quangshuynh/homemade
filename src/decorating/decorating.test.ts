@@ -51,9 +51,9 @@ function equip(save: GameSave, slug: string): GameSave {
 }
 
 describe('the decoration catalog', () => {
-  it('is small and curated: 12–18 pieces, with unique ids and names', () => {
-    expect(DECORATIONS.length).toBeGreaterThanOrEqual(12)
-    expect(DECORATIONS.length).toBeLessThanOrEqual(18)
+  it('is small and curated: 18–24 pieces (six of them keepsake rewards), with unique ids and names', () => {
+    expect(DECORATIONS.length).toBeGreaterThanOrEqual(18)
+    expect(DECORATIONS.length).toBeLessThanOrEqual(24)
     expect(new Set(DECORATIONS.map((entry) => entry.id)).size).toBe(DECORATIONS.length)
     expect(new Set(DECORATIONS.map((entry) => entry.name)).size).toBe(DECORATIONS.length)
     for (const entry of DECORATIONS) expect(entry.id, entry.name).toMatch(/^decoration_[a-z0-9-]+$/)

@@ -9,7 +9,8 @@ import type { DecorationDefinition, DecorationTheme, DecorationThemeId } from '.
  * Three ways in, never more than one per thing:
  * - the old cupboard, opened at the end of Chapter 5 (the starter set);
  * - something the player has already done (a first Mythic, a first secret,
- *   a whole family found, a first Legendary), granted once and kept for good;
+ *   a whole family found, a first Legendary, or a keepsake earned), granted
+ *   once and kept for good;
  * - a modest price in Crumbs, for some of the themed pieces.
  *
  * All of it is cosmetic. Nothing here is read by a baking, reward, level or
@@ -125,6 +126,56 @@ export const DECORATIONS: readonly DecorationDefinition[] = [
     slot: 'textile',
     unlock: { type: 'family-complete', familyId: 'fruity' },
     visual: { kind: 'towel', pattern: 'fruit' },
+  },
+
+  // ---- Keepsake rewards (Interval 9): each arrives with the keepsake that names it ----
+  {
+    id: defineId('decoration', 'cookie-tin'),
+    name: 'Cookie tin',
+    description: 'A dented blue tin with a windmill on the lid. For ten cards back in the box.',
+    slot: 'shelf',
+    unlock: { type: 'achievement', achievementId: defineId('achievement', 'recipe-keeper') },
+    visual: { kind: 'cookie-tin' },
+  },
+  {
+    id: defineId('decoration', 'embroidered-mitt'),
+    name: 'Embroidered oven mitt',
+    description: 'Quilted, singed at one thumb, with a little cookie stitched on the back. For half the box found.',
+    slot: 'textile',
+    unlock: { type: 'achievement', achievementId: defineId('achievement', 'half-full') },
+    visual: { kind: 'oven-mitt' },
+  },
+  {
+    id: defineId('decoration', 'ribboned-bundle'),
+    name: 'Ribboned recipe bundle',
+    description: 'Old cards tied up with red ribbon, the way someone kept their best ones. For four dividers done.',
+    slot: 'shelf',
+    unlock: { type: 'achievement', achievementId: defineId('achievement', 'full-shelf') },
+    visual: { kind: 'recipe-bundle' },
+  },
+  {
+    id: defineId('decoration', 'cookie-plate'),
+    name: 'Favourite-cookie plate',
+    description: 'A blue-rimmed plate, propped up, with three cookies on it that nobody is allowed to eat. For a first Familiar recipe.',
+    slot: 'counter-left',
+    unlock: { type: 'achievement', achievementId: defineId('achievement', 'getting-familiar') },
+    visual: { kind: 'cookie-plate' },
+  },
+  {
+    id: defineId('decoration', 'trophy-spoon'),
+    name: 'Tiny trophy spoon',
+    description: 'A silver teaspoon on a little stand, engraved “House Speciality”. For a first House Favourite.',
+    slot: 'shelf',
+    unlock: { type: 'achievement', achievementId: defineId('achievement', 'house-speciality') },
+    visual: { kind: 'trophy-spoon' },
+  },
+  {
+    id: defineId('decoration', 'marmalade-figurine'),
+    name: 'Marmalade figurine',
+    description: 'A small china cat, ginger, curled up asleep. Marmalade insists it looks nothing like her. For every spot filled.',
+    slot: 'shelf',
+    unlock: { type: 'achievement', achievementId: defineId('achievement', 'lived-in') },
+    visual: { kind: 'cat-figurine' },
   },
 
   // ---- For Crumbs: themed pieces, just for looks ----

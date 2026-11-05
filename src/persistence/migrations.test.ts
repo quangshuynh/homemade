@@ -5,8 +5,9 @@ import { bookCounts } from '../domain/recipeBook'
 import { availableScene, readyScenes } from '../story/progress'
 import { DECORATIONS } from '../decorating/catalog'
 import { decoratingOpen, grantEarnedDecorations } from '../decorating/rules'
-import { makeSave, makeV1Save, makeV2Save, makeV3Save, makeV4Save, makeV5Save } from '../test/fixtures'
-import { migrateV1ToV2, migrateV2ToV3, migrateV3ToV4, migrateV4ToV5, migrateV5ToV6 } from './migrations'
+import { makeSave, makeV1Save, makeV2Save, makeV3Save, makeV4Save, makeV5Save, makeV6Save } from '../test/fixtures'
+import { settleSave } from '../keepsakes/settle'
+import { migrateV1ToV2, migrateV2ToV3, migrateV3ToV4, migrateV4ToV5, migrateV5ToV6, migrateV6ToV7 } from './migrations'
 import { readSave } from './schema'
 
 /** Every ingredient the catalog had through Interval 4. Later ingredients are earned, never handed out by an upgrade. */
@@ -29,8 +30,8 @@ describe('save version 1 → 2', () => {
   it('loads an Interval 1 save as the current version', () => {
     const result = readSave(makeV1Save())
 
-    expect(CURRENT_SAVE_VERSION).toBe(6)
-    expect(result).toMatchObject({ ok: true, migratedFrom: 1, save: { version: 6, bakedCreations: [] } })
+    expect(CURRENT_SAVE_VERSION).toBe(7)
+    expect(result).toMatchObject({ ok: true, migratedFrom: 1, save: { version: CURRENT_SAVE_VERSION, bakedCreations: [] } })
   })
 
   it('keeps the profile, kitchen name, settings and timestamps', () => {
@@ -90,7 +91,7 @@ describe('save version 1 → 2', () => {
 describe('save version 2 → 3', () => {
   it('loads an Interval 2 save as version 3 with empty baking memories', () => {
     const result = readSave(makeV2Save())
-    expect(result).toMatchObject({ ok: true, migratedFrom: 2, save: { version: 6, bakedCreations: [] } })
+    expect(result).toMatchObject({ ok: true, migratedFrom: 2, save: { version: CURRENT_SAVE_VERSION, bakedCreations: [] } })
     expect(migrateV2ToV3(makeV2Save())).toMatchObject({ version: 3, bakedCreations: [] })
   })
 
@@ -154,7 +155,7 @@ describe('save version 2 → 3', () => {
 describe('save version 3 → 4', () => {
   it('loads an Interval 4 save as the current version', () => {
     const result = readSave(makeV3Save())
-    expect(result).toMatchObject({ ok: true, migratedFrom: 3, save: { version: 6 } })
+    expect(result).toMatchObject({ ok: true, migratedFrom: 3, save: { version: CURRENT_SAVE_VERSION } })
     expect(migrateV3ToV4(makeV3Save())).toMatchObject({ version: 4 })
   })
 
@@ -240,13 +241,16 @@ describe('Interval 6 content on older saves', () => {
     // Families and secrecy come from the catalog: nothing new was written into the save.
     expect(Object.keys(save).sort()).toEqual(
       [
+        'achievementIds',
         'bakedCreations',
         'createdAt',
         'decorating',
         'discoveredRecipes',
+        'favoriteRecipeIds',
         'pantryIngredientIds',
         'profile',
         'progression',
+        'recipeBakeCounts',
         'settings',
         'story',
         'tutorial',
@@ -267,7 +271,7 @@ describe('Interval 6 content on older saves', () => {
 describe('save version 4 → 5', () => {
   it('loads an Interval 6 save as the current version, with no story seen', () => {
     const result = readSave(makeV4Save())
-    expect(result).toMatchObject({ ok: true, migratedFrom: 4, save: { version: 6, story: { seenSceneIds: [] } } })
+    expect(result).toMatchObject({ ok: true, migratedFrom: 4, save: { version: CURRENT_SAVE_VERSION, story: { seenSceneIds: [] } } })
     expect(migrateV4ToV5(makeV4Save())).toMatchObject({ version: 5, story: { seenSceneIds: [] } })
   })
 
@@ -275,8 +279,10 @@ describe('save version 4 → 5', () => {
     const v4 = makeV4Save()
     const result = readSave(v4)
     if (!result.ok) throw new Error(result.detail)
-    const { story, decorating, ...rest } = result.save
-    expect(rest).toEqual({ ...v4, version: 6 })
+    const { story, decorating, achievementIds, recipeBakeCounts, favoriteRecipeIds, ...rest } = result.save
+    expect(rest).toEqual({ ...v4, version: CURRENT_SAVE_VERSION })
+    expect({ achievementIds, favoriteRecipeIds }).toEqual({ achievementIds: [], favoriteRecipeIds: [] })
+    expect(recipeBakeCounts).toEqual({ recipe_shortbread: 1, 'recipe_meringue-kiss': 1, 'recipe_chocolate-chip': 1, recipe_snickerdoodle: 1, 'recipe_jam-thumbprint': 1 })
     expect(decorating).toEqual({ ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] })
     expect(story).toEqual({ seenSceneIds: [] })
   })
@@ -310,7 +316,7 @@ describe('save version 4 → 5', () => {
       const result = readSave(old)
       if (!result.ok) throw new Error(result.detail)
       expect(result.save.story).toEqual({ seenSceneIds: [] })
-      expect(result.save.version).toBe(6)
+      expect(result.save.version).toBe(CURRENT_SAVE_VERSION)
     }
   })
 
@@ -361,7 +367,7 @@ describe('save version 5 → 6', () => {
     expect(result).toMatchObject({
       ok: true,
       migratedFrom: 5,
-      save: { version: 6, decorating: { ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] } },
+      save: { version: CURRENT_SAVE_VERSION, decorating: { ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] } },
     })
   })
 
@@ -369,8 +375,9 @@ describe('save version 5 → 6', () => {
     const v5 = makeV5Save()
     const result = readSave(v5)
     if (!result.ok) throw new Error(result.detail)
-    const { decorating, ...rest } = result.save
-    expect(rest).toEqual({ ...v5, version: 6 })
+    const { decorating, achievementIds, recipeBakeCounts, favoriteRecipeIds, ...rest } = result.save
+    expect({ achievementIds, recipeBakeCounts, favoriteRecipeIds }).toEqual({ achievementIds: [], recipeBakeCounts: { recipe_shortbread: 1, 'recipe_meringue-kiss': 1, 'recipe_chocolate-chip': 1, recipe_snickerdoodle: 1, 'recipe_jam-thumbprint': 1 }, favoriteRecipeIds: [] })
+    expect(rest).toEqual({ ...v5, version: CURRENT_SAVE_VERSION })
     expect(decorating).toEqual({ ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] })
   })
 
@@ -445,6 +452,102 @@ describe('the decorating part of a current save', () => {
       [{ ...good, noticedMomentIds: [''] }, 'noticedMomentIds'],
     ] as const) {
       const result = readSave(withDecorating(decorating))
+      expect(result, problem).toMatchObject({ ok: false, reason: 'invalid' })
+      if (!result.ok) expect(result.detail, problem).toContain(problem)
+    }
+  })
+})
+
+describe('save version 6 → 7', () => {
+  const recipeBake = (n: number, recipeId: string | null) => ({
+    id: `creation_00000000-0000-4000-8000-00000000000${n}`,
+    ingredientIds: ['ingredient_butter', 'ingredient_flour', 'ingredient_sugar'],
+    recipeId,
+    bakedAt: `2026-10-0${n}T10:00:00.000Z`,
+  })
+  /** An Interval 8 kitchen with three shortbreads, an experiment and an older find whose bakes were trimmed away. */
+  const played = () =>
+    makeV6Save({
+      discoveredRecipes: [
+        { recipeId: 'recipe_shortbread', discoveredAt: '2026-10-01T10:00:00.000Z' },
+        { recipeId: 'recipe_blondie', discoveredAt: '2026-09-01T10:00:00.000Z' },
+      ],
+      bakedCreations: [recipeBake(1, 'recipe_shortbread'), recipeBake(2, null), recipeBake(3, 'recipe_shortbread'), recipeBake(4, 'recipe_shortbread')],
+    })
+
+  it('loads an Interval 8 save as the current version, everything else exactly as it was', () => {
+    const v6 = played()
+    const result = readSave(v6)
+    if (!result.ok) throw new Error(result.detail)
+    expect(result.migratedFrom).toBe(6)
+    const { achievementIds, recipeBakeCounts, favoriteRecipeIds, ...rest } = result.save
+    expect(rest).toEqual({ ...v6, version: 7 })
+    expect(achievementIds).toEqual([])
+    expect(favoriteRecipeIds).toEqual([])
+    expect(recipeBakeCounts).toBeDefined()
+  })
+
+  it('initialises mastery conservatively: what the remembered bakes prove, and one for every found card', () => {
+    expect(migrateV6ToV7(played()).recipeBakeCounts).toEqual({ recipe_shortbread: 3, recipe_blondie: 1 })
+    // Nothing found, nothing counted; experiments never count.
+    expect(migrateV6ToV7(makeV6Save({ discoveredRecipes: [], bakedCreations: [recipeBake(1, null)] })).recipeBakeCounts).toEqual({})
+  })
+
+  it('awards keepsakes the kitchen already earned on its first settle, once', () => {
+    const result = readSave(played())
+    if (!result.ok) throw new Error(result.detail)
+    const first = settleSave(result.save)
+    expect(first.achievements.map((entry) => entry.id)).toEqual(['achievement_happy-accident', 'achievement_getting-familiar'])
+    expect(settleSave(first.save).achievements).toEqual([])
+    // Rewards stay cosmetic: no Crumbs or XP changed hands.
+    expect(first.save.progression).toEqual(result.save.progression)
+  })
+
+  it('upgrades every older save all the way through', () => {
+    for (const old of [makeV1Save(), makeV2Save(), makeV3Save(), makeV4Save(), makeV5Save()]) {
+      const result = readSave(old)
+      if (!result.ok) throw new Error(result.detail)
+      expect(result.save).toMatchObject({ version: 7, achievementIds: [], favoriteRecipeIds: [] })
+    }
+  })
+
+  it('is deterministic, leaves the stored data untouched, and refuses a save it can’t upgrade', () => {
+    const v6 = played()
+    const snapshot = structuredClone(v6)
+    expect(migrateV6ToV7(played())).toEqual(migrateV6ToV7(played()))
+    readSave(v6)
+    expect(v6).toEqual(snapshot)
+    const broken = makeV6Save({ bakedCreations: 'gone' })
+    const brokenSnapshot = structuredClone(broken)
+    expect(readSave(broken)).toMatchObject({ ok: false, reason: 'migration-failed', version: 6 })
+    expect(broken).toEqual(brokenSnapshot)
+  })
+})
+
+describe('the keepsakes, mastery and favourites parts of a current save', () => {
+  it('reads back exactly as written, unknown keepsake ids included', () => {
+    const save = makeSave({
+      achievementIds: ['achievement_happy-accident', 'achievement_retired'] as never,
+      recipeBakeCounts: { recipe_shortbread: 4 } as never,
+      favoriteRecipeIds: ['recipe_shortbread'] as never,
+    })
+    expect(readSave(JSON.parse(JSON.stringify(save)))).toEqual({ ok: true, save, migratedFrom: null })
+  })
+
+  it('refuses one that’s missing or misshapen', () => {
+    const base = makeSave()
+    for (const [patch, problem] of [
+      [{ achievementIds: undefined }, 'achievementIds'],
+      [{ achievementIds: ['recipe_shortbread'] }, 'not a list of keepsake ids'],
+      [{ achievementIds: ['achievement_lived-in', 'achievement_lived-in'] }, 'twice'],
+      [{ recipeBakeCounts: [] }, 'recipeBakeCounts is missing'],
+      [{ recipeBakeCounts: { shortbread: 2 } }, 'not a recipe id'],
+      [{ recipeBakeCounts: { recipe_shortbread: -1 } }, 'whole number of bakes'],
+      [{ recipeBakeCounts: { recipe_shortbread: 1.5 } }, 'whole number of bakes'],
+      [{ favoriteRecipeIds: 'all' }, 'favoriteRecipeIds'],
+      [{ favoriteRecipeIds: ['recipe_blondie', 'recipe_blondie'] }, 'twice'],
+    ] as const) {
+      const result = readSave({ ...base, ...patch })
       expect(result, problem).toMatchObject({ ok: false, reason: 'invalid' })
       if (!result.ok) expect(result.detail, problem).toContain(problem)
     }

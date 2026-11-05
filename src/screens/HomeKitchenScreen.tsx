@@ -1,5 +1,7 @@
-import { useSave } from '../app/gameContext'
-import { hrefFor } from '../app/routes'
+import { useGame, useSave } from '../app/gameContext'
+import { hrefFor, navigate } from '../app/routes'
+import { Button } from '../components/Button'
+import { favouriteRecipes } from '../keepsakes/rules'
 import { BakerPlaque } from '../components/BakerPlaque'
 import { CoolingRack } from '../components/CoolingRack'
 import { MixingBowl, PantryJar, RecipeBox } from '../components/illustrations'
@@ -22,6 +24,9 @@ import './HomeKitchenScreen.css'
 /** How many recent bakes sit on the rack in the kitchen. */
 export const RACK_SIZE = 3
 
+/** How many favourites the kitchen's note has room for. The rest are in the Recipe Book. */
+export const FAVOURITES_NOTE_SIZE = 3
+
 export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
   const save = useSave()
   const recipeCount = save.discoveredRecipes.length
@@ -36,6 +41,8 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
   const out = Object.values(pieces)
   const cupboardOpen = decoratingOpen(save)
   const cupboardUnread = waiting?.chapter.id === OLD_CUPBOARD_CHAPTER
+  const { prepareRecipe } = useGame()
+  const favourites = favouriteRecipes(save)
 
   return (
     <div className="kitchen">
@@ -121,6 +128,36 @@ export function HomeKitchenScreen({ now = new Date() }: { now?: Date }) {
           <CoolingRack creations={onRack} now={now} label="Just baked" />
         )}
       </section>
+
+      {/* Favourites, pinned up by the rack: each one lays its bowl out, nothing more. Only once there are any. */}
+      {favourites.length > 0 && (
+        <section className="kitchen__favourites" aria-labelledby="kitchen-favourites">
+          <div className="kitchen__rack-top">
+            <h2 id="kitchen-favourites" className="kitchen__rack-title">
+              Favourites
+            </h2>
+            {favourites.length > FAVOURITES_NOTE_SIZE && <a href={hrefFor('recipe-book')}>All of them, in the Recipe Book</a>}
+          </div>
+          <ul className="kitchen__favourites-list">
+            {favourites.slice(0, FAVOURITES_NOTE_SIZE).map((recipe) => (
+              <li key={recipe.id}>
+                <span className="kitchen__favourite-name">
+                  <span aria-hidden="true">♥ </span>
+                  {recipe.name}
+                </span>
+                <Button
+                  aria-label={`Bake again: ${recipe.name}`}
+                  onClick={() => {
+                    if (prepareRecipe(recipe.id)) navigate('bake')
+                  }}
+                >
+                  Bake again
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   )
 }
