@@ -28,6 +28,8 @@ So the failures are **environment-dependent and genuinely intermittent**: not or
 - A `CueSchedulerContext` lets tests supply the clock. UI tests use an *immediate* clock (cues ring synchronously, in order), so they assert the exact sound sequence with no waiting: `['pick', 'pick', 'pick', 'mix', 'ding', 'mastery-up', 'achievement-unlock']`. All the sleeps and extended sound timeouts are gone, and several assertions got stricter (full order instead of "contains").
 - Regression tests: a *manual* clock shows that moving on from a result cancels its waiting sounds, so one bake's stamp can't ring into the next (`Keepsakes.test.tsx`); `cues.test.ts` checks the real timer clock with fake timers (rings on time, cancels only what's waiting, leaves no timers); `reveal.test.ts` pins the cue sheet for experiments, rebakes, mastery, secrets and a Mythic with a level, a decoration and a keepsake.
 
+**A third one, found by CI.** The branch's first CI run failed once on `Story.test.tsx` › *shows every line straight away under reduced motion*: it read `data-motion="system"` where the save said `reduced`, 30ms into the test. This one was a real bug. `App` applied the motion preference in a passive `useEffect`, which React runs after the ready screen is committed, so the kitchen's first frame briefly ran on the loading screen's `system` setting, and a test reading the attribute as soon as a heading appeared could see it. It's now a `useLayoutEffect`, applied in the same commit, before paint. A regression test in `App.test.tsx` records the attribute from a `MutationObserver` the moment the kitchen's heading is inserted: it failed 3/3 before the change and passes after. The same test name had failed in an Interval 8 session too, so it was older than this interval.
+
 **What's left: long journeys on a saturated machine.** After the fix, every failure seen in the runs below was a **5s Vitest timeout** in a multi-screen journey (the tutorial walkthrough and its replay, the new-player story walkthrough, the two keepsake bakes, the whole-bake sound test), and only on a heavily loaded machine. When a test times out, Vitest abandons it but its pending clicks keep running against the next test's freshly rendered app, so one timeout can fail one or two later tests in the same file within a few hundred ms. Those cascades are not separate bugs.
 
 Evidence that it's load, not the code or the new content:
@@ -152,11 +154,12 @@ No save version change and no migration: ownership, discoveries, mastery counts,
 
 ## Automated
 
-653 tests (Vitest, jsdom, `fake-indexeddb`), up from 633: the sound cue sheet and both clocks, the cancel-on-move-on regression, every catalog recipe never paying twice, the Interval 11 jars' levels, prices and self-financing, the three-start exhaustive deadlock walk cross-checked against the real rules, the usage, family and rarity audit, the two family-reward decorations, an Interval 10 save loading unchanged with its keepsakes kept, and a save file carrying the new content. Lint, type-check and production build pass.
+654 tests (Vitest, jsdom, `fake-indexeddb`), up from 633: the motion preference applied before the first frame, the sound cue sheet and both clocks, the cancel-on-move-on regression, every catalog recipe never paying twice, the Interval 11 jars' levels, prices and self-financing, the three-start exhaustive deadlock walk cross-checked against the real rules, the usage, family and rarity audit, the two family-reward decorations, an Interval 10 save loading unchanged with its keepsakes kept, and a save file carrying the new content. Lint, type-check and production build pass.
 
 ## Bugs found and fixed
 
 - **Timing-sensitive tests** (above): sound-delay waits and sleeps replaced by an explicit, cancellable cue sheet and a test clock.
+- **The motion preference arrived a frame late** (above): applied after the first commit; now before paint, with a regression test.
 - **Keepsake sounds could outlive their screen:** the Decorate and Notes screens' stamps were uncancelled timers. Now cancelled on unmount.
 - **Draft balance deadlock** (above): caught by the anti-deadlock walk before anything shipped; fixed by giving every new jar a starter-shelf card worth its price.
 
