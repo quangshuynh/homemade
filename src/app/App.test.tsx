@@ -111,6 +111,26 @@ describe('navigation', () => {
   })
 })
 
+describe('the motion preference', () => {
+  it('is on the page before the kitchen first appears, never a frame late', async () => {
+    // Regression: it was applied in a passive effect, after the screen was committed, so for a
+    // moment the kitchen ran on the loading screen's 'system' setting, and a test reading it as
+    // soon as a heading appeared could see the wrong value.
+    document.documentElement.dataset.motion = 'system'
+    const seen: (string | undefined)[] = []
+    const observer = new MutationObserver(() => {
+      if (document.querySelector('h1')?.textContent === 'Crumb & Co.' && seen.length === 0) seen.push(document.documentElement.dataset.motion)
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+    const { repository } = createMemorySaveRepository(makeSave({ settings: { soundEnabled: false, motion: 'reduced' } }))
+    window.location.hash = '#/'
+    renderGame(repository)
+    await screen.findByRole('heading', { level: 1, name: 'Crumb & Co.' })
+    observer.disconnect()
+    expect(seen).toEqual(['reduced'])
+  })
+})
+
 describe('settings', () => {
   it('persists preferences', async () => {
     const user = userEvent.setup()

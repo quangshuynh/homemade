@@ -4,11 +4,13 @@ import { describe, expect, it, vi } from 'vitest'
 import { App } from '../app/App'
 import { GameProvider } from '../app/GameProvider'
 import type { AudioPlayer } from '../audio/audioPlayer'
+import { CueSchedulerContext } from '../audio/cues'
 import { SoundPlayerContext } from '../audio/soundContext'
 import type { RecipeId, StorySceneId } from '../domain/ids'
 import type { GameSave } from '../domain/types'
 import { createMemorySaveRepository } from '../persistence/memorySaveRepository'
 import { makeSave, makeV5Save } from '../test/fixtures'
+import { immediateCues } from '../test/soundCues'
 
 type User = ReturnType<typeof userEvent.setup>
 
@@ -36,9 +38,11 @@ function startAt(stored: unknown, hash = '#/') {
   window.location.hash = hash
   render(
     <SoundPlayerContext value={player}>
-      <GameProvider repository={memory.repository}>
-        <App />
-      </GameProvider>
+      <CueSchedulerContext value={immediateCues}>
+        <GameProvider repository={memory.repository}>
+          <App />
+        </GameProvider>
+      </CueSchedulerContext>
     </SoundPlayerContext>,
   )
   return { played, saved: () => memory.state.stored as GameSave }
@@ -305,7 +309,7 @@ describe('earning decorations by playing', () => {
     const result = (await screen.findByRole('heading', { level: 2, name: /Honey Flapjack/ })).closest('section')!
     expect(within(result).getByText(/For your kitchen:/).closest('p')).toHaveTextContent('For your kitchen: something new in the old cupboard (little lemon tree).')
     expect(within(result).getByRole('link', { name: 'Open the cupboard' })).toHaveAttribute('href', '#/decorate')
-    await waitFor(() => expect(played).toContain('decor-unlock'), { timeout: 3000 })
+    expect(played).toContain('decor-unlock')
     expect(saved().decorating.ownedDecorationIds).toContain('decoration_little-lemon-tree')
     expect(saved().decorating.equippedBySlot).toEqual({})
   })

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { CURRENT_SAVE_VERSION } from '../domain/save'
+import { INGREDIENTS } from '../domain/ingredients'
 import { INGREDIENT_UNLOCKS, unlockStatus } from '../domain/progression'
 import { bookCounts } from '../domain/recipeBook'
 import { availableScene, readyScenes } from '../story/progress'
@@ -258,13 +259,50 @@ describe('Interval 6 content on older saves', () => {
         'version',
       ],
     )
-    expect(bookCounts(save)).toEqual({ found: 3, total: 34, secretsFound: 0 })
+    expect(bookCounts(save)).toEqual({ found: 3, total: 47, secretsFound: 0 })
   })
 
   it('reads a current save exactly as it was written', () => {
     const interval5 = makeSave({ progression: { crumbs: 37, xp: 412 }, discoveredRecipes: [{ recipeId: 'recipe_shortbread' as never, discoveredAt: '2026-08-01T10:00:00.000Z' }] })
     const result = readSave(JSON.parse(JSON.stringify(interval5)))
     expect(result).toEqual({ ok: true, save: interval5, migratedFrom: null })
+  })
+})
+
+describe('Interval 11 content on an Interval 10 save', () => {
+  /** A finished Interval 10 kitchen, written as version 7 wrote it: the old nineteen jars, a keepsake for every card, a favourite, mastery, decorations out. */
+  const interval10 = () =>
+    makeSave({
+      pantryIngredientIds: INGREDIENTS.slice(0, 19).map((ingredient) => ingredient.id),
+      discoveredRecipes: [{ recipeId: 'recipe_shortbread' as never, discoveredAt: '2026-11-01T10:00:00.000Z' }],
+      bakedCreations: [{ id: 'creation_1' as never, ingredientIds: ['ingredient_butter', 'ingredient_flour', 'ingredient_sugar'] as never, recipeId: 'recipe_shortbread' as never, bakedAt: '2026-11-01T10:00:00.000Z' }],
+      progression: { crumbs: 12, xp: 1180 },
+      achievementIds: ['achievement_every-card', 'achievement_family-recipe'] as never,
+      recipeBakeCounts: { recipe_shortbread: 10 } as never,
+      favoriteRecipeIds: ['recipe_shortbread'] as never,
+      story: { seenSceneIds: ['scene_faded-box'] as never },
+    })
+
+  it('loads without a migration or a version change, exactly as written', () => {
+    const stored = JSON.parse(JSON.stringify(interval10()))
+    expect(stored.version).toBe(CURRENT_SAVE_VERSION)
+    expect(readSave(stored)).toEqual({ ok: true, save: stored, migratedFrom: null })
+  })
+
+  it('leaves the five new jars locked, to be bought with Crumbs like any other, and keeps every keepsake', () => {
+    const result = readSave(JSON.parse(JSON.stringify(interval10())))
+    if (!result.ok) throw new Error(result.detail)
+    for (const ingredient of INGREDIENTS.slice(19)) {
+      expect(result.save.pantryIngredientIds, ingredient.id).not.toContain(ingredient.id)
+      expect(unlockStatus(result.save, ingredient.id).kind, ingredient.id).not.toBe('owned')
+    }
+    // The new cards make the book bigger, but nothing earned is taken back.
+    const settled = settleSave(result.save).save
+    expect(settled.achievementIds).toEqual(expect.arrayContaining(['achievement_every-card', 'achievement_family-recipe']))
+    expect(settled.progression).toEqual({ crumbs: 12, xp: 1180 })
+    expect(settled.recipeBakeCounts).toEqual({ recipe_shortbread: 10 })
+    expect(settled.favoriteRecipeIds).toEqual(['recipe_shortbread'])
+    expect(bookCounts(settled)).toEqual({ found: 1, total: 47, secretsFound: 0 })
   })
 })
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useGame, useSave } from '../app/gameContext'
 import { hrefFor } from '../app/routes'
+import { useSoundCues } from '../audio/cues'
 import { useSound } from '../audio/soundContext'
 import { BakerPlaque, CrumbsMark } from '../components/BakerPlaque'
 import { Button, LinkButton } from '../components/Button'
@@ -17,6 +18,9 @@ import type { StoryNews } from '../story/progress'
 import { StoryNudge } from '../story/StoryNudge'
 import { useTutorial } from '../tutorial/tutorialContext'
 import './PantryScreen.css'
+
+/** A new level's ta-da, once the jar has been set down. */
+const LEVEL_AFTER_ADDITION_MS = 700
 
 const SHELVES: { category: IngredientCategory; title: string }[] = [
   { category: 'basic', title: 'Baking basics' },
@@ -52,17 +56,13 @@ export function PantryScreen() {
   // Once the dialog has closed (its own effect runs first), land on the news so it's
   // read out: the button that opened the dialog has gone, its jar now on the shelf.
   // A new level gets its ta-da after the jar has been set down.
-  const latestSound = useRef(playSound)
-  useEffect(() => {
-    latestSound.current = playSound
-  })
+  const ring = useSoundCues()
   useEffect(() => {
     if (!added) return
     addedNote.current?.focus()
     if (!added.levelUp) return
-    const timer = window.setTimeout(() => latestSound.current('level-up'), 700)
-    return () => window.clearTimeout(timer)
-  }, [added])
+    return ring([{ id: 'level-up', at: LEVEL_AFTER_ADDITION_MS }])
+  }, [added, ring])
 
   function confirm() {
     if (!confirming) return

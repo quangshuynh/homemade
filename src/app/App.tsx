@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType } from 'react'
+import { useLayoutEffect, useState, type ComponentType } from 'react'
 import { HomeKitchenScreen } from '../screens/HomeKitchenScreen'
 import { MemoriesScreen } from '../screens/MemoriesScreen'
 import { NotesScreen } from '../screens/NotesScreen'
@@ -35,8 +35,9 @@ export function App() {
   const [sawSetup, setSawSetup] = useState(false)
   if (state.status === 'first-run' && !sawSetup) setSawSetup(true)
 
-  // The motion preference is applied as a root attribute that the design tokens read.
-  useEffect(() => {
+  // The motion preference is applied as a root attribute that the design tokens read. A layout
+  // effect, so it's on the page in the same commit as the screen it governs, before anything is painted.
+  useLayoutEffect(() => {
     document.documentElement.dataset.motion = motion
   }, [motion])
 

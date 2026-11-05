@@ -10,11 +10,16 @@ import {
   COCOA,
   COCONUT,
   EGG,
+  ESPRESSO,
   FLOUR,
+  GINGER,
   HONEY,
   INGREDIENTS,
+  MARSHMALLOW,
   OATS,
+  ORANGE,
   PEANUT_BUTTER,
+  PECAN,
   PISTACHIO,
   SEA_SALT,
   STARTER_PANTRY,
@@ -59,8 +64,10 @@ describe('rarity', () => {
     const count = (rarity: string) => RECIPES.filter((recipe) => recipe.rarity === rarity).length
     expect(count('common')).toBeGreaterThanOrEqual(count('uncommon'))
     expect(count('uncommon')).toBeGreaterThanOrEqual(count('rare'))
-    expect(count('epic')).toBeLessThanOrEqual(4)
+    // Interval 11 added two Epics and no Legendary; the top three tiers stay under a fifth of the book.
+    expect(count('epic')).toBeLessThanOrEqual(6)
     expect(count('legendary')).toBeLessThanOrEqual(2)
+    expect((count('epic') + count('legendary') + count('mythic')) / RECIPES.length).toBeLessThan(0.2)
     expect(count('mythic')).toBe(1)
   })
 
@@ -103,6 +110,16 @@ describe('discovery rewards', () => {
     expect(again.save.progression).toEqual(first.save.progression)
     // The rebake is still remembered.
     expect(again.save.bakedCreations).toHaveLength(2)
+  })
+
+  it('never pays twice for any recipe in the catalog, whatever order it’s baked in', () => {
+    for (const recipe of RECIPES) {
+      const first = bakeInto(makeSave(), recipe.ingredientIds, 1)
+      const again = bakeInto(first.save, [...recipe.ingredientIds].reverse(), 2)
+      expect(again.outcome.reward, recipe.name).toBeNull()
+      expect(again.outcome.levelUp, recipe.name).toBeNull()
+      expect(again.save.progression, recipe.name).toEqual(first.save.progression)
+    }
   })
 
   it('pays nothing for a Kitchen Experiment', () => {
@@ -291,6 +308,25 @@ describe('balance', () => {
   const INTERVAL_4_PANTRY = INGREDIENTS.slice(0, 12).map((ingredient) => ingredient.id)
   const INTERVAL_4_RECIPES = RECIPES.slice(0, 12)
 
+  /** The cards Interval 11 added. */
+  const INTERVAL_11_RECIPE_IDS = new Set(
+    [
+      'gingersnap',
+      'pecan-sandie',
+      'chocolate-orange',
+      'orange-ginger-thin',
+      'mocha-crinkle',
+      'coffee-kiss',
+      'maple-pecan',
+      'salted-peanut-butter',
+      'orange-biscotti',
+      'marshmallow-puff',
+      'campfire-smore',
+      'salted-pecan-turtle',
+      'rocky-road',
+    ].map((slug) => defineId('recipe', slug)),
+  )
+
   const NEW_KITCHEN = makeNewKitchen()
   /**
    * The hardest place to start from: a kitchen upgraded from Interval 4 with
@@ -334,37 +370,114 @@ describe('balance', () => {
     return save
   }
 
-  /** Every pantry reachable from `start`, in every order of additions, and any with no way forward. */
+  /**
+   * Every pantry reachable from `start`, in every order of additions, and any
+   * with no way forward. Where a player stands depends only on *which*
+   * additions they've made, never the order (bestCase sums them), so each
+   * set is worked out once, as a bitmask over the additions still to make.
+   * That keeps the search exhaustive at nineteen additions (up to 2^19 sets)
+   * without walking every one of the orders that lead to each.
+   */
   function explore(start: GameSave) {
-    const all = INGREDIENT_UNLOCKS.map((unlock) => unlock.ingredientId).filter((id) => !start.pantryIngredientIds.includes(id))
-    const seen = new Set<string>()
-    const queue: IngredientId[][] = [[]]
-    const stuck: string[] = []
-    while (queue.length > 0) {
-      const added = queue.shift()!
-      const key = [...added].sort().join()
-      if (seen.has(key)) continue
-      seen.add(key)
-      const save = bestCase(start, added)
-      const next = all.filter((id) => !added.includes(id) && unlockStatus(save, id).kind === 'available')
-      if (added.length < all.length && next.length === 0) stuck.push(`${key} (${save.progression.crumbs} Crumbs, ${save.progression.xp} XP)`)
-      for (const id of next) queue.push([...added, id])
+    const all = INGREDIENT_UNLOCKS.filter((unlock) => !start.pantryIngredientIds.includes(unlock.ingredientId))
+    const bit = new Map(all.map((unlock, index) => [unlock.ingredientId, 1 << index]))
+    const found = new Set(start.discoveredRecipes.map((entry) => entry.recipeId))
+    // Each recipe that could still pay out, with the additions it waits on.
+    const payable = RECIPES.filter((recipe) => !recipe.isSecret && !found.has(recipe.id))
+      .filter((recipe) => recipe.ingredientIds.every((id) => start.pantryIngredientIds.includes(id) || bit.has(id)))
+      .map((recipe) => ({ needs: recipe.ingredientIds.reduce((mask, id) => mask | (bit.get(id) ?? 0), 0), reward: discoveryReward(recipe) }))
+
+    const standing = (mask: number) => {
+      let { crumbs, xp } = start.progression
+      all.forEach((unlock, index) => {
+        if (mask & (1 << index)) {
+          crumbs -= unlock.crumbs
+          xp += INGREDIENT_UNLOCK_XP
+        }
+      })
+      for (const recipe of payable) {
+        if ((recipe.needs & mask) === recipe.needs) {
+          crumbs += recipe.reward.crumbs
+          xp += recipe.reward.xp
+        }
+      }
+      return { crumbs, xp }
     }
-    return { seen, stuck, everything: [...all].sort().join() }
+    const nameOf = (mask: number) =>
+      all
+        .filter((_, index) => mask & (1 << index))
+        .map((unlock) => unlock.ingredientId)
+        .sort()
+        .join()
+
+    const full = (1 << all.length) - 1
+    const seen = new Uint8Array(full + 1)
+    const queue = [0]
+    seen[0] = 1
+    const stuck: string[] = []
+    let visited = 0
+    for (let head = 0; head < queue.length; head++) {
+      const mask = queue[head]!
+      visited++
+      const { crumbs, xp } = standing(mask)
+      const level = levelForXp(xp)
+      let moves = 0
+      all.forEach((unlock, index) => {
+        const next = mask | (1 << index)
+        if (next === mask || level < unlock.level || crumbs < unlock.crumbs) return
+        moves++
+        if (!seen[next]) {
+          seen[next] = 1
+          queue.push(next)
+        }
+      })
+      if (mask !== full && moves === 0) stuck.push(`${nameOf(mask)} (${crumbs} Crumbs, ${xp} XP)`)
+    }
+    return { visited, stuck, reachedEverything: seen[full] === 1, standing, bit }
   }
+
+  /**
+   * The newest hard case: an Interval 10 kitchen that owns all nineteen of
+   * the old ingredients and has found every card they make, but spent every
+   * Crumb (on the cupboard, say). The Interval 11 jars are new to it.
+   */
+  const INTERVAL_10_PANTRY = INGREDIENTS.slice(0, 19).map((ingredient) => ingredient.id)
+  const INTERVAL_10_RECIPES = RECIPES.filter(
+    (recipe) => !recipe.isSecret && recipe.ingredientIds.every((id) => INTERVAL_10_PANTRY.includes(id)) && !INTERVAL_11_RECIPE_IDS.has(recipe.id),
+  )
+  const INTERVAL_10_KITCHEN = makeNewKitchen({
+    pantryIngredientIds: INTERVAL_10_PANTRY,
+    discoveredRecipes: INTERVAL_10_RECIPES.map((recipe) => ({ recipeId: recipe.id, discoveredAt: NOW.toISOString() })),
+    progression: { crumbs: 0, xp: INTERVAL_10_RECIPES.reduce((total, recipe) => total + discoveryReward(recipe).xp, 0) },
+    tutorial: { completed: true, skipped: false },
+  })
 
   it.each([
     ['a brand-new kitchen', NEW_KITCHEN],
     ['an upgraded Interval 4 kitchen with no Crumbs', VETERAN],
+    ['a finished Interval 10 kitchen with no Crumbs', INTERVAL_10_KITCHEN],
   ])('can never leave %s stuck, whatever order ingredients are added in', (_, start) => {
-    const { seen, stuck, everything } = explore(start)
+    const { stuck, reachedEverything } = explore(start)
     expect(stuck).toEqual([])
     // And the whole pantry is reachable.
-    expect(seen.has(everything)).toBe(true)
+    expect(reachedEverything).toBe(true)
   })
 
   it('really does try a great many orders', () => {
-    expect(explore(NEW_KITCHEN).seen.size).toBeGreaterThan(1000)
+    expect(explore(NEW_KITCHEN).visited).toBeGreaterThan(10_000)
+  })
+
+  it('works each pantry out exactly as the game’s own rules would', () => {
+    // The fast search must agree with bestCase and unlockStatus, which use the real save and rules.
+    for (const start of [NEW_KITCHEN, VETERAN, INTERVAL_10_KITCHEN]) {
+      const { standing, bit } = explore(start)
+      const ids = [...bit.keys()]
+      for (let sample = 0; sample < 200; sample++) {
+        const added = ids.filter((_, index) => ((sample * 2654435761) >>> index) % 3 === 0)
+        const mask = added.reduce((total, id) => total | bit.get(id)!, 0)
+        expect(standing(mask)).toEqual(bestCase(start, added).progression)
+      }
+    }
   })
 
   it('reaches the top level by filling the pantry and finding every recipe that isn’t secret', () => {
@@ -405,6 +518,31 @@ describe('balance', () => {
     expect(findUnlock(PISTACHIO)!.level).toBeGreaterThan(findUnlock(BROWN_SUGAR)!.level)
     // Sea salt, which the Mythic needs, comes last of all.
     for (const unlock of INGREDIENT_UNLOCKS) expect(unlock.level).toBeLessThanOrEqual(findUnlock(SEA_SALT)!.level)
+  })
+
+  it('puts Interval 11’s jars at existing levels: no new levels, nothing past sea salt', () => {
+    const added = INGREDIENT_UNLOCKS.filter((unlock) => [ORANGE, GINGER, ESPRESSO, PECAN, MARSHMALLOW].includes(unlock.ingredientId))
+    expect(added.map(({ ingredientId, level, crumbs }) => [ingredientId, level, crumbs])).toEqual([
+      [ORANGE, 4, 25],
+      [GINGER, 5, 15],
+      [ESPRESSO, 6, 25],
+      [PECAN, 7, 15],
+      [MARSHMALLOW, 10, 15],
+    ])
+    expect(MAX_LEVEL).toBe(11)
+  })
+
+  it('makes every Interval 11 jar pay for itself from the starter shelf, so adding one never leaves a kitchen worse off', () => {
+    // This is what keeps the search above clean: a jar that can't earn its price back on its
+    // own can drain a kitchen that skipped the cheap early jars. Each of these has a card
+    // made from the starter pantry and that jar alone, worth at least what the jar costs.
+    for (const id of [ORANGE, GINGER, ESPRESSO, PECAN, MARSHMALLOW]) {
+      const shelf = [...STARTER_PANTRY, id]
+      const ownCards = RECIPES.filter((recipe) => !recipe.isSecret && recipe.ingredientIds.includes(id) && recipe.ingredientIds.every((need) => shelf.includes(need)))
+      const earned = ownCards.reduce((total, recipe) => total + discoveryReward(recipe).crumbs, 0)
+      expect(ownCards.length, id).toBeGreaterThan(0)
+      expect(earned, id).toBeGreaterThanOrEqual(findUnlock(id)!.crumbs)
+    }
   })
 
   it('keeps Interval 5’s pantry additions at the same level and price', () => {

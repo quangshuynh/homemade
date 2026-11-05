@@ -28,6 +28,12 @@ export const WHITE_CHOCOLATE = defineId('ingredient', 'white-chocolate')
 export const MAPLE_SYRUP = defineId('ingredient', 'maple-syrup')
 export const PISTACHIO = defineId('ingredient', 'pistachio')
 export const SEA_SALT = defineId('ingredient', 'sea-salt')
+// Interval 11
+export const ORANGE = defineId('ingredient', 'orange')
+export const GINGER = defineId('ingredient', 'ginger')
+export const ESPRESSO = defineId('ingredient', 'espresso')
+export const PECAN = defineId('ingredient', 'pecan')
+export const MARSHMALLOW = defineId('ingredient', 'marshmallow')
 
 export const INGREDIENTS: readonly Ingredient[] = [
   {
@@ -163,6 +169,42 @@ export const INGREDIENTS: readonly Ingredient[] = [
     description: 'Crunchy flakes of sea salt. A pinch changes everything around it.',
     category: 'basic',
     art: { form: 'granules', swatch: 'salt' },
+  },
+  // ---- Interval 11 ----
+  {
+    id: ORANGE,
+    name: 'Orange',
+    description: 'A sweet, thin-skinned orange. The zest perfumes your fingers for the rest of the day.',
+    category: 'flavouring',
+    art: { form: 'fruit', swatch: 'orange' },
+  },
+  {
+    id: GINGER,
+    name: 'Ginger',
+    description: 'Ground ginger: warm, peppery, with a little bite at the back of the throat.',
+    category: 'flavouring',
+    art: { form: 'powder', swatch: 'ginger' },
+  },
+  {
+    id: ESPRESSO,
+    name: 'Espresso',
+    description: 'A small jar of instant espresso. One spoonful makes chocolate taste more of itself.',
+    category: 'flavouring',
+    art: { form: 'granules', swatch: 'espresso' },
+  },
+  {
+    id: PECAN,
+    name: 'Pecans',
+    description: 'Buttery pecan halves, toasted until the whole kitchen smells of them.',
+    category: 'flavouring',
+    art: { form: 'nuts', swatch: 'pecan' },
+  },
+  {
+    id: MARSHMALLOW,
+    name: 'Marshmallows',
+    description: 'A bag of little marshmallows. They puff up in the oven and toast at the tips.',
+    category: 'flavouring',
+    art: { form: 'pillows', swatch: 'marshmallow' },
   },
 ]
 

@@ -4,12 +4,14 @@ import { describe, expect, it, vi } from 'vitest'
 import { App } from '../app/App'
 import { GameProvider } from '../app/GameProvider'
 import type { AudioPlayer } from '../audio/audioPlayer'
+import { CueSchedulerContext } from '../audio/cues'
 import { SoundPlayerContext } from '../audio/soundContext'
 import type { DecorationId, RecipeId, StorySceneId } from '../domain/ids'
 import { CURRENT_SAVE_VERSION } from '../domain/save'
 import type { GameSave } from '../domain/types'
 import { createMemorySaveRepository } from '../persistence/memorySaveRepository'
 import { makeSave } from '../test/fixtures'
+import { immediateCues } from '../test/soundCues'
 import { STORY_SCENES } from './chapters'
 import { STORY_NOTES } from './notes'
 
@@ -53,9 +55,11 @@ function startAt(stored: unknown, hash = '#/') {
   window.location.hash = hash
   render(
     <SoundPlayerContext value={player}>
-      <GameProvider repository={memory.repository}>
-        <App />
-      </GameProvider>
+      <CueSchedulerContext value={immediateCues}>
+        <GameProvider repository={memory.repository}>
+          <App />
+        </GameProvider>
+      </CueSchedulerContext>
     </SoundPlayerContext>,
   )
   return { played, saved: () => memory.state.stored as GameSave }

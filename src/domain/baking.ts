@@ -5,14 +5,19 @@ import {
   COCONUT,
   CHOCOLATE_CHIPS,
   CINNAMON,
+  ESPRESSO,
   findIngredient,
   FLOUR,
+  GINGER,
   HONEY,
   LEMON,
   listIngredientNames,
   MAPLE_SYRUP,
+  MARSHMALLOW,
   OATS,
+  ORANGE,
   PEANUT_BUTTER,
+  PECAN,
   PISTACHIO,
   SEA_SALT,
   STRAWBERRY_JAM,
@@ -127,6 +132,12 @@ const EXPERIMENT_DOUGH: readonly (readonly [IngredientId, CookieLook['dough']])[
   [OATS, 'golden'],
   [HONEY, 'golden'],
   [LEMON, 'lemon'],
+  // Interval 11: after everything older, so an old experiment still looks the way it did.
+  [ESPRESSO, 'dark'],
+  [GINGER, 'spiced'],
+  [PECAN, 'nutty'],
+  [ORANGE, 'golden'],
+  [MARSHMALLOW, 'snow'],
 ]
 
 const EXPERIMENT_TOPPING: readonly (readonly [IngredientId, CookieLook['topping']])[] = [
@@ -140,6 +151,10 @@ const EXPERIMENT_TOPPING: readonly (readonly [IngredientId, CookieLook['topping'
   [LEMON, 'zest'],
   [SEA_SALT, 'salt-flakes'],
   [MAPLE_SYRUP, 'drizzle'],
+  // Interval 11
+  [PECAN, 'pecan'],
+  [MARSHMALLOW, 'marshmallow'],
+  [ORANGE, 'orange-zest'],
 ]
 
 export function experimentLook(ids: readonly IngredientId[]): CookieLook {

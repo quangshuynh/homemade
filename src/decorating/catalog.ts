@@ -127,6 +127,23 @@ export const DECORATIONS: readonly DecorationDefinition[] = [
     unlock: { type: 'family-complete', familyId: 'fruity' },
     visual: { kind: 'towel', pattern: 'fruit' },
   },
+  // Interval 11: two more dividers finished, for the window and the plant spot, which had the fewest pieces.
+  {
+    id: defineId('decoration', 'orange-garland'),
+    name: 'Dried orange garland',
+    description: 'Slices of orange dried slowly in a low oven and strung across the window. For every Warm & Spiced card.',
+    slot: 'window',
+    unlock: { type: 'family-complete', familyId: 'warm-spiced' },
+    visual: { kind: 'orange-garland' },
+  },
+  {
+    id: defineId('decoration', 'coffee-plant'),
+    name: 'Potted coffee plant',
+    description: 'Glossy leaves and a few red cherries. It will never make a cup, but it tries. For every Chocolate card.',
+    slot: 'plant',
+    unlock: { type: 'family-complete', familyId: 'chocolate' },
+    visual: { kind: 'pot-plant', plant: 'coffee' },
+  },
 
   // ---- Keepsake rewards (Interval 9): each arrives with the keepsake that names it ----
   {

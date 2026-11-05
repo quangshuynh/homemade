@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { App } from '../app/App'
 import { GameProvider } from '../app/GameProvider'
 import type { AudioPlayer } from '../audio/audioPlayer'
+import { CueSchedulerContext } from '../audio/cues'
 import { SoundPlayerContext } from '../audio/soundContext'
 import type { RecipeId } from '../domain/ids'
 import { VISIBLE_RECIPES } from '../domain/recipeBook'
@@ -11,6 +12,7 @@ import { RECIPES } from '../domain/recipes'
 import type { GameSave } from '../domain/types'
 import { createMemorySaveRepository } from '../persistence/memorySaveRepository'
 import { makeNewKitchen, makeSave } from '../test/fixtures'
+import { immediateCues } from '../test/soundCues'
 
 type User = ReturnType<typeof userEvent.setup>
 
@@ -31,9 +33,11 @@ function startAt(hash: string, save: GameSave) {
   window.location.hash = hash
   const view = render(
     <SoundPlayerContext value={player}>
-      <GameProvider repository={memory.repository}>
-        <App />
-      </GameProvider>
+      <CueSchedulerContext value={immediateCues}>
+        <GameProvider repository={memory.repository}>
+          <App />
+        </GameProvider>
+      </CueSchedulerContext>
     </SoundPlayerContext>,
   )
   return { played, saved: () => memory.state.stored as GameSave, container: view.container }
@@ -65,14 +69,14 @@ describe('the Recipe Book’s families', () => {
       'Strange & Wonderful',
     ])
     const classics = screen.getByRole('region', { name: 'Classics' })
-    expect(classics).toHaveTextContent('1 of 5 discovered')
+    expect(classics).toHaveTextContent('1 of 6 discovered')
     expect(within(classics).getByRole('heading', { level: 3, name: 'Shortbread' })).toBeInTheDocument()
-    expect(screen.getByRole('region', { name: 'Chocolate' })).toHaveTextContent('1 of 5 discovered')
+    expect(screen.getByRole('region', { name: 'Chocolate' })).toHaveTextContent('1 of 7 discovered')
     // A family with nothing found yet says so quietly, and still keeps its blank cards.
     const nutty = screen.getByRole('region', { name: 'Nutty' })
     expect(nutty).toHaveTextContent('No recipes written here yet.')
-    expect(within(nutty).getAllByText('Not discovered yet')).toHaveLength(4)
-    expect(screen.getByText('2 of 34 recipes written down.')).toBeInTheDocument()
+    expect(within(nutty).getAllByText('Not discovered yet')).toHaveLength(7)
+    expect(screen.getByText('2 of 47 recipes written down.')).toBeInTheDocument()
   })
 
   it('shows one family at a time from the dividers, by keyboard alone, and says what it shows', async () => {
@@ -91,7 +95,7 @@ describe('the Recipe Book’s families', () => {
     expect(classics).toHaveAttribute('aria-pressed', 'true')
     expect(every).toHaveAttribute('aria-pressed', 'false')
     expect(familyRegions()).toHaveLength(1)
-    expect(screen.getByRole('status')).toHaveTextContent('Showing Classics: 1 of 5 discovered.')
+    expect(screen.getByRole('status')).toHaveTextContent('Showing Classics: 1 of 6 discovered.')
 
     await user.tab()
     await user.keyboard(' ')
@@ -100,7 +104,7 @@ describe('the Recipe Book’s families', () => {
 
     await user.click(every)
     expect(familyRegions()).toHaveLength(7)
-    expect(screen.getByRole('status')).toHaveTextContent('Showing every family: 1 of 34 recipes.')
+    expect(screen.getByRole('status')).toHaveTextContent('Showing every family: 1 of 47 recipes.')
   })
 })
 
@@ -117,7 +121,7 @@ describe('clues on blank cards', () => {
     // Lemon isn't on a new kitchen's shelf, so the Fruity cards only say how many.
     const fruity = screen.getByRole('region', { name: 'Fruity' })
     expect(within(fruity).queryByText(/Marmalade scribbled/)).not.toBeInTheDocument()
-    expect(within(fruity).getAllByText(/^Needs \d ingredients$/)).toHaveLength(5)
+    expect(within(fruity).getAllByText(/^Needs \d ingredients$/)).toHaveLength(7)
   })
 
   it('never name an ingredient, a rarity or a recipe', async () => {
@@ -148,10 +152,10 @@ describe('secret recipes in the book', () => {
     startAt('#/recipe-book', stocked({ discoveredRecipes: found('recipe_shortbread', 'recipe_snowball') }))
     await openBook()
 
-    expect(screen.getByText('1 of 34 recipes written down.')).toBeInTheDocument()
+    expect(screen.getByText('1 of 47 recipes written down.')).toBeInTheDocument()
     expect(screen.getByText('Secrets found: 1')).toBeInTheDocument()
     const curious = screen.getByRole('region', { name: 'Strange & Wonderful' })
-    expect(curious).toHaveTextContent('0 of 5 discovered · 1 secret')
+    expect(curious).toHaveTextContent('0 of 7 discovered · 1 secret')
     const card = within(curious).getByRole('heading', { level: 3, name: 'Snowball' }).closest('li')!
     expect(within(card).getByText('Secret')).toBeInTheDocument()
     expect(within(card).getByText('Rare')).toBeInTheDocument()
@@ -180,9 +184,8 @@ describe('the secret reveal', () => {
     // Marmalade's first-secret line, said once.
     expect(within(result).getByText(/A secret! Let’s keep it between us./)).toBeInTheDocument()
 
-    await waitFor(() => expect(played).toContain('discover-rare'), { timeout: 2500 })
-    expect(played.indexOf('discover-secret')).toBeGreaterThan(-1)
-    expect(played.indexOf('discover-secret')).toBeLessThan(played.indexOf('discover-rare'))
+    // The hush, then the chime, then the first-secret keepsake's stamp.
+    expect(played.slice(played.indexOf('ding'))).toEqual(['ding', 'discover-secret', 'discover-rare', 'achievement-unlock'])
     expect(saved().progression).toEqual({ crumbs: 40, xp: 1270 })
   })
 
@@ -206,7 +209,7 @@ describe('the secret reveal', () => {
     expect(within(result).queryByText('Something unexpected…')).not.toBeInTheDocument()
     expect(within(result).getByText('Secret')).toBeInTheDocument()
     expect(within(result).queryByText(/Crumbs ·/)).not.toBeInTheDocument()
-    await waitFor(() => expect(played).toContain('ding'))
+    expect(played.at(-1)).toBe('ding')
     expect(played).not.toContain('discover-secret')
   })
 })
@@ -228,7 +231,7 @@ describe('the first Mythic', () => {
     expect(within(result).getByText(/A Mythic. In this kitchen./)).toBeInTheDocument()
     expect(container.querySelector('.bake-result__mascot [data-expression="starstruck"]')).not.toBeNull()
 
-    await waitFor(() => expect(played).toContain('discover-mythic'), { timeout: 2500 })
+    expect(played).toContain('discover-mythic')
     expect(saved().progression).toEqual({ crumbs: 300, xp: 1520 })
   })
 
@@ -249,7 +252,7 @@ describe('Marmalade’s milestones', () => {
     startAt(
       '#/bake',
       stocked({
-        discoveredRecipes: found('recipe_jam-thumbprint', 'recipe_lemon-shortbread', 'recipe_jam-sandwich', 'recipe_lemon-white-chocolate', 'recipe_vanilla-kiss'),
+        discoveredRecipes: found('recipe_jam-thumbprint', 'recipe_lemon-shortbread', 'recipe_jam-sandwich', 'recipe_lemon-white-chocolate', 'recipe_orange-ginger-thin', 'recipe_orange-biscotti', 'recipe_vanilla-kiss'),
         progression: { crumbs: 0, xp: 1200 },
       }),
     )

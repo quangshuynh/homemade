@@ -4,11 +4,13 @@ import { describe, expect, it, vi } from 'vitest'
 import { App } from '../app/App'
 import { GameProvider } from '../app/GameProvider'
 import type { AudioPlayer } from '../audio/audioPlayer'
+import { CueSchedulerContext } from '../audio/cues'
 import { SoundPlayerContext } from '../audio/soundContext'
 import { CHOCOLATE_CHIPS } from '../domain/ingredients'
 import type { GameSave } from '../domain/types'
 import { createMemorySaveRepository } from '../persistence/memorySaveRepository'
 import { makeNewKitchen, makeSave } from '../test/fixtures'
+import { immediateCues } from '../test/soundCues'
 
 type User = ReturnType<typeof userEvent.setup>
 
@@ -23,9 +25,11 @@ function startAt(hash: string, save: GameSave) {
   window.location.hash = hash
   render(
     <SoundPlayerContext value={player}>
-      <GameProvider repository={memory.repository}>
-        <App />
-      </GameProvider>
+      <CueSchedulerContext value={immediateCues}>
+        <GameProvider repository={memory.repository}>
+          <App />
+        </GameProvider>
+      </CueSchedulerContext>
     </SoundPlayerContext>,
   )
   return { played, saved: () => memory.state.stored as GameSave }
@@ -102,8 +106,7 @@ describe('the discovery reveal', () => {
     expect(within(result).getByRole('link', { name: 'See what’s new in the Pantry' })).toHaveAttribute('href', '#/pantry')
     expect(within(result).getByText('A new level! Look at you go.')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Baker Level 2!')
-    await waitFor(() => expect(played).toEqual(expect.arrayContaining(['ding', 'discover-common', 'level-up'])), { timeout: 2500 })
-    expect(played.indexOf('level-up')).toBeGreaterThan(played.indexOf('discover-common'))
+    expect(played.slice(-3)).toEqual(['ding', 'discover-common', 'level-up'])
     expect(saved().progression.xp).toBe(50)
   })
 
@@ -116,7 +119,8 @@ describe('the discovery reveal', () => {
     expect(result).toHaveAttribute('data-rarity', 'uncommon')
     expect(within(result).getByText('Uncommon')).toBeInTheDocument()
     expect(within(result).getByText('Uncommon! Now we’re getting somewhere.')).toBeInTheDocument()
-    await waitFor(() => expect(played).toContain('discover-uncommon'))
+    // Forty XP is Level 2, so its ta-da follows the chime.
+    expect(played.slice(played.indexOf('ding'))).toEqual(['ding', 'discover-uncommon', 'level-up'])
   })
 })
 
@@ -135,7 +139,7 @@ describe('pantry additions', () => {
     expect(chips).not.toHaveTextContent(/cookie|recipe/i)
     // Only the five starter ingredients are on the shelves.
     expect(screen.getByRole('region', { name: 'Baking basics' })).toHaveTextContent('Flour')
-    expect(within(additions()).getAllByRole('listitem').filter((item) => item.classList.contains('addition'))).toHaveLength(14)
+    expect(within(additions()).getAllByRole('listitem').filter((item) => item.classList.contains('addition'))).toHaveLength(19)
   })
 
   it('explains, in words a screen reader reaches, why an addition isn’t possible yet', async () => {
@@ -204,7 +208,7 @@ describe('pantry additions', () => {
 
     const news = await screen.findByRole('generic', { name: 'Added chocolate chips to the pantry' })
     expect(news).toHaveTextContent('Baker Level 3! Strawberry jam, oats and cocoa powder can go in the pantry now.')
-    await waitFor(() => expect(played).toContain('level-up'))
+    expect(played).toEqual(['ingredient-unlock', 'level-up'])
   })
 
   it('isn’t shown at all in a kitchen that already owns everything', async () => {
@@ -233,7 +237,7 @@ describe('the Recipe Book', () => {
     expect(within(card).getByText('Uncommon')).toBeInTheDocument()
 
     const blanks = screen.getAllByText('Not discovered yet').map((text) => text.closest('li')!)
-    expect(blanks).toHaveLength(33)
+    expect(blanks).toHaveLength(46)
     for (const blank of blanks) {
       expect(blank).not.toHaveTextContent(/common|rare|epic|legendary|mythic|peanut|honey|chocolate/i)
     }

@@ -2,8 +2,8 @@ import { useEffect, useId, useRef, useState, type CSSProperties, type RefObject 
 import { useGame, useSave, type KitchenBake } from '../app/gameContext'
 import { hrefFor } from '../app/routes'
 import { useReducedMotion } from '../app/useReducedMotion'
+import { useSoundCues } from '../audio/cues'
 import { useSound } from '../audio/soundContext'
-import { discoverySound } from '../audio/sounds'
 import { CrumbsMark } from '../components/BakerPlaque'
 import { Button, LinkButton } from '../components/Button'
 import { BakingBowl, Cookie, IngredientJar, Oven } from '../components/kitchenArt'
@@ -38,7 +38,7 @@ import { DecorNews } from '../decorating/DecorNews'
 import { StoryNudge } from '../story/StoryNudge'
 import { isTutorialBowl, TUTORIAL_BOWL } from '../tutorial/tutorial'
 import { useTutorial } from '../tutorial/tutorialContext'
-import { discoverySoundDelay, REVEAL_BEAT_MS, secretSoundDelay } from './reveal'
+import { bakeSoundCues, REVEAL_BEAT_MS } from './reveal'
 import './BakeScreen.css'
 
 /** Long enough to see the oven, short enough never to feel like waiting. */
@@ -120,6 +120,7 @@ export function BakeScreen() {
   const station = useRef<HTMLElement>(null)
   const ids = { shelf: useId(), bowl: useId(), result: useId(), mixHint: useId() }
   const playSound = useSound()
+  const ring = useSoundCues()
   const tutorial = useTutorial()
   const tutorialStep = tutorial.run?.step
   // While Marmalade is guiding a bake, she points at the shortbread jars and Mix waits for them.
@@ -167,39 +168,18 @@ export function BakeScreen() {
   }, [phase.kind])
 
   // Out of the oven: the timer dings, a first discovery gets its rarity's chime as
-  // the stamp lands, and a new level gets a little ta-da once that has rung.
+  // the stamp lands, and a new level gets a little ta-da once that has rung
+  // (the whole cue sheet is in screens/reveal). Leaving the result cancels
+  // anything still to ring, so one bake's sounds never spill into the next.
   const doneOutcome = phase.kind === 'done' ? phase.outcome : null
   useEffect(() => {
     if (!doneOutcome) return
-    const { playSound: play, reducedMotion: still, tutorialOn } = latest.current
-    play('ding')
+    const { reducedMotion: still, tutorialOn } = latest.current
     report({ type: 'baked', outcome: doneOutcome })
     // During the tutorial Marmalade reads the reward out herself; otherwise the status line does.
     if (!tutorialOn) setMessage(describeOutcome(doneOutcome))
-    // A rebake: no discovery chime. A named mastery stage and any keepsake each get one small sound, never more.
-    const keepsake = doneOutcome.keepsakes.earned.length > 0
-    if (!doneOutcome.reward) {
-      const later: number[] = []
-      if (doneOutcome.masteryUp) later.push(window.setTimeout(() => latest.current.playSound('mastery-up'), 700))
-      if (keepsake) later.push(window.setTimeout(() => latest.current.playSound('achievement-unlock'), doneOutcome.masteryUp ? 1400 : 700))
-      return () => later.forEach((timer) => window.clearTimeout(timer))
-    }
-    const { rarity } = doneOutcome.reward
-    const secret = isSecretFind(doneOutcome)
-    const chime = discoverySoundDelay(rarity, still, secret)
-    const timers = [window.setTimeout(() => latest.current.playSound(discoverySound(rarity)), chime)]
-    // A secret gets a hush first, with "Something unexpected…", then its rarity's chime as usual.
-    if (secret) timers.push(window.setTimeout(() => latest.current.playSound('discover-secret'), secretSoundDelay(rarity, still)))
-    if (doneOutcome.levelUp) timers.push(window.setTimeout(() => latest.current.playSound('level-up'), chime + 1100))
-    // Something for the cupboard: the last thing to ring, after any level.
-    const afterLevel = chime + (doneOutcome.levelUp ? 2200 : 1100)
-    if (doneOutcome.decor.length > 0) {
-      timers.push(window.setTimeout(() => latest.current.playSound('decor-unlock'), afterLevel))
-    }
-    // A keepsake rings last of all: one stamp however many arrived.
-    if (keepsake) timers.push(window.setTimeout(() => latest.current.playSound('achievement-unlock'), afterLevel + (doneOutcome.decor.length > 0 ? 1000 : 0)))
-    return () => timers.forEach((timer) => window.clearTimeout(timer))
-  }, [doneOutcome, report])
+    return ring(bakeSoundCues(doneOutcome, still))
+  }, [doneOutcome, report, ring])
 
   function change(next: BowlChange, ingredient: Ingredient) {
     if (next.outcome === 'added') playSound('pick')

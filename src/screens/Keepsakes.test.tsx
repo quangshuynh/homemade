@@ -4,12 +4,14 @@ import { describe, expect, it, vi } from 'vitest'
 import { App } from '../app/App'
 import { GameProvider } from '../app/GameProvider'
 import type { AudioPlayer } from '../audio/audioPlayer'
+import { CueSchedulerContext, type CueScheduler } from '../audio/cues'
 import { SoundPlayerContext } from '../audio/soundContext'
 import type { RecipeId, StorySceneId } from '../domain/ids'
 import type { GameSave } from '../domain/types'
 import { createMemorySaveRepository } from '../persistence/memorySaveRepository'
 import { STORY_SCENES } from '../story/chapters'
 import { makeSave, makeV6Save } from '../test/fixtures'
+import { createManualCues, immediateCues } from '../test/soundCues'
 
 type User = ReturnType<typeof userEvent.setup>
 
@@ -19,16 +21,18 @@ const still = { soundEnabled: true, motion: 'reduced' } as const
 const found = (...slugs: string[]) => slugs.map((slug) => ({ recipeId: `recipe_${slug}` as RecipeId, discoveredAt: '2026-10-01T10:00:00.000Z' }))
 const SHORTBREAD = ['Flour', 'Sugar', 'Butter']
 
-function startAt(stored: unknown, hash: string) {
+function startAt(stored: unknown, hash: string, cues: CueScheduler = immediateCues) {
   const memory = createMemorySaveRepository(stored)
   const played: string[] = []
   const player: AudioPlayer = { play: (id) => played.push(id), stopAll: vi.fn() }
   window.location.hash = hash
   render(
     <SoundPlayerContext value={player}>
-      <GameProvider repository={memory.repository}>
-        <App />
-      </GameProvider>
+      <CueSchedulerContext value={cues}>
+        <GameProvider repository={memory.repository}>
+          <App />
+        </GameProvider>
+      </CueSchedulerContext>
     </SoundPlayerContext>,
   )
   return { played, saved: () => memory.state.stored as GameSave }
@@ -79,8 +83,9 @@ describe('a keepsake earned at the oven', () => {
     expect(document.querySelector('.bake-result__mastery')).toHaveTextContent('Familiar Shortbread is Familiar now: baked 3 times.')
     expect(bakeStatus()).toHaveTextContent('Shortbread is Familiar now: baked 3 times.')
     expect(bakeStatus()).toHaveTextContent('A keepsake for the recipe box: Getting Familiar.')
-    await waitFor(() => expect(played).toContain('mastery-up'))
-    expect(saved().recipeBakeCounts).toEqual({ recipe_shortbread: 3 })
+    // The stage's sound, then the keepsake's stamp, and nothing else.
+    expect(played).toEqual(['pick', 'pick', 'pick', 'mix', 'ding', 'mastery-up', 'achievement-unlock'])
+    await waitFor(() => expect(saved().recipeBakeCounts).toEqual({ recipe_shortbread: 3 }))
 
     // The next one is routine: just the count, no stage, no sound.
     played.length = 0
@@ -89,7 +94,25 @@ describe('a keepsake earned at the oven', () => {
     await screen.findByRole('heading', { level: 2, name: 'Shortbread' })
     expect(screen.getByText('Already in your Recipe Book, under Classics. Baked 4 times.')).toBeInTheDocument()
     expect(screen.queryByText(/is Familiar now/)).not.toBeInTheDocument()
-    await new Promise((resolve) => setTimeout(resolve, 900))
+    expect(played).toEqual(['pick', 'pick', 'pick', 'mix', 'ding'])
+  })
+
+  it('never lets one bake’s sounds ring into the next: moving on cancels anything still to come', async () => {
+    // Regression: these sounds used to be bare timers that a test (or a quick
+    // player) could outrun, so a stamp from one bake could land after the next began.
+    const user = userEvent.setup()
+    const clock = createManualCues()
+    const save = makeSave({ settings: still, discoveredRecipes: found('shortbread'), recipeBakeCounts: { recipe_shortbread: 2 } as never })
+    const { played } = startAt(save, '#/bake', clock.schedule)
+
+    await bakeBowl(user, SHORTBREAD)
+    await screen.findByRole('heading', { level: 2, name: 'Shortbread' })
+    expect(played.at(-1)).toBe('ding')
+    expect(clock.waiting()).toEqual(['mastery-up', 'achievement-unlock'])
+
+    await user.click(screen.getByRole('button', { name: 'Bake another batch' }))
+    expect(clock.waiting()).toEqual([])
+    clock.ringAll()
     expect(played).not.toContain('mastery-up')
     expect(played).not.toContain('achievement-unlock')
   })
