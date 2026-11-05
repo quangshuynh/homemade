@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useGame, useSave } from '../app/gameContext'
+import { useSound } from '../audio/soundContext'
 import { hrefFor, navigate } from '../app/routes'
 import { Button, LinkButton } from '../components/Button'
 import { Cookie } from '../components/kitchenArt'
@@ -8,16 +9,19 @@ import { RaritySeal } from '../components/RaritySeal'
 import { ScreenTitle } from '../components/ScreenTitle'
 import { SecretSeal } from '../components/SecretSeal'
 import { getIngredient } from '../domain/ingredients'
+import { bakeCount, masteryStage, stageInfo } from '../domain/mastery'
 import { bookCounts, bookSections, type BookEntry, type FamilySection } from '../domain/recipeBook'
 import type { RecipeFamily } from '../domain/types'
+import { isFavourite, keepsakeCounts } from '../keepsakes/rules'
 import { availableScene } from '../story/progress'
+import { bakedTimes } from '../keepsakes/words'
 import './RecipeBookScreen.css'
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-type Filter = RecipeFamily | 'all'
+type Filter = RecipeFamily | 'all' | 'favourites'
 
 /** "3 of 5 discovered · 1 secret". */
 function describeProgress(section: FamilySection): string {
@@ -39,13 +43,17 @@ export function RecipeBookScreen() {
   const [announcement, setAnnouncement] = useState('')
   const sections = bookSections(save)
   const { found, total, secretsFound } = bookCounts(save)
-  const shown = filter === 'all' ? sections : sections.filter((section) => section.family.id === filter)
+  const shown = filter === 'all' || filter === 'favourites' ? sections : sections.filter((section) => section.family.id === filter)
   const newNote = availableScene(save) !== null
+  const keepsakes = keepsakeCounts(save)
+  // Favourites, wherever they're filed. Only found cards can be favourites.
+  const favourites = sections.flatMap((section) => section.entries).filter((entry) => entry.kind === 'found' && isFavourite(save, entry.recipe.id))
 
   function choose(next: Filter) {
     setFilter(next)
     const section = sections.find((entry) => entry.family.id === next)
-    setAnnouncement(section ? `Showing ${section.family.name}: ${describeProgress(section)}.` : `Showing every family: ${found} of ${total} recipes.`)
+    if (next === 'favourites') setAnnouncement(`Showing your favourites: ${favourites.length}.`)
+    else setAnnouncement(section ? `Showing ${section.family.name}: ${describeProgress(section)}.` : `Showing every family: ${found} of ${total} recipes.`)
   }
 
   return (
@@ -70,11 +78,26 @@ export function RecipeBookScreen() {
           </>
         )}
       </a>
+      <a className="recipe-book__notes recipe-book__keepsakes" href={hrefFor('keepsakes')}>
+        <span className="recipe-book__notes-flag recipe-book__keepsakes-flag" aria-hidden="true" />
+        Kitchen Keepsakes
+        <span className="recipe-book__keepsakes-count">
+          <span className="visually-hidden">:</span> {keepsakes.earned} of {keepsakes.total} stamped
+        </span>
+      </a>
 
       <div className="recipe-book__dividers" role="group" aria-label="Show recipes from">
         <button type="button" className="book-divider" aria-pressed={filter === 'all'} onClick={() => choose('all')}>
           Every family
         </button>
+        {(favourites.length > 0 || filter === 'favourites') && (
+          <button type="button" className="book-divider book-divider--favourites" aria-pressed={filter === 'favourites'} onClick={() => choose('favourites')}>
+            <span aria-hidden="true">♥</span> Favourites
+            <span className="book-divider__count" aria-hidden="true">
+              {favourites.length}
+            </span>
+          </button>
+        )}
         {sections.map((section) => (
           <button
             key={section.family.id}
@@ -95,9 +118,26 @@ export function RecipeBookScreen() {
         {announcement}
       </p>
 
-      {shown.map((section) => (
-        <FamilyShelf key={section.family.id} section={section} />
-      ))}
+      {filter === 'favourites' ? (
+        <section className="book-family" aria-labelledby="family-favourites" data-family="favourites">
+          <div className="book-family__divider">
+            <h2 id="family-favourites" className="book-family__name">
+              Favourites
+            </h2>
+            <p className="book-family__progress">
+              {favourites.length === 0 ? 'None marked' : `${favourites.length} marked`}
+            </p>
+          </div>
+          {favourites.length === 0 && <p className="book-family__empty">Mark a card “Favourite” and it’ll be kept here too.</p>}
+          <ol className="recipe-book__cards">
+            {favourites.map((entry) => (
+              <BookCard key={entry.recipe.id} entry={entry} />
+            ))}
+          </ol>
+        </section>
+      ) : (
+        shown.map((section) => <FamilyShelf key={section.family.id} section={section} />)
+      )}
 
       <div className="recipe-book__foot">
         <p>Experiments stay in the kitchen. Only recipes get a card.</p>
@@ -131,7 +171,9 @@ function FamilyShelf({ section }: { section: FamilySection }) {
 }
 
 function BookCard({ entry }: { entry: BookEntry }) {
-  const { prepareRecipe } = useGame()
+  const save = useSave()
+  const { prepareRecipe, setFavourite } = useGame()
+  const playSound = useSound()
   const { recipe } = entry
 
   if (entry.kind === 'blank') {
@@ -154,10 +196,14 @@ function BookCard({ entry }: { entry: BookEntry }) {
   }
 
   const headingId = `book-${recipe.id}`
+  const favourite = isFavourite(save, recipe.id)
+  const count = bakeCount(save, recipe.id)
+  // Never zero for a found card; an older save always proves at least the first bake.
+  const stage = masteryStage(save, recipe.id) ?? 'discovered'
   return (
-    <li className="book-card" data-rarity={recipe.rarity} data-secret={recipe.isSecret ? '' : undefined}>
+    <li className="book-card" data-rarity={recipe.rarity} data-secret={recipe.isSecret ? '' : undefined} data-mastery={stage}>
       <article aria-labelledby={headingId} className="book-card__body">
-        <Cookie look={recipe.look} className="book-card__cookie" />
+        <Cookie look={recipe.look} className="book-card__cookie" flourish={stage === 'house-favourite'} />
         <h3 id={headingId} className="book-card__name">
           {recipe.name}
         </h3>
@@ -179,6 +225,28 @@ function BookCard({ entry }: { entry: BookEntry }) {
           ))}
         </ul>
         <p className="book-card__date">First baked {formatDate(entry.discoveredAt)}</p>
+        {/* Mastery, in words: the stamp is only decoration. */}
+        <p className="book-card__mastery">
+          <span className="book-card__mastery-stage">{stageInfo(stage).label}</span>
+          <span aria-hidden="true"> · </span>
+          <span className="visually-hidden">, </span>
+          {bakedTimes(Math.max(1, count))}
+        </p>
+        <div className="book-card__buttons">
+        <button
+          type="button"
+          className="book-card__favourite"
+          aria-pressed={favourite}
+          aria-label={`Favourite: ${recipe.name}`}
+          onClick={() => {
+            if (setFavourite(recipe.id, !favourite) && !favourite) playSound('favorite')
+          }}
+        >
+          <span className="book-card__heart" aria-hidden="true">
+            {favourite ? '♥' : '♡'}
+          </span>{' '}
+          Favourite
+        </button>
         <Button
           className="book-card__again"
           aria-label={`Bake again: ${recipe.name}`}
@@ -189,6 +257,7 @@ function BookCard({ entry }: { entry: BookEntry }) {
         >
           Bake again
         </Button>
+        </div>
       </article>
     </li>
   )

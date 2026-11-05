@@ -7,6 +7,7 @@ import { PantryScreen } from '../screens/PantryScreen'
 import { RecipeBookScreen } from '../screens/RecipeBookScreen'
 import { BakeScreen } from '../screens/BakeScreen'
 import { DecorateScreen } from '../screens/DecorateScreen'
+import { KeepsakesScreen } from '../screens/KeepsakesScreen'
 import { IncompatibleSaveScreen, LoadingScreen, StorageUnavailableScreen } from '../screens/SaveTroubleScreen'
 import { SettingsScreen } from '../screens/SettingsScreen'
 import { TutorialProvider } from '../tutorial/TutorialProvider'
@@ -23,6 +24,7 @@ const SCREENS: Record<RouteId, ComponentType> = {
   memories: MemoriesScreen,
   notes: NotesScreen,
   decorate: DecorateScreen,
+  keepsakes: KeepsakesScreen,
 }
 
 export function App() {

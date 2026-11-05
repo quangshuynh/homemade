@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { clearSlot, equipDecoration as applyEquip, grantEarnedDecorations, purchaseDecoration } from '../decorating/rules'
+import { clearSlot, equipDecoration as applyEquip, purchaseDecoration } from '../decorating/rules'
 import type { DecorationSlot } from '../decorating/slots'
 import { bake as bakeBowl, prepareBowl, recordBake, type Bowl, type PreparedBake } from '../domain/baking'
 import { newCreationId } from '../domain/creations'
@@ -7,17 +7,26 @@ import type { DecorationId, IngredientId, RecipeId, StorySceneId } from '../doma
 import { unlockIngredient as applyUnlock } from '../domain/progression'
 import { createNewSave, touchSave, type NewSaveInput } from '../domain/save'
 import type { GameSave } from '../domain/types'
+import { setFavourite as applyFavourite } from '../keepsakes/rules'
+import { settleSave } from '../keepsakes/settle'
 import type { SaveRepository } from '../persistence/repository'
 import { evaluateStoryProgress, seeScene } from '../story/progress'
 import {
   GameContext,
   type GameState,
   type ImportedSave,
+  type KeepsakeNews,
   type KitchenBake,
+  type KitchenEquip,
   type KitchenScene,
   type KitchenUnlock,
   type SaveStatus,
 } from './gameContext'
+
+/** What a change earned in keepsakes, and whether they're the kitchen's very first. */
+function newsFor(before: GameSave, earned: KeepsakeNews['earned']): KeepsakeNews {
+  return { earned, first: earned.length > 0 && before.achievementIds.length === 0 }
+}
 
 function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
@@ -66,13 +75,14 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
           saveRef.current = null
           setState({ status: 'first-run' })
         } else if (result.kind === 'loaded') {
-          // The first look after loading: anything earned and not yet handed over
-          // (including everything an upgraded save earned before decorating
-          // existed) goes in the cupboard now. Deterministic, so a second look finds nothing.
-          const { save, granted } = grantEarnedDecorations(result.save)
+          // The first look after loading: any keepsake or decoration earned and not
+          // yet handed over (including everything an upgraded save earned before
+          // keepsakes or decorating existed) arrives now, without asking the player
+          // to repeat anything. Deterministic, so a second look finds nothing.
+          const { save } = settleSave(result.save)
           saveRef.current = save
           setState({ status: 'ready', save })
-          if (granted.length > 0) {
+          if (save !== result.save) {
             void persist(save).catch(() => {
               // Surfaced through saveStatus; the grant is simply made again on the next load.
             })
@@ -127,12 +137,13 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       const current = saveRef.current
       if (!current) throw new Error('Nothing to bake into: the save is not loaded')
       const now = new Date()
-      // The batch, any discovery and anything it earned for the cupboard arrive together as one next save, written once.
+      // The batch, any discovery, its mastery count, and any keepsake or decoration it
+      // earned arrive together as one next save, written once.
       const { save: baked, outcome } = recordBake(current, bakeBowl(bowl), now, newCreationId())
-      const { save: next, granted } = grantEarnedDecorations(baked)
+      const { save: next, achievements, decor } = settleSave(baked)
       const stamped = { ...next, updatedAt: now.toISOString() }
       commit(stamped)
-      return { ...outcome, story: evaluateStoryProgress(current, stamped), decor: granted }
+      return { ...outcome, story: evaluateStoryProgress(current, stamped), decor, keepsakes: newsFor(current, achievements) }
     },
     [commit],
   )
@@ -158,26 +169,27 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       const result = seeScene(current, id)
       if (!result.ok) return result
       // A replay hands back the same save: nothing to write, nothing new.
-      if (result.save === current) return { ...result, decor: [] }
-      // Finishing the brass key's chapter opens the cupboard: its contents arrive in the same write.
-      const { save: next, granted } = grantEarnedDecorations(result.save)
+      if (result.save === current) return { ...result, decor: [], keepsakes: newsFor(current, []) }
+      // Finishing the brass key's chapter opens the cupboard: its contents (and any keepsake) arrive in the same write.
+      const { save: next, achievements, decor } = settleSave(result.save)
       const stamped = { ...next, updatedAt: new Date().toISOString() }
       commit(stamped)
-      return { ...result, save: stamped, decor: granted }
+      return { ...result, save: stamped, decor, keepsakes: newsFor(current, achievements) }
     },
     [commit],
   )
 
   const equipDecoration = useCallback(
-    (slot: DecorationSlot, id: DecorationId) => {
+    (slot: DecorationSlot, id: DecorationId): KitchenEquip => {
       const current = saveRef.current
       if (!current) throw new Error('Nothing to decorate: the save is not loaded')
       const result = applyEquip(current, slot, id)
       if (!result.ok) return result
-      // What's out, and any remark Marmalade has now made, in one write.
-      const stamped = { ...result.save, updatedAt: new Date().toISOString() }
+      // What's out, any remark Marmalade has now made, and any keepsake it earned, in one write.
+      const { save: next, achievements, decor } = settleSave(result.save)
+      const stamped = { ...next, updatedAt: new Date().toISOString() }
       commit(stamped)
-      return { ...result, save: stamped }
+      return { ...result, save: stamped, decor, keepsakes: newsFor(current, achievements) }
     },
     [commit],
   )
@@ -203,6 +215,18 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       const stamped = { ...result.save, updatedAt: new Date().toISOString() }
       commit(stamped)
       return { ...result, save: stamped }
+    },
+    [commit],
+  )
+
+  const setFavourite = useCallback(
+    (recipeId: RecipeId, favourite: boolean) => {
+      const current = saveRef.current
+      if (!current) return false
+      const next = applyFavourite(current, recipeId, favourite)
+      if (next === current) return false
+      commit({ ...next, updatedAt: new Date().toISOString() })
+      return true
     },
     [commit],
   )
@@ -235,8 +259,8 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
     async (incoming: ImportedSave) => {
       // Let any pending write land first, so it can't overwrite the import afterwards.
       await writeQueue.current.catch(() => {})
-      // The same first look as a load: anything the file's kitchen earned goes in its cupboard.
-      const { save } = grantEarnedDecorations(incoming.save)
+      // The same first look as a load: any keepsake or decoration the file's kitchen earned arrives.
+      const { save } = settleSave(incoming.save)
       await repository.replace(save, {
         note: 'Set aside when another save was imported',
         alsoArchive:
@@ -271,6 +295,7 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       equipDecoration,
       clearDecorationSlot,
       buyDecoration,
+      setFavourite,
       preparedBowl,
       prepareRecipe,
       clearPreparedBowl,
@@ -291,6 +316,7 @@ export function GameProvider({ repository, children }: { repository: SaveReposit
       equipDecoration,
       clearDecorationSlot,
       buyDecoration,
+      setFavourite,
       preparedBowl,
       prepareRecipe,
       clearPreparedBowl,

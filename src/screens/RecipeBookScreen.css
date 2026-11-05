@@ -416,3 +416,117 @@
   border-radius: var(--radius-paper);
   transform: rotate(-2deg);
 }
+
+/* ---- Interval 9: keepsakes, mastery and favourites ---- */
+
+/* The keepsakes envelope sits right behind the notes bookmark. */
+.recipe-book__keepsakes {
+  margin-top: calc(-1 * var(--space-4));
+}
+
+.recipe-book__keepsakes-flag {
+  background: var(--jam-500);
+}
+
+.recipe-book__keepsakes-count {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+}
+
+.book-divider--favourites span[aria-hidden='true']:first-child {
+  color: var(--jam-500);
+}
+
+/* "Well-Loved · Baked 5 times": always words; the little stamp beside it is only decoration. */
+.book-card__mastery {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.book-card__mastery-stage {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+/* Familiar and up: the stage is inked like a small rubber stamp. */
+.book-card:is([data-mastery='familiar'], [data-mastery='well-loved'], [data-mastery='house-favourite']) .book-card__mastery-stage {
+  padding: 0 var(--space-2);
+  color: var(--jam-500);
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-sticker);
+  transform: rotate(-3deg);
+}
+
+/* Well-Loved and up: a ribbon corner tucked over the top-left of the card. */
+.book-card:is([data-mastery='well-loved'], [data-mastery='house-favourite'])::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  background: linear-gradient(135deg, var(--jam-500) 0 32%, transparent 32%);
+  border-top-left-radius: var(--radius-paper);
+  pointer-events: none;
+}
+
+/* House Favourite: a scalloped frame drawn inside the card edge (and the cookie gets its dusting). */
+.book-card[data-mastery='house-favourite'] {
+  box-shadow:
+    var(--shadow-paper),
+    inset 0 0 0 4px var(--paper),
+    inset 0 0 0 6px var(--jam-500);
+}
+
+.book-card__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.book-card__buttons .book-card__again {
+  margin-top: 0;
+}
+
+/* A plain toggle that says its state (aria-pressed) and shows it with a filled heart, not colour alone. */
+.book-card__favourite {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--tap-target);
+  padding: 0 var(--space-3);
+  font: inherit;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+  color: var(--ink);
+  background: transparent;
+  border: 1.5px dashed var(--ink-soft);
+  border-radius: var(--radius-sticker);
+  cursor: pointer;
+}
+
+.book-card__favourite[aria-pressed='true'] {
+  background: var(--butter-300);
+  border-style: solid;
+  border-color: var(--ink);
+}
+
+.book-card__favourite:focus-visible {
+  outline: var(--focus-width) dashed var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.book-card__heart {
+  font-size: 1.15em;
+  line-height: 1;
+  color: var(--jam-500);
+}

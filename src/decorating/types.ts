@@ -1,4 +1,4 @@
-import type { DecorationId, StoryChapterId } from '../domain/ids'
+import type { AchievementId, DecorationId, StoryChapterId } from '../domain/ids'
 import type { CookieRarity, RecipeFamily } from '../domain/types'
 import type { DecorationSlot } from './slots'
 
@@ -24,6 +24,8 @@ export type DecorationUnlockRule =
   | { type: 'first-rarity'; rarity: CookieRarity }
   /** A secret recipe is in the book. */
   | { type: 'first-secret' }
+  /** A keepsake has been earned (Interval 9). */
+  | { type: 'achievement'; achievementId: AchievementId }
   /** Bought from the cupboard, once, for this many Crumbs. Purely cosmetic. */
   | { type: 'crumbs'; price: number }
 
@@ -39,6 +41,13 @@ export type DecorationLook =
   | { kind: 'crock'; material: 'stoneware' | 'copper' }
   | { kind: 'rolling-pin' }
   | { kind: 'bread-board' }
+  // Interval 9: keepsake rewards.
+  | { kind: 'cookie-tin' }
+  | { kind: 'oven-mitt' }
+  | { kind: 'recipe-bundle' }
+  | { kind: 'cookie-plate' }
+  | { kind: 'trophy-spoon' }
+  | { kind: 'cat-figurine' }
 
 /**
  * Hand-authored, static catalog data. Saves store only the id, so a name,

@@ -353,13 +353,50 @@ function Topping({ look }: { look: CookieLook }) {
   }
 }
 
-export function Cookie({ look, className }: { look: CookieLook; className?: string }) {
+/** Where the sugar lands on a House Favourite. Fixed, so the same cookie always looks the same. */
+const DUSTING: readonly Point[] = [
+  [30, 30],
+  [44, 24],
+  [60, 28],
+  [70, 40],
+  [26, 46],
+  [38, 40],
+  [56, 44],
+  [72, 56],
+  [32, 62],
+  [48, 58],
+  [62, 66],
+  [42, 72],
+]
+
+/**
+ * A cookie, drawn from its look. `flourish` is the House Favourite touch
+ * (Interval 9): a dusting of icing sugar and a scalloped ring piped round the
+ * edge. Cosmetic only, the same every time, and never a different recipe.
+ */
+export function Cookie({ look, className, flourish = false }: { look: CookieLook; className?: string; flourish?: boolean }) {
   return (
     <svg className={className} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
       <path d={SHAPES[look.shape]} transform="translate(2 4)" fill="rgb(70 38 12 / 0.28)" />
       <path d={SHAPES[look.shape]} fill={doughColour(look.dough)} stroke={INK} strokeWidth="2.5" strokeLinejoin="round" />
       <path d={SHAPES[look.shape]} fill="none" stroke="rgb(255 255 255 / 0.25)" strokeWidth="5" transform="translate(50 50) scale(0.82) translate(-50 -50)" />
       <Topping look={look} />
+      {flourish && (
+        <g className="cookie__flourish">
+          <path
+            d={SHAPES[look.shape]}
+            fill="none"
+            stroke="rgb(255 253 246 / 0.9)"
+            strokeWidth="3"
+            strokeDasharray="1 5"
+            strokeLinecap="round"
+            transform="translate(50 50) scale(0.9) translate(-50 -50)"
+          />
+          {DUSTING.map(([x, y]) => (
+            <circle key={`${x}-${y}`} cx={x} cy={y} r="1.6" fill="rgb(255 253 246 / 0.85)" />
+          ))}
+        </g>
+      )}
     </svg>
   )
 }

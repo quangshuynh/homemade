@@ -61,6 +61,8 @@ export function meetsUnlockRule(save: GameSave, rule: DecorationUnlockRule): boo
       return save.discoveredRecipes.some((entry) => findRecipeById(entry.recipeId)?.rarity === rule.rarity)
     case 'first-secret':
       return save.discoveredRecipes.some((entry) => findRecipeById(entry.recipeId)?.isSecret)
+    case 'achievement':
+      return save.achievementIds.includes(rule.achievementId)
     case 'crumbs':
       return false
   }

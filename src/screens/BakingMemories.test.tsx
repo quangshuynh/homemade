@@ -223,7 +223,7 @@ describe('Bake again', () => {
     // Reduced motion: the result is there straight away, focused.
     const heading = await screen.findByRole('heading', { level: 2, name: 'Shortbread' })
     await waitFor(() => expect(heading).toHaveFocus())
-    expect(screen.getByText('Already in your Recipe Book, under Classics.')).toBeInTheDocument()
+    expect(screen.getByText('Already in your Recipe Book, under Classics. Baked twice.')).toBeInTheDocument()
   })
 
   it('brings the prepared bowl into view when it starts off screen, without animating when motion is reduced', async () => {

@@ -120,7 +120,7 @@ describe('baking', () => {
 
     const heading = await screen.findByRole('heading', { level: 2, name: 'Chocolate Chip Cookie' })
     expect(heading).not.toHaveTextContent(/New recipe/)
-    expect(screen.getByText('Already in your Recipe Book, under Chocolate.')).toBeInTheDocument()
+    expect(screen.getByText('Already in your Recipe Book, under Chocolate. Baked twice.')).toBeInTheDocument()
     expect((state.stored as GameSave).discoveredRecipes).toEqual([{ recipeId: 'recipe_chocolate-chip', discoveredAt: firstDate }])
   })
 

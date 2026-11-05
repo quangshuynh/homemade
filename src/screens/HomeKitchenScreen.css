@@ -343,3 +343,41 @@
   background: var(--butter-300);
   border-radius: var(--radius-paper);
 }
+
+/* Favourites (Interval 9): a short list pinned up by the rack, each a tap from the bowl. */
+.kitchen__favourites {
+  display: grid;
+  gap: var(--space-3);
+  justify-self: center;
+  width: min(100%, 34rem);
+}
+
+.kitchen__favourites-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kitchen__favourites-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-card);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.kitchen__favourite-name {
+  font-family: var(--font-hand);
+  font-weight: var(--weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.kitchen__favourite-name span {
+  color: var(--jam-500);
+}

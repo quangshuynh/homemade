@@ -160,3 +160,13 @@ export function makeV5Save(overrides: Record<string, unknown> = {}): Record<stri
     ...overrides,
   }
 }
+
+/** A save exactly as Interval 8 (save version 6) wrote it. Written out literally on purpose. */
+export function makeV6Save(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    ...makeV5Save(),
+    version: 6,
+    decorating: { ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] },
+    ...overrides,
+  }
+}

@@ -3,7 +3,7 @@ import { STARTER_PANTRY } from './ingredients'
 import type { GameSave, GameSettings, PlayerProfile } from './types'
 
 /** The save schema version this build writes. */
-export const CURRENT_SAVE_VERSION = 6
+export const CURRENT_SAVE_VERSION = 7
 
 export const NAME_MAX_LENGTH = 32
 
@@ -58,6 +58,9 @@ export function createNewSave(input: NewSaveInput, now: Date = new Date()): Game
     story: { seenSceneIds: [] },
     // The cupboard stays locked until the story reaches it.
     decorating: { ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] },
+    achievementIds: [],
+    recipeBakeCounts: {},
+    favoriteRecipeIds: [],
     settings: { ...DEFAULT_SETTINGS },
     createdAt: timestamp,
     updatedAt: timestamp,

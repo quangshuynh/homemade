@@ -1,5 +1,5 @@
 import type { DecorationSlot } from '../decorating/slots'
-import type { CreationId, DecorationId, IngredientId, PlayerId, RecipeId, StorySceneId } from './ids'
+import type { AchievementId, CreationId, DecorationId, IngredientId, PlayerId, RecipeId, StorySceneId } from './ids'
 
 /**
  * Core domain models. These are intentionally small: they name the concepts
@@ -215,6 +215,21 @@ export type GameSave = {
   tutorial: TutorialState
   story: StoryState
   decorating: DecoratingState
+  /**
+   * Keepsakes earned (Interval 9), in the order they arrived. Ids only: names
+   * and descriptions live in keepsakes/catalog. Permanent: nothing ever
+   * takes one away, and each is earned at most once.
+   */
+  achievementIds: AchievementId[]
+  /**
+   * How many times each recipe has been baked, for recipe mastery
+   * (Interval 9). Sparse: a recipe never baked has no entry. Lifetime counts,
+   * kept apart from `bakedCreations` because that history is trimmed.
+   * Experiments never count; neither does laying a bowl out with Bake again.
+   */
+  recipeBakeCounts: Partial<Record<RecipeId, number>>
+  /** Discovered recipes the player has marked as favourites, in the order marked. Organisational only. */
+  favoriteRecipeIds: RecipeId[]
   settings: GameSettings
   /** ISO-8601 timestamps. */
   createdAt: string

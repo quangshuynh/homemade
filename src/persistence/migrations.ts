@@ -183,10 +183,50 @@ export function migrateV5ToV6(raw: RawRecord): RawRecord {
   return { ...raw, version: 6, decorating: { ownedDecorationIds: [], equippedBySlot: {}, noticedMomentIds: [] } }
 }
 
+/**
+ * v6 -> v7 (Interval 9, keepsakes, mastery and favourites):
+ * - adds `favoriteRecipeIds`, empty: nothing is marked for the player.
+ * - adds `achievementIds`, empty. Keepsakes the kitchen already earned are
+ *   handed over the first time the upgraded save is loaded, by the same pure
+ *   rule the game runs after every change (see keepsakes/settle). A
+ *   migration mustn't read the live catalogs, and that rule is idempotent.
+ * - adds `recipeBakeCounts`, initialised conservatively to what the save can
+ *   prove: for each recipe, the number of times it appears in the remembered
+ *   bakes, and at least 1 for any recipe in the book (discovering it was a
+ *   bake). Older bakes trimmed from the 50-bake history can't be counted, so
+ *   a returning player may know a recipe better than the count says; it never
+ *   says they baked more than they did. Experiments never count.
+ * - leaves everything else exactly as it was.
+ */
+export function migrateV6ToV7(raw: RawRecord): RawRecord {
+  const creations = raw.bakedCreations
+  if (!Array.isArray(creations)) {
+    throw new Error('version 6 save has no bakedCreations list')
+  }
+  const discovered = raw.discoveredRecipes
+  if (!Array.isArray(discovered)) {
+    throw new Error('version 6 save has no discoveredRecipes list')
+  }
+  if (typeof raw.decorating !== 'object' || raw.decorating === null) {
+    throw new Error('version 6 save has no decorating state')
+  }
+  const counts: Record<string, number> = {}
+  for (const creation of creations) {
+    const recipeId = typeof creation === 'object' && creation !== null ? (creation as RawRecord).recipeId : null
+    if (typeof recipeId === 'string') counts[recipeId] = (counts[recipeId] ?? 0) + 1
+  }
+  for (const entry of discovered) {
+    const recipeId = typeof entry === 'object' && entry !== null ? (entry as RawRecord).recipeId : null
+    if (typeof recipeId === 'string' && !Object.hasOwn(counts, recipeId)) counts[recipeId] = 1
+  }
+  return { ...raw, version: 7, achievementIds: [], recipeBakeCounts: counts, favoriteRecipeIds: [] }
+}
+
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   1: migrateV1ToV2,
   2: migrateV2ToV3,
   3: migrateV3ToV4,
   4: migrateV4ToV5,
   5: migrateV5ToV6,
+  6: migrateV6ToV7,
 }

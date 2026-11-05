@@ -21,6 +21,7 @@ import {
   WHITE_CHOCOLATE,
 } from './ingredients'
 import { addCreation, makeCreation } from './creations'
+import { crossedStage, type MasteryStage } from './mastery'
 import { addReward, discoveryReward, levelUpBetween, type DiscoveryReward, type LevelUp } from './progression'
 import { completedFamilies } from './recipeBook'
 import { findRecipeById, RECIPES } from './recipes'
@@ -192,6 +193,10 @@ export type BakeOutcome = {
   firstCompletedFamily: boolean
   /** Set when the reward crossed one or more Baker Levels. */
   levelUp: LevelUp | null
+  /** How many times this recipe has now been baked, this bake included. 0 for an experiment. */
+  bakeCount: number
+  /** The named mastery stage this bake reached (Familiar, Well-Loved, House Favourite), if it reached one. */
+  masteryUp: MasteryStage | null
 }
 
 /**
@@ -208,9 +213,16 @@ export function recordBake(
 ): { save: GameSave; outcome: BakeOutcome } {
   const creation = makeCreation(result, now, creationId)
   const bakedCreations = addCreation(save.bakedCreations, creation)
+  // Mastery counts every bake of a recipe, first or again; never an experiment.
+  // A recipe in the book has been baked at least once, whatever the count says.
+  const recorded = result.kind === 'recipe' ? (save.recipeBakeCounts[result.recipe.id] ?? 0) : 0
+  const before = result.kind === 'recipe' && isDiscovered(save, result.recipe.id) ? Math.max(recorded, 1) : recorded
+  const bakeCount = result.kind === 'recipe' ? before + 1 : 0
+  const recipeBakeCounts = result.kind === 'recipe' ? { ...save.recipeBakeCounts, [result.recipe.id]: bakeCount } : save.recipeBakeCounts
+  const masteryUp = result.kind === 'recipe' ? crossedStage(before, bakeCount) : null
   if (result.kind !== 'recipe' || isDiscovered(save, result.recipe.id)) {
     return {
-      save: { ...save, bakedCreations },
+      save: { ...save, bakedCreations, recipeBakeCounts },
       outcome: {
         result,
         newDiscovery: false,
@@ -221,6 +233,8 @@ export function recordBake(
         completedFamily: null,
         firstCompletedFamily: false,
         levelUp: null,
+        bakeCount,
+        masteryUp,
       },
     }
   }
@@ -234,6 +248,7 @@ export function recordBake(
   const next: GameSave = {
     ...save,
     bakedCreations,
+    recipeBakeCounts,
     discoveredRecipes: [...save.discoveredRecipes, { recipeId: recipe.id, discoveredAt: now.toISOString() }],
     progression,
   }
@@ -252,6 +267,8 @@ export function recordBake(
       completedFamily,
       firstCompletedFamily: completedFamily !== null && completeBefore.length === 0,
       levelUp: levelUpBetween(save.progression.xp, progression.xp, save.pantryIngredientIds),
+      bakeCount,
+      masteryUp,
     },
   }
 }

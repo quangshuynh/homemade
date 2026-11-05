@@ -16,16 +16,16 @@ It is **not** an idle or clicker game. Nothing ticks up while you're away, and n
 
 ## Status
 
-**Interval 8: Kitchen decorating and more recipes.** The brass key from Chapter 5 finally fits something: a cupboard under the counter, full of things the kitchen used to have. Once it's open, the kitchen is yours to decorate.
+**Interval 9: Keepsakes, recipe mastery and favourites.** Long-term things to come back for, without a grind: no streaks, no dailies, no timers.
 
-- **Decorating:** a tiled wall now sits behind the counter, with seven curated spots (a frame on the wall, the window, a shelf, three spots along the back of the counter, and a towel on the cupboard door). Each holds one thing at a time. *The old cupboard* in the kitchen opens edit mode: pick a spot, try a piece, put it out. Taps and clicks only, no dragging.
-- **18 decorations** in three light themes (Cottage, Warm Bakery, Garden Kitchen) plus a few keepsakes. A starter set comes free with the cupboard; keepsakes are earned once by things already done (a first Mythic, Legendary or secret, a finished family); some themed pieces cost a modest number of Crumbs.
-- **Purely cosmetic.** Decorations never change a bake, a reward, a level or an ingredient. They're just for looks.
-- **Seven new recipes** (34 in all, 31 visible), aimed at the jars that had only one card and the thinnest family dividers. Still 19 ingredients and Baker Levels 1–11.
+- **Kitchen Keepsakes:** 15 hand-picked milestones (a first experiment, ten cards back, a family finished, every spot in the kitchen filled…), stamped once, for good, in an envelope at the back of the Recipe Book. A couple stay hidden until earned so they can't spoil a secret. Older kitchens get what they'd already earned.
+- **Recipe mastery:** baking a recipe again makes it Familiar (3 bakes), Well-Loved (5) and a House Favourite (10, the top). Each stage is a stamp or flourish on its card, never Crumbs or XP.
+- **Favourites:** mark any found recipe; it gets a Favourites divider in the Recipe Book and a *Bake again* shortcut in the kitchen. No effect on anything else.
+- **Six new decorations** (24 in all), each arriving with a keepsake, mostly for the shelf. Everything stays cosmetic.
 
-Underneath is a complete baking loop (pick up to five ingredients, mix, bake, discover hand-written recipes, remember your last 50 bakes, Bake again) that installs and plays offline, with save files and quiet sounds. Recipes have fixed rarities and family dividers, three secret recipes stay hidden until baked, and a short story (*The Faded Recipe Box* through *The Old Cupboard*) opens as you play. A *first* discovery earns Crumbs and Baker XP; rebakes and experiments earn nothing.
+Underneath is a complete baking loop (pick up to five ingredients, mix, bake, discover hand-written recipes, remember your last 50 bakes, Bake again) that installs and plays offline, with save files and quiet sounds. Recipes (34, 19 ingredients) have fixed rarities and family dividers, three secret recipes stay hidden until baked, a short story (*The Faded Recipe Box* through *The Old Cupboard*) opens as you play, and the brass key opens a cupboard of decorations for the kitchen. A *first* discovery earns Crumbs and Baker XP; rebakes and experiments earn nothing.
 
-Saves live in the browser's IndexedDB (save version 6; older saves upgrade on load, with the original archived, and get any decorations they'd already earned). No account, no server, nothing sent anywhere.
+Saves live in the browser's IndexedDB (save version 7; older saves upgrade on load, with the original archived, and get any keepsakes and decorations they'd already earned). No account, no server, nothing sent anywhere.
 
 ## Tech stack
 
@@ -79,6 +79,7 @@ src/
   tutorial/       The first-time tutorial: its step machine, provider and card
   story/          The recipe box's story: chapters, scenes and notes as content, and the rules for what opens when
   decorating/     Kitchen decorating: the spots, the decoration catalog, ownership and reward rules, and the kitchen picture
+  keepsakes/      Keepsakes: the catalog, the earning rules, favourites, and the one settle step that hands out anything earned
   styles/         Design tokens and base styles
   assets/         Static art and the synthesised sounds
 service-worker/   The offline worker and the Vite plugin that builds it into dist/sw.js
@@ -92,6 +93,7 @@ A few design decisions worth knowing:
 - **Game rules live in `domain/`.** Ingredients and recipes are static catalogs with stable ids, and saves store only ids. Matching, discovery and bowl rules are pure functions (`domain/baking.ts`), and screens call them rather than deciding anything themselves.
 - **A bake is one save write.** `recordBake` returns the whole next save (the remembered batch, any discovery and its reward), so a bake can't be half-saved or paid twice. Adding an ingredient is one write too. History is capped by `MAX_BAKED_CREATIONS`.
 - **Decorating is cosmetic and saved as ids.** The save keeps which decorations are owned and which is out in each spot; names and drawings live in `decorating/catalog.ts`. Earned decorations are handed over by one idempotent rule after bakes, scenes, loads and imports, so nothing is granted twice and older saves get what they'd already earned.
+- **Keepsakes and mastery are worked out, then remembered.** Each keepsake is a rule over the save; one idempotent `settleSave` runs after every bake, scene and decoration and on load or import, stores the ids of keepsakes earned and hands over any decoration that comes with one. Mastery uses lifetime bake counts kept apart from the 50-bake history.
 - **Story is content plus pure rules.** Chapters, scenes and notes are static content in `story/`; the save keeps only the ids of scenes seen. What's open next, what's complete and which notes are found are pure functions (`story/progress.ts`), checked centrally after each bake and pantry addition, never by a screen.
 - **Balance lives in one file.** Rarity rewards, level thresholds and ingredient costs are in `domain/progression.ts`, and a test checks that no order of choices can leave a player stuck.
 - **Everything read from storage is checked.** `persistence/schema.ts` validates stored data and runs any migrations before the game sees it. Each save has a `version`. A save that can't be read is **never deleted automatically**: the player sees what went wrong and can download a copy, try again, or set it aside. Setting it aside moves it to an archive store rather than deleting it. Before a migrated save is written back, the original is archived too.
@@ -108,7 +110,7 @@ Homemade is a static site with no environment variables, secrets or backend. On 
 
 Semantic landmarks and headings, real links and buttons, a skip link, visible focus rings, and focus that moves to each new screen's heading after navigation. Text meets WCAG AA contrast. Everything works with a keyboard alone, touch targets are at least 44px, and focus is never hidden under the phone tab bar. Motion respects `prefers-reduced-motion` unless the player overrides it in Settings, and nothing relies on animation to convey meaning. Sound and motion are separate settings.
 
-Rarity is always written, never colour alone; Marmalade's lines are plain text; the tutorial works with a keyboard alone and can be skipped at any point. Decorating works by keyboard and touch alone, each spot and piece is named in words, and what's out or being tried is always written, never shown by colour alone. Browser checks are recorded in [`docs/verification/`](docs/verification/) ([Interval 4](docs/verification/interval-4.md), [Interval 5](docs/verification/interval-5.md), [Interval 6](docs/verification/interval-6.md), [Interval 7](docs/verification/interval-7.md), [Interval 8](docs/verification/interval-8.md)).
+Rarity is always written, never colour alone; Marmalade's lines are plain text; the tutorial works with a keyboard alone and can be skipped at any point. Decorating works by keyboard and touch alone, each spot and piece is named in words, and what's out or being tried is always written, never shown by colour alone. Keepsakes and mastery stages are always written ("Stamped", "Not yet", "Well-Loved · Baked 5 times"), hidden keepsakes aren't in the page at all until earned, the favourite toggle says its state, and a keepsake never takes focus. Browser checks are recorded in [`docs/verification/`](docs/verification/) ([Interval 4](docs/verification/interval-4.md), [Interval 5](docs/verification/interval-5.md), [Interval 6](docs/verification/interval-6.md), [Interval 7](docs/verification/interval-7.md), [Interval 8](docs/verification/interval-8.md), [Interval 9](docs/verification/interval-9.md)).
 
 ## Where it's heading
 

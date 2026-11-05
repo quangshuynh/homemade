@@ -29,7 +29,11 @@ import { lockedIngredients, RARITY_LABELS } from '../domain/progression'
 import { familyName } from '../domain/recipeBook'
 import { findRecipeById } from '../domain/recipes'
 import type { CookieRarity, Ingredient } from '../domain/types'
-import { describeLevelUp, discoveryReaction } from '../mascot/reactions'
+import { describeLevelUp, discoveryReaction, keepsakeReaction } from '../mascot/reactions'
+import { stageInfo } from '../domain/mastery'
+import { KeepsakeNews } from '../keepsakes/KeepsakeNews'
+import { describeKeepsakes } from '../keepsakes/words'
+import { bakedTimes } from '../keepsakes/words'
 import { DecorNews } from '../decorating/DecorNews'
 import { StoryNudge } from '../story/StoryNudge'
 import { isTutorialBowl, TUTORIAL_BOWL } from '../tutorial/tutorial'
@@ -50,6 +54,17 @@ function describeReward(outcome: BakeOutcome): string {
   const secret = isSecretFind(outcome) ? 'Something unexpected: a secret recipe! ' : ''
   const level = outcome.levelUp ? ` ${describeLevelUp(outcome.levelUp)}` : ''
   return `${secret}${RARITY_LABELS[rarity]} recipe. Earned ${crumbs} Crumbs and ${xp} XP.${level}`
+}
+
+/** "Shortbread is Familiar now: baked 3 times." Only when a bake reaches a named stage. */
+function describeMastery(outcome: BakeOutcome): string {
+  if (!outcome.masteryUp || outcome.result.kind !== 'recipe') return ''
+  return `${outcome.result.recipe.name} is ${stageInfo(outcome.masteryUp).label} now: ${bakedTimes(outcome.bakeCount).toLowerCase()}.`
+}
+
+/** Everything the status line says once the batch is out, in the order the card shows it. */
+function describeOutcome(outcome: KitchenBake): string {
+  return [describeReward(outcome), describeMastery(outcome), describeKeepsakes(outcome.keepsakes.earned)].filter(Boolean).join(' ')
 }
 
 /** A secret recipe baked for the first time. */
@@ -159,9 +174,16 @@ export function BakeScreen() {
     const { playSound: play, reducedMotion: still, tutorialOn } = latest.current
     play('ding')
     report({ type: 'baked', outcome: doneOutcome })
-    if (!doneOutcome.reward) return
     // During the tutorial Marmalade reads the reward out herself; otherwise the status line does.
-    if (!tutorialOn) setMessage(describeReward(doneOutcome))
+    if (!tutorialOn) setMessage(describeOutcome(doneOutcome))
+    // A rebake: no discovery chime. A named mastery stage and any keepsake each get one small sound, never more.
+    const keepsake = doneOutcome.keepsakes.earned.length > 0
+    if (!doneOutcome.reward) {
+      const later: number[] = []
+      if (doneOutcome.masteryUp) later.push(window.setTimeout(() => latest.current.playSound('mastery-up'), 700))
+      if (keepsake) later.push(window.setTimeout(() => latest.current.playSound('achievement-unlock'), doneOutcome.masteryUp ? 1400 : 700))
+      return () => later.forEach((timer) => window.clearTimeout(timer))
+    }
     const { rarity } = doneOutcome.reward
     const secret = isSecretFind(doneOutcome)
     const chime = discoverySoundDelay(rarity, still, secret)
@@ -170,9 +192,12 @@ export function BakeScreen() {
     if (secret) timers.push(window.setTimeout(() => latest.current.playSound('discover-secret'), secretSoundDelay(rarity, still)))
     if (doneOutcome.levelUp) timers.push(window.setTimeout(() => latest.current.playSound('level-up'), chime + 1100))
     // Something for the cupboard: the last thing to ring, after any level.
+    const afterLevel = chime + (doneOutcome.levelUp ? 2200 : 1100)
     if (doneOutcome.decor.length > 0) {
-      timers.push(window.setTimeout(() => latest.current.playSound('decor-unlock'), chime + (doneOutcome.levelUp ? 2200 : 1100)))
+      timers.push(window.setTimeout(() => latest.current.playSound('decor-unlock'), afterLevel))
     }
+    // A keepsake rings last of all: one stamp however many arrived.
+    if (keepsake) timers.push(window.setTimeout(() => latest.current.playSound('achievement-unlock'), afterLevel + (doneOutcome.decor.length > 0 ? 1000 : 0)))
     return () => timers.forEach((timer) => window.clearTimeout(timer))
   }, [doneOutcome, report])
 
@@ -445,7 +470,8 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain, quietMascot =
   const secret = result.kind === 'recipe' && result.recipe.isSecret
   const secretFind = newDiscovery && secret
   const mythicFind = newDiscovery && rarity === 'mythic'
-  const reaction = quietMascot ? null : discoveryReaction(outcome, save.discoveredRecipes.length)
+  // One line from Marmalade at most: a discovery's news first, then a keepsake moment worth mentioning.
+  const reaction = quietMascot ? null : (discoveryReaction(outcome, save.discoveredRecipes.length) ?? keepsakeReaction(outcome.keepsakes))
   const style = rarity && newDiscovery ? ({ '--reveal-beat': `${REVEAL_BEAT_MS[rarity]}ms` } as CSSProperties) : undefined
 
   return (
@@ -515,7 +541,15 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain, quietMascot =
             <p className="bake-result__made">Made with {listIngredientNames(result.ingredientIds)}.</p>
             <p className="bake-result__book">
               {`${newDiscovery ? 'Copied into' : 'Already in'} your Recipe Book, under ${familyName(result.recipe.family)}.`}
+              {!newDiscovery && !outcome.masteryUp && ` ${bakedTimes(outcome.bakeCount)}.`}
             </p>
+            {/* A named mastery stage: said in words, with a small stamp. Routine bakes get the count above and nothing more. */}
+            {outcome.masteryUp && (
+              <p className="bake-result__mastery">
+                <span className="bake-result__mastery-stamp">{stageInfo(outcome.masteryUp).label}</span>{' '}
+                {describeMastery(outcome)}
+              </p>
+            )}
           </>
         ) : (
           <>
@@ -537,6 +571,8 @@ function BakeResult({ outcome, headingRef, headingId, onBakeAgain, quietMascot =
         {outcome.story && <StoryNudge news={outcome.story} className="bake-result__story" />}
         {/* Something this find earned for the kitchen. Mentioned, never put out for them. */}
         <DecorNews pieces={outcome.decor} className="bake-result__story" />
+        {/* Any keepsake it earned: one label, however many. */}
+        <KeepsakeNews keepsakes={outcome.keepsakes.earned} className="bake-result__story" />
 
         <div className="bake-result__actions">
           <Button variant="primary" onClick={onBakeAgain}>

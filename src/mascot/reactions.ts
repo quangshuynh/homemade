@@ -4,6 +4,7 @@ import type { LevelUp } from '../domain/progression'
 import { familyName } from '../domain/recipeBook'
 import type { IngredientId } from '../domain/ids'
 import type { MascotExpression } from '../components/Mascot'
+import type { AchievementDefinition } from '../keepsakes/types'
 
 /**
  * What Marmalade says, and when. She's around for the moments that matter
@@ -61,6 +62,25 @@ export function discoveryReaction(outcome: BakeOutcome, discoveredCount: number)
   }
   if (outcome.levelUp) return { expression: 'excited', line: 'A new level! Look at you go.' }
   if (discoveredCount === 1) return { expression: 'happy', line: 'Your first card, back in the book. That’s how it starts.' }
+  return null
+}
+
+/**
+ * Her reaction to keepsakes arriving, or null for the ordinary ones. Only a
+ * handful of moments get a line, the biggest first: every spot in the
+ * kitchen filled, a first House Favourite, several keepsakes at once, and
+ * the kitchen's very first keepsake. Routine mastery steps get nothing.
+ */
+export function keepsakeReaction(news: { earned: readonly AchievementDefinition[]; first: boolean }): Reaction | null {
+  const ids = news.earned.map((achievement) => achievement.id as string)
+  if (ids.includes('achievement_lived-in')) {
+    return { expression: 'proud', line: 'Something in every spot. It finally looks like somebody lives here. Somebody does.' }
+  }
+  if (ids.includes('achievement_house-speciality')) {
+    return { expression: 'celebrate', line: 'Ten batches! That one’s a House Favourite now. It’s practically the kitchen’s own.' }
+  }
+  if (ids.length >= 3) return { expression: 'excited', line: `${ids.length} keepsakes at once! The recipe box is going to need a bigger lid.` }
+  if (news.first) return { expression: 'happy', line: 'A keepsake for the recipe box. I’ll tuck it in behind the cards.' }
   return null
 }
 
